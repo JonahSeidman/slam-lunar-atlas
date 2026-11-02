@@ -826,6 +826,109 @@ p strong{color:var(--ink);font-weight:600}
     }
   };
 
+  /* ---------------- the gap: zoom from the globe into an orbital view of the pit ---------------- */
+  let pitTex = null, pitBorn = 0, pitSize = 0;
+  function pitJob(S) {
+    let prev = new Float32Array(S), cur = new Float32Array(S), row = -1;
+    const L = (() => { const l = Math.hypot(.83, -.1, .5); return [.83 / l, -.1 / l, .5 / l]; })();
+    return rasterJob(S, S, (x, y, d, o) => {
+      if (y !== row) { const tmp = prev; prev = cur; cur = tmp; row = y; }
+      const u = x / S, v = y / S, dx = u - .5, dy = v - .5, ang = Math.atan2(dy, dx);
+      const rp = .19 * (1 + (vnoise(Math.cos(ang) * 2 + 5, Math.sin(ang) * 2 + 5, 3) - .5) * .22 + (vnoise(Math.cos(ang) * 7 + 9, Math.sin(ang) * 7, 1) - .5) * .06);
+      const q = Math.hypot(dx, dy) / rp;
+      let h = craterH(u, v, .37, 9, 5, .4) + craterH(u, v, .71, 24, 9, .5) * .8 + craterH(u, v, .13, 70, 13, .55) * .6 + (vnoise(u * 30, v * 30, 2) - .5) * .004;
+      if (q > 1) h += .01 * Math.exp(-(q - 1) * 3.5);
+      cur[x] = h;
+      const gx = x ? (h - cur[x - 1]) * S : 0, gy = y ? (h - prev[x]) * S : 0;
+      const nl = Math.hypot(gx, gy, 1);
+      const I = Math.max(0, (-gx * L[0] - gy * L[1] + L[2]) / nl) * 1.55;
+      const alb = .5 + (vnoise(u * 6, v * 6, 4) - .5) * .14 + (vnoise(u * 60, v * 60, 1) - .5) * .1 + (vnoise(u * 160, v * 160, 8) - .5) * .08;
+      let val = alb * I;
+      if (q < 1) {
+        const xr = dx / rp, yr = dy / rp;
+        const edge = -.05 - .55 * Math.sqrt(Math.max(0, 1 - yr * yr * 1.1)) + (vnoise(yr * 4 + 7, 1, 1) - .5) * .06;
+        const lit = 1 - sstep(edge - .04, edge + .04, xr);
+        if (q > .87) {
+          const wall = sstep(.05, .7, -xr) * (1 - sstep(.75, .95, Math.abs(yr)));
+          const strata = .8 + .2 * vnoise(ang * 30, q * 12, 2);
+          val = .015 + .55 * wall * strata * (.75 + .25 * vnoise(u * 90, v * 90, 3));
+        } else {
+          const r1 = vnoise(u * 18, v * 18, 5), r2 = vnoise(u * 55, v * 55, 6);
+          const boulder = 0, shade = (r1 - .5) * .16 + (r2 - .5) * .1 - craterH(u, v, .5, 140, 21, .7) * 4;
+          val = lerp(.014 + .01 * r1, .34 + shade + boulder - sstep(.0, .2, xr - edge + .2) * .08, lit);
+        }
+      }
+      const c = clamp(val, 0, 1.1) * 232;
+      d[o] = Math.min(255, c * 1.02); d[o + 1] = Math.min(255, c); d[o + 2] = Math.min(255, c * .95); d[o + 3] = 255;
+    }, c => { if (S >= pitSize) { pitTex = c; pitSize = S; pitBorn = performance.now(); } });
+  }
+  resizers.push(() => {
+    const R = region(), want = Math.round(clamp(Math.min(R.x1 - R.x0, R.y1 - R.y0) * DPR * .95, 320, 900) / 32) * 32;
+    if (want > pitSize * 1.2) queue(pitJob(want));
+  });
+  function pitFrame(p) {
+    const R = region(), cx = (R.x0 + R.x1) / 2, cy = (R.y0 + R.y1) / 2, s = Math.min(R.x1 - R.x0, R.y1 - R.y0) * .92 * lerp(.94, 1.04, ease(p));
+    return { cx, cy, s, x: cx - s / 2, y: cy - s / 2 };
+  }
+  function brackets(x, y, w, h, c, l = 18) {
+    ctx.strokeStyle = c; ctx.lineWidth = 1.3; ctx.beginPath();
+    ctx.moveTo(x, y + l); ctx.lineTo(x, y); ctx.lineTo(x + l, y);
+    ctx.moveTo(x + w - l, y); ctx.lineTo(x + w, y); ctx.lineTo(x + w, y + l);
+    ctx.moveTo(x + w, y + h - l); ctx.lineTo(x + w, y + h); ctx.lineTo(x + w - l, y + h);
+    ctx.moveTo(x + l, y + h); ctx.lineTo(x, y + h); ctx.lineTo(x, y + h - l); ctx.stroke();
+  }
+  SCN.orbit = {
+    moon(p) {
+      const b = moonPlace(1), u = project(TRANQ[0], TRANQ[1], 0, { x: 0, y: 0, r: 1 }), F = pitFrame(p);
+      const k = ease(p / .42), r = b.r * Math.pow(60, k);
+      return { x: lerp(b.x, F.cx - u.x * r, k), y: lerp(b.y, F.cy - u.y * r, k), r, a: 1 - sstep(.26, .4, p), w: 0 };
+    },
+    draw(p, t, M) {
+      const kz = sstep(.12, .3, p);
+      if (kz > 0 && kz < 1 && M.a > .05) {
+        const pt = at(TRANQ, M); alpha(kz * (1 - sstep(.3, .38, p)));
+        ctx.strokeStyle = rgba(C.accent, .9); ctx.lineWidth = 1.2; const rr = 14 + 40 * kz;
+        ctx.strokeRect(pt.x - rr, pt.y - rr, rr * 2, rr * 2);
+      }
+      const k = sstep(.27, .42, p); if (k <= 0) return;
+      const F = pitFrame(p), { x, y, s, cx, cy } = F;
+      alpha(k);
+      ctx.save(); ctx.beginPath(); ctx.rect(x, y, s, s); ctx.clip();
+      if (pitTex) { ctx.imageSmoothingQuality = 'high'; ctx.drawImage(pitTex, x, y, s, s); }
+      else { ctx.fillStyle = '#3c3a36'; ctx.fillRect(x, y, s, s); ctx.fillStyle = '#060606'; ctx.beginPath(); ctx.arc(cx, cy, s * .19, 0, TAU); ctx.fill(); }
+      const vg = ctx.createRadialGradient(cx, cy, s * .32, cx, cy, s * .75);
+      vg.addColorStop(0, 'rgba(5,7,13,0)'); vg.addColorStop(1, 'rgba(5,7,13,.78)');
+      ctx.fillStyle = vg; ctx.fillRect(x, y, s, s);
+      // scan line sweep, like a frame coming down from orbit
+      const sw = (t * .12) % 1; alpha(k * .5);
+      const sg = ctx.createLinearGradient(0, y + sw * s - 40, 0, y + sw * s);
+      sg.addColorStop(0, 'rgba(255,122,47,0)'); sg.addColorStop(1, 'rgba(255,122,47,.12)');
+      ctx.fillStyle = sg; ctx.fillRect(x, y + sw * s - 40, s, 40);
+      ctx.restore();
+      alpha(k); brackets(x, y, s, s, rgba(C.ink, .55));
+      tag(x + 4, y - 14, 'MARE TRANQUILLITATIS PIT · 8.3°N 33.2°E', C.accent);
+      tag(x + s, y + s + 16, 'ORBITAL VIEW · ILLUSTRATIVE', C.faint, 'right');
+      const pr = s * .19, bx = x + 16, by = y + s - 18;
+      ctx.strokeStyle = C.ink; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(bx, by - 4); ctx.lineTo(bx, by); ctx.lineTo(bx + pr * 2, by); ctx.lineTo(bx + pr * 2, by - 4); ctx.stroke();
+      tag(bx + pr, by - 12, '~100 M', C.ink, 'center');
+      // what orbit can't see: a sketched conduit running under the surface
+      const kc = sstep(.48, .6, p); if (kc <= 0) return;
+      const ax = cx - pr * .9, ay = cy + pr * .1, ex = cx - pr * 2.35, ey = cy + pr * .75, tw = pr * .42;
+      const nx = -(ey - ay), ny = ex - ax, nl = Math.hypot(nx, ny), ux = nx / nl * tw, uy = ny / nl * tw;
+      const reach = ease((p - .48) / .2);
+      const fx = lerp(ax, ex, reach), fy = lerp(ay, ey, reach);
+      alpha(kc); ctx.setLineDash([5, 5]); ctx.strokeStyle = rgba(C.accent, .95); ctx.lineWidth = 1.4;
+      ctx.beginPath(); ctx.moveTo(ax + ux, ay + uy); ctx.lineTo(fx + ux * .8, fy + uy * .8); ctx.moveTo(ax - ux, ay - uy); ctx.lineTo(fx - ux * .8, fy - uy * .8); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.font = '600 22px "Big Shoulders Display", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = C.accent;
+      if (reach > .9) ctx.fillText('?', ex - (ex - ax) * .12, ey - (ey - ay) * .12 + 1);
+      const qs = [['HOW FAR?', ex - 4, ey + pr * .55, 'center', .62], ['CEILING?', (ax + ex) / 2 + ux * 1.6, (ay + ey) / 2 + uy * 1.6 - 12, 'center', .68],
+                  ['FLOOR DRIVABLE?', (ax + ex) / 2 - ux * 1.6, (ay + ey) / 2 - uy * 1.6 + 14, 'center', .74], ['FITS A HABITAT?', cx + pr * .55, cy - pr * 1.25, 'center', .8]];
+      for (const [txt, qx, qy, al, at0] of qs) { const kk = sstep(at0, at0 + .06, p); if (kk > 0) { alpha(kc * kk); tag(qx, qy, txt, C.accent, al); } }
+      const kn = sstep(.62, .7, p); if (kn > 0) { alpha(kn); tag(x + 4, y + s + 16, 'CONDUIT OUTLINE SKETCHED · EXTENT UNKNOWN', C.faint); }
+    }
+  };
+
 /*@SCENES*/
 
   /* ---------------- scroll engine ---------------- */
