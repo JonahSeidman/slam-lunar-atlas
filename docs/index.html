@@ -91,6 +91,7 @@ p strong{color:var(--ink);font-weight:600}
 .sources ol{margin:0;padding-left:1.2rem;display:grid;gap:.45rem;max-width:62rem;color:var(--dim);font-size:.85rem;line-height:1.5}
 .sources a{color:var(--ink);text-underline-offset:3px}
 .sources a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.sources .contact{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:.6rem 2rem;font-size:1rem}
 .sources p{margin-top:1.4rem;font-size:.8rem;color:var(--faint);max-width:62rem}
 
 .hud{position:fixed;z-index:2;left:max(16px,env(safe-area-inset-left,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));font-family:var(--f-mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);display:flex;gap:.6rem;align-items:center;pointer-events:none}
@@ -227,7 +228,7 @@ p strong{color:var(--ink);font-weight:600}
         <p class="eyebrow">The device</p>
         <h2>A small rover built for one job.</h2>
         <p>Small enough to lower through a skylight, low and wide enough to drive a rubble floor in total darkness. Everything it needs to map is on board, and everything it learns goes up the cable.</p>
-        <p>Later missions add an <strong>alpha particle X-ray spectrometer</strong> on a small arm, pressed against the walls and floor to measure what the cave is made of.</p>
+        <p>Two large wheels carry it over rubble. Underneath, an <strong>alpha particle X-ray spectrometer</strong> reads the ground it drives over and measures what the cave is made of, element by element.</p>
       </div>
     </div>
   </section>
@@ -286,17 +287,11 @@ p strong{color:var(--ink);font-weight:600}
 </main>
 
 <footer class="sources">
-  <h2>Sources</h2>
-  <ol>
-    <li>L. Carrer et al., "Radar evidence of an accessible cave conduit on the Moon below the Mare Tranquillitatis pit," <i>Nature Astronomy</i> (2024).</li>
-    <li>T. Horvath, P. Hayne, D. Paige, "Thermal and illumination environments of lunar pits and caves," <i>Geophysical Research Letters</i> (2022).</li>
-    <li>R. Wagner, M. Robinson, "Distribution, formation mechanisms, and significance of lunar pits," <i>Icarus</i> (2014).</li>
-    <li>C. Ding et al., "Towards a habitable Moon: probing subsurface cavities with global penetrating radar," <i>npj Space Exploration</i> 1, 11 (2025).</li>
-    <li>NASA: Artemis II mission (April 2026); Artemis IV (early 2028, about a week near the south pole); Moon Base development (2026); <a href="https://www.nasa.gov/commercial-lunar-payload-services/" target="_blank" rel="noopener">Commercial Lunar Payload Services</a>.</li>
-    <li>China Manned Space Agency: crewed lunar landing before 2030. CNSA: ILRS basic model by 2035; Chang'e-4, -5, -6 and -7 mission records.</li>
-    <li>NASA KNaCK: SLAM LiDAR for exploration and mapping of lunar pits and caves (IPCC 2023).</li>
-  </ol>
-  <p>All graphics are illustrative: the Moon, pit, cave cross-sections, rover and point clouds are generated in the browser and are not to scale or real sensor data. Google Maps and Street View are a functional analogy only; no affiliation with Google, NASA, CNSA or any cited organization is implied.</p>
+  <h2>Jonah Seidman</h2>
+  <ul class="contact">
+    <li><a href="mailto:jonahkais@gmail.com">jonahkais@gmail.com</a></li>
+    <li><a href="https://jonahseidman.com" target="_blank" rel="noopener">jonahseidman.com</a></li>
+  </ul>
 </footer>
 
 <script>
@@ -1125,27 +1120,43 @@ p strong{color:var(--ink);font-weight:600}
       ctx.fillStyle = '#ffd2a8'; ctx.fillRect(sx - 1, w0 + 1, 2, w1 - w0 - 2); ctx.restore();
     }
   }
+  // two-wheeled rover, seen from the front at a slight angle
+  function wheel34(x, y, r, a, side, far) {
+    // side: -1 left, +1 right; tire is a short cylinder whose outer face points away from the body
+    const sq = .42, th = r * .34;
+    ctx.save(); ctx.translate(x, y);
+    const tg = ctx.createLinearGradient(-th, 0, th, 0); tg.addColorStop(0, '#1a1917'); tg.addColorStop(.5, '#3b3934'); tg.addColorStop(1, '#141412');
+    ctx.fillStyle = tg; ctx.beginPath(); ctx.ellipse(-side * th * .5, 0, r * sq, r, 0, 0, TAU); ctx.fill();
+    ctx.fillRect(-side * th * .5 - (side > 0 ? 0 : 0), -r, side * th * .5 + side * th * .5 - side * th * .5, 0);
+    ctx.beginPath(); ctx.rect(Math.min(-side * th * .5, side * th * .5), -r, th, r * 2); ctx.fill();
+    ctx.fillStyle = '#0d0d0c';
+    for (let k = 0; k < 16; k++) { const b = a + k * TAU / 16, yy = Math.sin(b) * r; if (Math.cos(b) < 0) continue; ctx.fillRect(Math.min(-side * th * .5, side * th * .5), yy - r * .035, th, r * .07); }
+    ctx.translate(side * th * .5, 0); ctx.scale(sq, 1);
+    wheelDraw(0, 0, r, a, far);
+    ctx.restore();
+  }
+  function roverBody(cx, cy, hw, br, kComp) {
+    // horizontal cylinder axle-body from cx-hw to cx+hw, radius br
+    const g = ctx.createLinearGradient(0, cy - br, 0, cy + br);
+    g.addColorStop(0, '#fbf8f1'); g.addColorStop(.35, '#e4dfd4'); g.addColorStop(.75, '#a29c90'); g.addColorStop(1, '#5d5850');
+    ctx.fillStyle = g; ctx.fillRect(cx - hw, cy - br, hw * 2, br * 2);
+    const mg = ctx.createLinearGradient(0, cy - br, 0, cy + br); mg.addColorStop(0, '#ffe2a0'); mg.addColorStop(.4, '#d39a42'); mg.addColorStop(1, '#6e4512');
+    ctx.fillStyle = mg; ctx.fillRect(cx - hw * .38, cy - br, hw * .76, br * 2);
+    ctx.strokeStyle = 'rgba(90,55,10,.45)'; ctx.lineWidth = 1; ctx.beginPath();
+    for (let u = -.34; u < .36; u += .07) { ctx.moveTo(cx + u * hw, cy - br + 1); ctx.lineTo(cx + (u + .03) * hw, cy + br - 1); }
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,.75)'; ctx.fillRect(cx - hw, cy - br * .62, hw * 2, Math.max(1, br * .06));
+    ctx.fillStyle = 'rgba(5,7,13,.25)'; ctx.fillRect(cx - hw * .38, cy - br, 1, br * 2); ctx.fillRect(cx + hw * .38 - 1, cy - br, 1, br * 2);
+  }
   function roverDraw(x, y, ang, rw, t, roll, lights) {
-    const rh = rw * .42, wr = rh * .36, wy = rh * .8 - wr;
+    const rh = rw * .42, R = rh * .62, wy = rh * .8 - R, hw = rw * .3, br = R * .42;
     ctx.save(); ctx.translate(x, y); ctx.rotate(ang);
-    const wxs = [-rw * .36, 0, rw * .36];
-    wxs.forEach((wx, i) => wheelDraw(wx + rw * .05, wy - rh * .06, wr, roll + i, true));
-    strut([[wxs[0], wy], [-rw * .08, rh * .12], [rw * .18, wy - rh * .1], [wxs[1], wy]], Math.max(1.6, rh * .1));
-    strut([[rw * .18, wy - rh * .1], [wxs[2], wy]], Math.max(1.6, rh * .1));
-    const yT = -rh * .45, yB = rh * .22;
-    const gb = ctx.createLinearGradient(0, yT, 0, yB);
-    gb.addColorStop(0, '#f6f2e9'); gb.addColorStop(.55, '#cdc7bb'); gb.addColorStop(1, '#8a857b');
-    ctx.fillStyle = gb; ctx.beginPath(); ctx.roundRect(-rw / 2, yT, rw, yB - yT, Math.max(1.5, rh * .1)); ctx.fill();
-    const mg = ctx.createLinearGradient(0, yB - rh * .16, 0, yB); mg.addColorStop(0, '#f0cb74'); mg.addColorStop(1, '#94631f');
-    ctx.fillStyle = mg; ctx.fillRect(-rw / 2 + 1, yB - rh * .16, rw - 2, rh * .14);
-    ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.fillRect(-rw / 2 + 2, yT, rw - 4, 1);
-    ctx.fillStyle = 'rgba(5,7,13,.25)'; ctx.fillRect(-rw * .05, yT + 2, 1, yB - yT - rh * .2);
-    wxs.forEach((wx, i) => wheelDraw(wx, wy, wr, roll + i * .7, false));
-    joint(-rw * .08, rh * .12, Math.max(1.5, rh * .09)); joint(rw * .18, wy - rh * .1, Math.max(1.3, rh * .07));
-    ctx.fillStyle = '#4a4740'; ctx.fillRect(rw * .2 - 1, yT - rh * .5, 2, rh * .5);
-    lidarPuck(rw * .2, yT - rh * .78, rh * .2, rh * .3, t, lights ? 1 : 0);
-    ctx.fillStyle = '#26262a'; ctx.fillRect(-rw / 2 - rh * .14, -rh * .2, rh * .16, rh * .2);
-    ctx.fillStyle = C.accent; ctx.fillRect(-rw / 2 - rh * .05, -rh * .18, Math.max(1.5, rh * .05), rh * .16);
+    roverBody(0, wy, hw, br);
+    ctx.fillStyle = '#4a4740'; ctx.fillRect(-1, wy - br - rh * .45, 2, rh * .45);
+    lidarPuck(0, wy - br - rh * .72, rh * .2, rh * .3, t, lights ? 1 : 0);
+    ctx.fillStyle = '#b9b3a7'; ctx.fillRect(-rh * .06, wy + br, rh * .12, rh * .1);
+    wheel34(-hw - R * .14, wy, R, roll, -1, false);
+    wheel34(hw + R * .14, wy, R, roll + .5, 1, false);
     ctx.restore();
   }
   const rot = (x, y, a) => [x * Math.cos(a) - y * Math.sin(a), x * Math.sin(a) + y * Math.cos(a)];
@@ -1380,131 +1391,94 @@ p strong{color:var(--ink);font-weight:600}
     moon: () => null,
     draw(p, t) {
       const s = p * .9, R = region(), w = R.x1 - R.x0, h = R.y1 - R.y0, mob = W < 900;
-      const L = Math.min(w * (mob ? .46 : .42), h * .6);
-      const cx = R.x0 + w * (mob ? .5 : .46), cy = R.y0 + h * .55;
-      const X = x => cx + x * L, Y = y => cy + y * L, dx = .07, dy = -.05;
+      const L = Math.min(w * (mob ? .44 : .4), h * .6);
+      const cx = R.x0 + w * (mob ? .5 : .47), cy = R.y0 + h * .55;
+      const X = x => cx + x * L, Y = y => cy + y * L;
       const kA = ease(clamp((s - .02) / .45, 0, 1)), e = 1 - kA;
       const off = (o, f) => { ctx.save(); ctx.translate(o[0] * L * e, o[1] * L * e); f(); ctx.restore(); };
-      const poly = pts => { ctx.beginPath(); pts.forEach(([x, y], i) => i ? ctx.lineTo(X(x), Y(y)) : ctx.moveTo(X(x), Y(y))); ctx.closePath(); };
       const roll = RM ? 0 : t * .15;
       alpha(1);
       // ground
-      const fy = Y(.3), fx0 = Math.max(R.x0, X(-1.15)), fx1 = Math.min(R.x1, X(1.15));
+      const fy = Y(.32), fx0 = Math.max(R.x0, X(-1.2)), fx1 = Math.min(R.x1, X(1.2));
       const fg = ctx.createLinearGradient(0, fy, 0, fy + L * .3);
       fg.addColorStop(0, 'rgba(120,113,102,.45)'); fg.addColorStop(1, 'rgba(120,113,102,0)');
       ctx.fillStyle = fg; ctx.fillRect(fx0, fy, fx1 - fx0, L * .3);
       for (const [u, v, k] of REGO) { const gx = X(u); if (gx < fx0 || gx > fx1) continue; ctx.fillStyle = `rgba(236,232,223,${(.04 + k * .1 * (1 - v)).toFixed(3)})`; ctx.fillRect(gx, fy + v * v * L * .26, 1 + k * 1.5, 1 + k); }
       const hl = ctx.createLinearGradient(fx0, 0, fx1, 0); hl.addColorStop(0, 'rgba(180,172,160,0)'); hl.addColorStop(.5, 'rgba(180,172,160,.5)'); hl.addColorStop(1, 'rgba(180,172,160,0)');
       ctx.fillStyle = hl; ctx.fillRect(fx0, fy, fx1 - fx0, 1);
-      for (const [u, rw, rh, sd] of [[-.95, .05, .03, 1], [-.8, .028, .02, 2], [1.0, .06, .04, 4], [1.12, .03, .02, 5]]) { if (X(u) > fx0 && X(u) < fx1) rock(X(u), fy, rw * L, rh * L, sd); }
+      for (const [u, rw, rh, sd] of [[-1.0, .05, .03, 1], [-.86, .028, .02, 2], [.95, .06, .04, 4], [1.1, .03, .02, 5]]) { if (X(u) > fx0 && X(u) < fx1) rock(X(u), fy, rw * L, rh * L, sd); }
       // contact shadow
-      const sh = ctx.createRadialGradient(X(0), fy, 0, X(0), fy, L * .6);
+      const sh = ctx.createRadialGradient(X(0), fy, 0, X(0), fy, L * .7);
       sh.addColorStop(0, `rgba(0,0,0,${(.55 * kA).toFixed(3)})`); sh.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx.save(); ctx.translate(X(0), fy); ctx.scale(1, .12); ctx.translate(-X(0), -fy); ctx.fillStyle = sh; ctx.beginPath(); ctx.arc(X(0), fy, L * .6, 0, TAU); ctx.fill(); ctx.restore();
-      // LiDAR sweep on the floor
+      ctx.save(); ctx.translate(X(0), fy); ctx.scale(1, .12); ctx.translate(-X(0), -fy); ctx.fillStyle = sh; ctx.beginPath(); ctx.arc(X(0), fy, L * .7, 0, TAU); ctx.fill(); ctx.restore();
+      // LiDAR rings on the floor
       const kl = sstep(.5, .7, s);
       if (kl > 0) {
         const ph = RM ? .3 : (t * .45) % 1;
-        for (let k = 0; k < 3; k++) { const q = (k + ph) / 3, rk = .25 + q * .85; alpha(kl * (1 - q) * .55); ctx.strokeStyle = C.accent; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(X(.2), fy, rk * L, rk * L * .07, 0, 0, TAU); ctx.stroke(); }
+        for (let k = 0; k < 3; k++) { const q = (k + ph) / 3, rk = .3 + q * .85; alpha(kl * (1 - q) * .55); ctx.strokeStyle = C.accent; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(X(0), fy, rk * L, rk * L * .07, 0, 0, TAU); ctx.stroke(); }
         alpha(1);
       }
       // geometry
-      const wr = L * .095, wyN = fy - wr, wyF = wyN + dy * L * .7;
-      const WX = [-.36, .05, .4], piv = [-.06, .1], bog = [.22, .19];
-      // far side
-      off([0, .35], () => {
-        WX.forEach((u, i) => wheelDraw(X(u + dx * .7), wyF, wr, roll + i, true));
-        strut([[X(WX[0] + dx * .7), wyF], [X(piv[0] + dx * .7), Y(piv[1] + dy * .7)], [X(bog[0] + dx * .7), Y(bog[1] + dy * .7)]], L * .028, true);
-        strut([[X(WX[1] + dx * .7), wyF], [X(bog[0] + dx * .7), Y(bog[1] + dy * .7)], [X(WX[2] + dx * .7), wyF]], L * .028, true);
-      });
-      // tether cable
-      const c0 = [X(-.56), Y(-.03)], c1 = [X(-.78), Y(-.03)], c2 = [X(-.84), Y(-.45)], c3 = [X(-1.02), Y(-.8)];
-      off([-.35, 0], () => {
+      const WR = L * .3, hy = fy - WR, hw = L * .3, br = WR * .42, wxo = hw + WR * .14;
+      // tether: leaves the back of the body and climbs to the skylight
+      const c0 = [X(-.12), hy - br * .7], c1 = [X(-.2), Y(-.55)], c2 = [X(-.45), Y(-.6)], c3 = [X(-.62), Y(-.95)];
+      off([-.3, -.2], () => {
         ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(...c0); ctx.bezierCurveTo(...c1, ...c2, ...c3);
         ctx.strokeStyle = '#1d1c1a'; ctx.lineWidth = Math.max(3, L * .024); ctx.stroke();
         ctx.strokeStyle = '#5a5246'; ctx.lineWidth = Math.max(1.5, L * .012); ctx.stroke();
         ctx.save(); ctx.translate(-1, -1); ctx.strokeStyle = 'rgba(232,212,170,.5)'; ctx.lineWidth = 1; ctx.stroke(); ctx.restore(); ctx.lineCap = 'butt';
+        const bgg = ctx.createLinearGradient(0, c0[1] - L * .05, 0, c0[1]); bgg.addColorStop(0, '#4a4a52'); bgg.addColorStop(1, '#141417');
+        ctx.fillStyle = bgg; ctx.beginPath(); ctx.roundRect(c0[0] - L * .03, c0[1] - L * .035, L * .06, L * .05, 3); ctx.fill();
+        ctx.fillStyle = C.accent; ctx.fillRect(c0[0] - L * .03, c0[1] - L * .01, L * .06, Math.max(2, L * .008));
       });
-      // compute module slides into the body
+      // compute module slides into the body from above
       const kc = 1 - sstep(.72, .95, kA);
-      if (kc > 0) off([0, -.65], () => {
+      if (kc > 0) off([0, -.7], () => {
         alpha(kc);
-        ctx.fillStyle = '#0f1914'; ctx.beginPath(); ctx.roundRect(X(-.22), Y(-.08), L * .32, L * .13, 3); ctx.fill();
+        ctx.fillStyle = '#0f1914'; ctx.beginPath(); ctx.roundRect(X(.06), hy - L * .05, L * .2, L * .1, 3); ctx.fill();
         ctx.strokeStyle = rgba(C.accent, .5); ctx.lineWidth = 1; ctx.stroke();
-        ctx.fillStyle = '#2b302c'; ctx.fillRect(X(-.17), Y(-.055), L * .09, L * .08); ctx.fillRect(X(-.05), Y(-.05), L * .05, L * .05); ctx.fillRect(X(.03), Y(-.05), L * .04, L * .07);
+        ctx.fillStyle = '#2b302c'; ctx.fillRect(X(.08), hy - L * .03, L * .06, L * .06); ctx.fillRect(X(.16), hy - L * .03, L * .07, L * .04);
         alpha(1);
       });
       // body
-      const x0 = -.46, x1 = .46, yT = -.13, yB = .08;
-      const tg = ctx.createLinearGradient(0, Y(yT + dy), 0, Y(yT)); tg.addColorStop(0, '#d9d4c9'); tg.addColorStop(1, '#efebe2');
-      ctx.fillStyle = tg; poly([[x0, yT], [x1, yT], [x1 + dx, yT + dy], [x0 + dx, yT + dy]]); ctx.fill();
-      ctx.strokeStyle = 'rgba(120,140,175,.55)'; ctx.lineWidth = 1; ctx.beginPath();
-      for (let u = -.34; u <= .02; u += .028) { ctx.moveTo(X(u + dx * .12), Y(yT + dy * .12)); ctx.lineTo(X(u + dx * .88), Y(yT + dy * .88)); }
-      ctx.stroke();
-      const fgr = ctx.createLinearGradient(0, Y(yT), 0, Y(yB)); fgr.addColorStop(0, '#b7b1a5'); fgr.addColorStop(1, '#6f6a61');
-      ctx.fillStyle = fgr; poly([[x1, yT], [x1 + dx, yT + dy], [x1 + dx, yB + dy], [x1, yB]]); ctx.fill();
-      const bg = ctx.createLinearGradient(0, Y(yT), 0, Y(yB));
-      bg.addColorStop(0, '#fbf8f1'); bg.addColorStop(.45, '#dcd6ca'); bg.addColorStop(1, '#9d978b');
-      ctx.fillStyle = bg; ctx.beginPath(); ctx.roundRect(X(x0), Y(yT), L * (x1 - x0), L * (yB - yT), L * .016); ctx.fill();
-      const mg = ctx.createLinearGradient(0, Y(yB - .045), 0, Y(yB)); mg.addColorStop(0, '#f6d384'); mg.addColorStop(.5, '#c8913a'); mg.addColorStop(1, '#7a4f16');
-      ctx.fillStyle = mg; ctx.fillRect(X(x0 + .01), Y(yB - .045), L * (x1 - x0 - .02), L * .04);
-      ctx.strokeStyle = 'rgba(90,55,10,.45)'; ctx.lineWidth = 1; ctx.beginPath();
-      for (let u = x0 + .03; u < x1 - .02; u += .045) { ctx.moveTo(X(u), Y(yB - .043)); ctx.lineTo(X(u + .02 + Math.sin(u * 40) * .008), Y(yB - .006)); }
-      ctx.stroke();
-      ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.fillRect(X(x0 + .015), Y(yT), L * (x1 - x0 - .03), 1.2);
-      ctx.strokeStyle = 'rgba(5,7,13,.22)'; ctx.beginPath(); ctx.moveTo(X(-.2), Y(yT + .01)); ctx.lineTo(X(-.2), Y(yB - .05)); ctx.moveTo(X(.24), Y(yT + .01)); ctx.lineTo(X(.24), Y(yB - .05)); ctx.stroke();
-      ctx.fillStyle = 'rgba(5,7,13,.35)';
-      for (const [u, v] of [[-.44, -.11], [-.22, -.11], [-.18, -.11], [.22, -.11], [.26, -.11], [.44, -.11]]) { ctx.beginPath(); ctx.arc(X(u), Y(v), Math.max(1, L * .005), 0, TAU); ctx.fill(); }
-      for (let k = 0; k < 6; k++) { const vg = ctx.createLinearGradient(0, Y(-.08), 0, Y(.0)); vg.addColorStop(0, 'rgba(5,7,13,.45)'); vg.addColorStop(1, 'rgba(5,7,13,.15)'); ctx.fillStyle = vg; ctx.beginPath(); ctx.roundRect(X(-.42 + k * .032), Y(-.085), Math.max(2, L * .013), L * .085, 2); ctx.fill(); }
-      ctx.font = `600 ${Math.max(9, Math.round(L * .038))}px "IBM Plex Mono", monospace`; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-      ctx.fillStyle = C.accent; ctx.fillText('SLAM-01', X(-.13), Y(-.035));
-      ctx.fillRect(X(-.13), Y(-.005), L * .16, Math.max(1.5, L * .006));
-      // near side rocker-bogie and wheels
-      off([0, .35], () => {
-        strut([[X(WX[0]), wyN], [X(piv[0]), Y(piv[1])], [X(bog[0]), Y(bog[1])]], L * .03);
-        strut([[X(WX[1]), wyN], [X(bog[0]), Y(bog[1])], [X(WX[2]), wyN]], L * .03);
-        WX.forEach((u, i) => wheelDraw(X(u), wyN, wr, roll + i * .7, false));
-        joint(X(piv[0]), Y(piv[1]), L * .022); joint(X(bog[0]), Y(bog[1]), L * .018);
+      roverBody(X(0), hy, hw, br);
+      ctx.font = `600 ${Math.max(9, Math.round(L * .034))}px "IBM Plex Mono", monospace`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#3a2408'; ctx.fillText('SLAM-01', X(0), hy + br * .15);
+      ctx.fillStyle = 'rgba(5,7,13,.4)';
+      for (let k = 0; k < 4; k++) { ctx.beginPath(); ctx.roundRect(X(-.27 + k * .028), hy - br * .45, Math.max(2, L * .011), br * .9, 2); ctx.fill(); }
+      for (let k = 0; k < 4; k++) { ctx.beginPath(); ctx.roundRect(X(.17 + k * .028), hy - br * .45, Math.max(2, L * .011), br * .9, 2); ctx.fill(); }
+      // APXS: fixed in the belly, looking straight down at the floor
+      const ax = X(0), ay0 = hy + br * .9, ay1 = fy - L * .045;
+      off([0, .25], () => {
+        const hg = ctx.createLinearGradient(ax - L * .03, 0, ax + L * .03, 0); hg.addColorStop(0, '#5e5a52'); hg.addColorStop(.4, '#e9e4d9'); hg.addColorStop(1, '#6b665d');
+        ctx.fillStyle = hg; ctx.fillRect(ax - L * .028, ay0, L * .056, ay1 - ay0);
+        const gg = ctx.createLinearGradient(ax - L * .036, 0, ax + L * .036, 0); gg.addColorStop(0, '#9c6a1e'); gg.addColorStop(.4, '#ffe2a0'); gg.addColorStop(1, '#9c6a1e');
+        ctx.fillStyle = gg; ctx.fillRect(ax - L * .036, ay1 - L * .02, L * .072, L * .016);
+        ctx.fillStyle = '#1b1b1f'; ctx.fillRect(ax - L * .025, ay1 - L * .004, L * .05, L * .008);
       });
+      const kx = sstep(.55, .75, s) * (RM ? .8 : .6 + .4 * Math.sin(t * 3));
+      if (kx > 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; alpha(kx); ctx.translate(ax, fy); ctx.scale(1, .3); const xg = ctx.createRadialGradient(0, 0, 0, 0, 0, L * .14); xg.addColorStop(0, 'rgba(201,170,255,.8)'); xg.addColorStop(1, 'rgba(201,170,255,0)'); ctx.fillStyle = xg; ctx.fillRect(-L * .14, -L * .14, L * .28, L * .28); ctx.restore(); alpha(1); }
       // LiDAR mast
-      const px = X(.2), pt0 = Y(-.47);
-      off([0, -.42], () => {
-        const mg2 = ctx.createLinearGradient(px - 3, 0, px + 3, 0); mg2.addColorStop(0, '#2c2a26'); mg2.addColorStop(.5, '#8d877c'); mg2.addColorStop(1, '#2c2a26');
-        ctx.fillStyle = mg2; ctx.fillRect(px - Math.max(1.5, L * .011), Y(-.36), Math.max(3, L * .022), L * .24);
-        ctx.fillStyle = '#3a3834'; ctx.beginPath(); ctx.ellipse(px, Y(yT + dy * .4), L * .04, L * .01, 0, 0, TAU); ctx.fill();
-        lidarPuck(px, pt0, L * .06, L * .1, t, kl);
+      const pt0 = hy - br - L * .26;
+      off([0, -.4], () => {
+        const mg2 = ctx.createLinearGradient(X(0) - 3, 0, X(0) + 3, 0); mg2.addColorStop(0, '#2c2a26'); mg2.addColorStop(.5, '#8d877c'); mg2.addColorStop(1, '#2c2a26');
+        ctx.fillStyle = mg2; ctx.fillRect(X(0) - Math.max(1.5, L * .011), pt0 + L * .1, Math.max(3, L * .022), hy - br - pt0 - L * .1);
+        ctx.fillStyle = '#3a3834'; ctx.beginPath(); ctx.ellipse(X(0), hy - br, L * .04, L * .01, 0, 0, TAU); ctx.fill();
+        lidarPuck(X(0), pt0, L * .065, L * .1, t, kl);
       });
-      // APXS arm reaching a rock in front
-      const S0 = [X(.48), Y(-.02)], E0 = [X(.66), Y(-.17)], W0 = [X(.8), Y(.1)], rkX = X(.8), rkTop = fy - L * .062;
-      off([.5, -.1], () => {
-        rock(rkX, fy, L * .085, L * .07, 9);
-        strut([S0, E0, W0], L * .026);
-        joint(...S0, L * .02); joint(...E0, L * .017); joint(...W0, L * .015);
-        const hw = L * .022, hb = rkTop - 1;
-        const hg = ctx.createLinearGradient(W0[0] - hw, 0, W0[0] + hw, 0); hg.addColorStop(0, '#5e5a52'); hg.addColorStop(.4, '#e9e4d9'); hg.addColorStop(1, '#6b665d');
-        ctx.fillStyle = hg; ctx.fillRect(W0[0] - hw, W0[1] + L * .01, hw * 2, hb - W0[1] - L * .01);
-        const gg = ctx.createLinearGradient(W0[0] - hw, 0, W0[0] + hw, 0); gg.addColorStop(0, '#9c6a1e'); gg.addColorStop(.4, '#ffe2a0'); gg.addColorStop(1, '#9c6a1e');
-        ctx.fillStyle = gg; ctx.fillRect(W0[0] - hw * 1.15, hb - L * .03, hw * 2.3, L * .018);
-        ctx.fillStyle = '#1b1b1f'; ctx.fillRect(W0[0] - hw * .9, hb - L * .012, hw * 1.8, L * .012);
-        const kx = sstep(.55, .75, s) * (RM ? .8 : .6 + .4 * Math.sin(t * 3));
-        if (kx > 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; alpha(kx); const xg = ctx.createRadialGradient(W0[0], hb, 0, W0[0], hb, L * .07); xg.addColorStop(0, 'rgba(201,170,255,.7)'); xg.addColorStop(1, 'rgba(201,170,255,0)'); ctx.fillStyle = xg; ctx.fillRect(W0[0] - L * .07, hb - L * .07, L * .14, L * .14); ctx.restore(); alpha(1); }
-      });
-      // tether termination boot
-      off([-.35, 0], () => {
-        const bgg = ctx.createLinearGradient(0, Y(-.07), 0, Y(.02)); bgg.addColorStop(0, '#4a4a52'); bgg.addColorStop(1, '#141417');
-        ctx.fillStyle = bgg; poly([[-.46, -.07], [-.46, .02], [-.53, -.008], [-.565, -.02], [-.565, -.04], [-.53, -.052]]); ctx.fill();
-        ctx.fillStyle = C.accent; ctx.fillRect(X(-.5), Y(-.06), Math.max(2, L * .01), L * .06);
-      });
+      // two big wheels
+      off([-.4, 0], () => wheel34(X(0) - wxo, hy, WR, roll, -1, false));
+      off([.4, 0], () => wheel34(X(0) + wxo, hy, WR, roll + .5, 1, false));
       // callouts
       const k1 = sstep(.38, .55, s);
       if (k1 > 0) {
         alpha(k1);
-        callout(px + L * .06, pt0 + L * .05, X(.42), Y(-.64), '3D LIDAR · SEES BY ITS OWN LASER', C.accent);
-        callout(X(-.33), Y(-.09), X(-.3), Y(-.44), 'COMPUTE · SLAM + AUTONOMY', C.accent, 'right');
-        callout(W0[0] + L * .025, (W0[1] + rkTop) / 2, X(.9), Y(-.2), 'APXS ARM · ROCK CHEMISTRY · LATER MISSIONS', VIOLET);
-        callout(X(-.545), Y(-.03), X(-.72), Y(.18), 'TETHER · POWER, DATA, LOAD', C.ink, 'right');
-        callout(X(bog[0]), Y(bog[1]), X(.36), Y(.52), 'ROCKER-BOGIE · LOW, WIDE STANCE', C.ink);
-        callout(X(WX[0]), wyN, X(-.6), Y(.5), 'IMU + WHEEL ODOMETRY', C.ink, 'right');
+        callout(X(.065), pt0 + L * .05, X(.4), Y(-.66), '3D LIDAR · SEES BY ITS OWN LASER', C.accent);
+        callout(X(.2), hy - br * .3, X(.62), Y(-.38), 'COMPUTE · SLAM + AUTONOMY', C.accent);
+        callout(ax + L * .03, (ay0 + ay1) / 2, X(.75), Y(.5), 'APXS · ELEMENTAL COMPOSITION', VIOLET);
+        callout(c1[0] - L * .02, Y(-.5), X(-.62), Y(-.42), 'TETHER · POWER, DATA, LOAD', C.ink, 'right');
+        callout(X(0) - wxo - WR * .4, hy + WR * .35, X(-.82), Y(.5), 'TWO LARGE WHEELS · CLIMBS RUBBLE', C.ink, 'right');
+        callout(X(-.2), hy + br * .2, X(-.7), Y(.06), 'IMU + WHEEL ODOMETRY', C.ink, 'right');
         alpha(1);
       }
     }
