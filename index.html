@@ -1415,6 +1415,180 @@ p strong{color:var(--ink);font-weight:600}
     }
   };
 
+  /* ---------------- the map: a rotating 3D point cloud and what people do with it ---------------- */
+  const GOOD = '#9ad7a0', hex = c => [parseInt(c.slice(1, 3), 16), parseInt(c.slice(3, 5), 16), parseInt(c.slice(5, 7), 16)];
+  const TUBE = (() => {
+    const r = rng(11), pts = [], N = 96;
+    const cl = u => [lerp(-1.35, 1.35, u), -.12 * u + (vnoise(u * 6, 1, 7) - .5) * .03, Math.sin(u * 2.6 - .4) * .32];
+    const A = u => .22 + .05 * Math.sin(u * 7 + 1) + (vnoise(u * 9, 3, 3) - .5) * .05 - .075 * Math.exp(-(((u - .7) / .05) ** 2));
+    const B = u => .25 + .05 * Math.cos(u * 5) + .06 * Math.exp(-(((u - .45) / .1) ** 2)) + (vnoise(u * 8, 5, 5) - .5) * .04;
+    const frame = u => {
+      const c = cl(u), c2 = cl(Math.min(1, u + .01)), c1 = cl(Math.max(0, u - .01));
+      const tx = c2[0] - c1[0], tz = c2[2] - c1[2], tl = Math.hypot(tx, tz);
+      return { c, t: [tx / tl, 0, tz / tl], n: [-tz / tl, 0, tx / tl] };
+    };
+    const mound = u => .06 * Math.exp(-(((u - .1) / .05) ** 2));
+    const at = (u, lat, hgt) => { const F = frame(u); return [F.c[0] + F.n[0] * lat, F.c[1] + hgt, F.c[2] + F.n[2] * lat]; };
+    const floorH = (u, lat) => mound(u) * (1 - (lat / A(u)) ** 2) + (vnoise(u * 40, lat * 30, 2) - .5) * .015;
+    const trav = (u, lat) => { const n = vnoise(u * 14, lat * 8 + 3, 9) + mound(u) * 6 + .5 * Math.exp(-(((u - .82) / .05) ** 2)); return n > .78 ? 2 : n > .62 ? 1 : 0; };
+    for (let i = 0; i <= N; i++) {
+      const u = i / N + (r() - .5) * .004, a = A(u), b = B(u);
+      for (let k = 0; k <= 22; k++) {
+        const th = k / 22 * Math.PI + (r() - .5) * .05;
+        if (Math.abs(u - .1) < .035 && th > .95 && th < 2.2) continue;
+        const rr = 1 + (r() - .5) * .07, lat = Math.cos(th) * a * rr, hgt = Math.sin(th) * b * rr;
+        pts.push({ p: at(u, lat, hgt), u, k: 1, th, hgt, conf: clamp(1 - u * .55 - (r() * .25) - (th > 1.2 && th < 1.9 ? .15 : 0), 0, 1), tr: 0 });
+      }
+      for (let k = 0; k < 9; k++) {
+        const lat = lerp(-a * .92, a * .92, (k + r() * .6) / 9);
+        pts.push({ p: at(u, lat, floorH(u, lat)), u, k: 0, lat, hgt: 0, conf: clamp(1 - u * .4 - r() * .15, 0, 1), tr: trav(u, lat) });
+      }
+    }
+    const top = B(.1) + .5, sk = frame(.1);
+    for (let y = B(.1) - .02; y < top; y += .025) for (let k = 0; k < 14; k++) {
+      const a = k / 14 * TAU + r() * .2, rr = .075 + (r() - .5) * .01;
+      pts.push({ p: [sk.c[0] + Math.cos(a) * rr, sk.c[1] + y, sk.c[2] + Math.sin(a) * rr], u: .1, k: 2, hgt: y, conf: .95, tr: 0 });
+    }
+    for (let k = 0; k < 260; k++) {
+      const a = r() * TAU, rr = .1 + Math.sqrt(r()) * .38;
+      pts.push({ p: [sk.c[0] + Math.cos(a) * rr, sk.c[1] + top + (r() - .5) * .01, sk.c[2] + Math.sin(a) * rr], u: .1, k: 3, hgt: top, conf: .9, tr: 0 });
+    }
+    return { pts, cl, A, B, frame, at, floorH, top, sk };
+  })();
+  const CC = { warm: hex('#ffd59a'), acc: hex('#ff7a2f'), ink: hex('#ece8df'), us: hex('#7fa6ff'), good: hex(GOOD), amber: hex('#ffc861'), cn: hex('#ff5468'), white: [255, 255, 255] };
+  SCN.map = {
+    moon: () => null,
+    draw(p, t) {
+      const s = p * 4, R = region(), w = R.x1 - R.x0, h = R.y1 - R.y0, mob = W < 900;
+      const w0 = 1 - sstep(.8, 1.1, s), w1 = sstep(.8, 1.1, s) * (1 - sstep(1.8, 2.1, s)), w2 = sstep(1.8, 2.1, s) * (1 - sstep(2.8, 3.1, s)), w3 = sstep(2.8, 3.1, s);
+      const yaw = -.32 + p * .75 + (RM ? 0 : Math.sin(t * .15) * .06), pit = .5 - .1 * w2;
+      const S = Math.min(w * .36, h * .58) * (mob ? 1.05 : 1), ocx = R.x0 + w * .5, ocy = R.y0 + h * (mob ? .52 : .55);
+      const cy_ = Math.cos(yaw), sy_ = Math.sin(yaw), cp = Math.cos(pit), sp = Math.sin(pit);
+      const P = (x, y, z) => {
+        const x1 = x * cy_ - z * sy_, z1 = x * sy_ + z * cy_, y2 = y * cp - z1 * sp, z2 = y * sp + z1 * cp, f = 3.4 / (3.4 + z2);
+        return [ocx + x1 * S * f, ocy - (y2 + .05) * S * f, f];
+      };
+      const PP = q => P(q[0], q[1], q[2]);
+      const kR = .03 + ease(clamp(s / .8, 0, 1)) * .97;
+      const T = TUBE, pulse = RM ? 1 : .5 + .5 * Math.sin(t * 4);
+      alpha(1);
+      for (const q of T.pts) {
+        if (q.u > kR + .002) continue;
+        const [x, y, f] = PP(q.p);
+        const base = q.k === 3 ? CC.ink : q.k === 0 ? CC.acc : mixC(CC.acc, CC.warm, clamp(q.hgt / .3, 0, 1));
+        const cf = mixC(CC.us, CC.acc, 1 - q.conf);
+        const tv = q.k === 0 ? (q.tr === 0 ? CC.good : q.tr === 1 ? CC.amber : CC.cn) : CC.ink;
+        const haz = q.k === 1 && Math.abs(q.u - .82) < .035 && q.th > 1.1 && q.th < 2.1;
+        let c = base;
+        if (w1 > 0) c = mixC(c, haz ? CC.cn : cf, w1);
+        if (w3 > 0) c = mixC(c, haz ? CC.cn : tv, w3);
+        if (kR < 1 && q.u > kR - .03) c = mixC(c, CC.white, .7);
+        let a = (q.k === 3 ? .3 : .78) * (.55 + .45 * f);
+        if (q.k === 1) a *= 1 - .55 * w3 - .35 * w2;
+        if (q.k === 0 && w3 > 0) a = lerp(a, .95, w3);
+        if (haz && (w1 > 0 || w3 > 0)) a = lerp(a, .5 + .5 * pulse, Math.max(w1, w3));
+        const sz = (q.k === 0 && w3 > .5 ? 2.1 : 1.5) * f;
+        ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${a.toFixed(3)})`; ctx.fillRect(x - sz / 2, y - sz / 2, sz, sz);
+      }
+      const path = []; for (let u = .1; u <= Math.min(.95, kR); u += .01) path.push(PP(T.at(u, .02 * Math.sin(u * 20), T.floorH(u, 0) + .02)));
+      const line = (pts, c, wd = 1.4, dash = null) => { if (pts.length < 2) return; ctx.strokeStyle = c; ctx.lineWidth = wd; if (dash) ctx.setLineDash(dash); ctx.beginPath(); pts.forEach((q, i) => i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])); ctx.stroke(); ctx.setLineDash([]); };
+      const skB = PP(T.at(.1, 0, T.floorH(.1, 0))), skT = PP([T.sk.c[0], T.sk.c[1] + T.top, T.sk.c[2]]);
+      // step 0: survey products
+      if (w0 > 0) {
+        alpha(w0);
+        line(path, rgba(C.ink, .85), 1.4);
+        for (let u = .18; u <= Math.min(.92, kR); u += .09) {
+          const F = T.frame(u), b = T.at(u, 0, .07), tip = PP([b[0] + F.t[0] * .05, b[1], b[2] + F.t[2] * .05]), o = PP(b);
+          const nx = -(tip[1] - o[1]), ny = tip[0] - o[0], nl = Math.hypot(nx, ny) || 1;
+          ctx.fillStyle = rgba('#9fc4ff', .8); ctx.beginPath(); ctx.moveTo(o[0], o[1]); ctx.lineTo(tip[0] + nx / nl * 4, tip[1] + ny / nl * 4); ctx.lineTo(tip[0] - nx / nl * 4, tip[1] - ny / nl * 4); ctx.fill();
+        }
+        const ax = (d, c) => { const e = PP([T.sk.c[0] + d[0] * .14, T.sk.c[1] + T.floorH(.1, 0) + d[1] * .14, T.sk.c[2] + d[2] * .14]); line([skB, e], c, 1.6); };
+        ax([1, 0, 0], C.accent); ax([0, 1, 0], C.ink); ax([0, 0, 1], C.us);
+        const k0 = sstep(.5, .8, s);
+        if (k0 > 0) {
+          alpha(w0 * k0);
+          const mid = PP(T.at(.55, 0, T.B(.55) + .02)), cam = PP(T.at(.36, 0, .1)), rp = PP(T.at(.72, 0, .03));
+          tag(mid[0], mid[1] - 22, 'REGISTERED 3D POINT CLOUD', C.accent, 'center');
+          callout(skT[0], skT[1], skT[0] - 30, skT[1] - 26, 'SKYLIGHT', C.ink, 'right');
+          callout(skB[0], skB[1], skB[0] - 40, skB[1] + 30, 'FIXED REFERENCE FRAME', C.ink, 'right');
+          callout(cam[0], cam[1], cam[0] + 10, cam[1] + 54, 'CAMERA POSES · IMAGERY', '#9fc4ff');
+          callout(rp[0], rp[1], rp[0] + 20, rp[1] + 40, 'ROVER PATH', C.ink);
+        }
+      }
+      // step 1: select
+      if (w1 > 0) {
+        alpha(w1);
+        const dim = (a, b, txt, side = 1) => {
+          const A_ = PP(a), B_ = PP(b); ctx.strokeStyle = C.ink; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(A_[0], A_[1]); ctx.lineTo(B_[0], B_[1]);
+          const dx = B_[0] - A_[0], dy = B_[1] - A_[1], l = Math.hypot(dx, dy) || 1, nx = -dy / l * 5, ny = dx / l * 5;
+          ctx.moveTo(A_[0] - nx, A_[1] - ny); ctx.lineTo(A_[0] + nx, A_[1] + ny); ctx.moveTo(B_[0] - nx, B_[1] - ny); ctx.lineTo(B_[0] + nx, B_[1] + ny); ctx.stroke();
+          tag((A_[0] + B_[0]) / 2 + side * 10, (A_[1] + B_[1]) / 2, txt, C.ink, side > 0 ? 'left' : 'right');
+        };
+        dim(T.at(.45, 0, T.floorH(.45, 0)), T.at(.45, 0, T.B(.45)), 'CEILING 21.4 M ± 0.3');
+        const ca = T.A(.7), hh = T.B(.7) * .35, th0 = Math.asin(.35);
+        dim(T.at(.7, -ca * Math.cos(th0), hh), T.at(.7, ca * Math.cos(th0), hh), 'NARROWEST 11.8 M ± 0.2', 1);
+        const s0 = PP(T.at(.22, 0, T.floorH(.22, 0) + .01)), s1 = PP(T.at(.32, 0, T.floorH(.32, 0) + .01));
+        line([s0, s1], C.ink, 1.6); tag(s0[0] - 8, s0[1] + 22, 'FLOOR SLOPE 4.1° ± 0.2', C.ink, 'right');
+        const hz = PP(T.at(.82, 0, T.B(.82)));
+        ring(hz[0], hz[1], 16, C.cn, t, .9); tag(hz[0] + 22, hz[1] - 18, 'ROCKFALL HAZARD', C.cn);
+        const lx = R.x0 + 8, ly = R.y1 - 14, lw = Math.min(160, w * .3);
+        const lg = ctx.createLinearGradient(lx, 0, lx + lw, 0); lg.addColorStop(0, C.us); lg.addColorStop(1, C.accent);
+        ctx.fillStyle = lg; ctx.fillRect(lx, ly, lw, 4);
+        tag(lx, ly - 12, 'CONFIDENCE  HIGH → LOW', C.dim);
+        tag(R.x1, R.y1 - 10, 'ILLUSTRATIVE VALUES', C.faint, 'right');
+      }
+      // step 2: design
+      if (w2 > 0) {
+        alpha(w2);
+        const box = (u, lat, L_, W_, H_) => {
+          const F = T.frame(u), b = T.at(u, lat, T.floorH(u, lat) + .005), cs = [];
+          for (const [i, j, k] of [[-1, -1, 0], [1, -1, 0], [1, 1, 0], [-1, 1, 0], [-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1]])
+            cs.push(PP([b[0] + F.t[0] * L_ * i + F.n[0] * W_ * j, b[1] + H_ * k, b[2] + F.t[2] * L_ * i + F.n[2] * W_ * j]));
+          ctx.fillStyle = rgba(C.ink, .08); ctx.beginPath(); [4, 5, 6, 7].forEach((q, i) => i ? ctx.lineTo(cs[q][0], cs[q][1]) : ctx.moveTo(cs[q][0], cs[q][1])); ctx.fill();
+          ctx.strokeStyle = rgba(C.ink, .9); ctx.lineWidth = 1.1; ctx.beginPath();
+          for (const [a, c] of [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]]) { ctx.moveTo(cs[a][0], cs[a][1]); ctx.lineTo(cs[c][0], cs[c][1]); }
+          ctx.stroke(); return cs[6];
+        };
+        const m1 = box(.37, -.06, .06, .05, .09), m2 = box(.47, .05, .065, .055, .1), m3 = box(.57, -.04, .06, .05, .09);
+        ctx.fillStyle = '#ffd59a';
+        for (const u of [.36, .46, .56]) { const L_ = PP(T.at(u, 0, T.B(u) - .01)); ctx.beginPath(); ctx.arc(L_[0], L_[1], 2.4, 0, TAU); ctx.fill(); }
+        const pw = [skT, PP([T.sk.c[0] + .07, T.sk.c[1] + T.B(.1), T.sk.c[2]])];
+        for (let u = .12; u <= .47; u += .02) pw.push(PP(T.at(u, T.A(u) * .75, T.B(u) * .7)));
+        line(pw, C.accent, 1.4, [5, 4]);
+        if (!RM) for (let k = 0; k < 4; k++) { const i = Math.floor(((t * .4 + k / 4) % 1) * (pw.length - 1)); ctx.fillStyle = C.accent; ctx.fillRect(pw[i][0] - 2, pw[i][1] - 2, 4, 4); }
+        const eg = []; for (let u = .37; u >= .1; u -= .02) eg.push(PP(T.at(u, -.02, T.floorH(u, 0) + .015))); eg.push(skT);
+        line(eg, GOOD, 1.6, [3, 4]);
+        const k2 = sstep(2.05, 2.3, s);
+        if (k2 > 0) {
+          alpha(w2 * k2);
+          tag(m2[0] + 12, m2[1] - 20, 'MODULES FIT TO MEASURED WALLS', C.ink);
+          const pm = pw[Math.floor(pw.length * .6)]; tag(pm[0] + 10, pm[1] - 16, 'POWER + COMMS FROM SKYLIGHT', C.accent);
+          const em = eg[Math.floor(eg.length * .5)]; tag(em[0], em[1] + 24, 'EMERGENCY EGRESS', GOOD, 'center');
+          const lt = PP(T.at(.56, 0, T.B(.56) - .01)); tag(lt[0] + 10, lt[1] - 14, 'LIGHTING', '#ffd59a');
+        }
+      }
+      // step 3: operate
+      if (w3 > 0) {
+        alpha(w3);
+        const rt = []; for (let u = .12; u <= .95; u += .01) { const lat = .07 * Math.sin(u * 9) - .06 * Math.exp(-(((u - .82) / .06) ** 2)); rt.push([u, PP(T.at(u, lat, T.floorH(u, lat) + .02))]); }
+        line(rt.map(q => q[1]), C.ink, 1.6);
+        const mu = RM ? .5 : .12 + ((t * .045) % 1) * .83, mi = rt.reduce((b, q, i) => Math.abs(q[0] - mu) < Math.abs(rt[b][0] - mu) ? i : b, 0), mk = rt[mi][1];
+        ctx.fillStyle = C.ink; ctx.beginPath(); ctx.arc(mk[0], mk[1], 4.5, 0, TAU); ctx.fill(); ring(mk[0], mk[1], 6, C.ink, t, .7);
+        const hz = PP(T.at(.82, 0, T.B(.82)));
+        ring(hz[0], hz[1], 16, C.cn, t, .9);
+        const k3 = sstep(3.05, 3.3, s);
+        if (k3 > 0) {
+          alpha(w3 * k3);
+          tag(hz[0] + 22, hz[1] - 18, 'REPEAT SCAN · ROCKFALL DETECTED', C.cn);
+          const pin = (u, lat, txt, c) => { const b = PP(T.at(u, lat, T.floorH(u, lat))), tp = [b[0], b[1] - 34]; line([b, tp], c, 1.2); ctx.fillStyle = c; ctx.beginPath(); ctx.arc(tp[0], tp[1], 3, 0, TAU); ctx.fill(); tag(tp[0], tp[1] - 12, txt, c, 'center'); };
+          pin(.3, .1, 'GPR TARGET', '#c9aaff'); pin(.6, -.12, 'SPECTROMETER', '#ffd59a'); pin(.9, .1, 'RADIATION', '#9fc4ff');
+          const lx = R.x0 + 8, ly = R.y1 - 10;
+          [[GOOD, 'DRIVABLE'], ['#ffc861', 'CAUTION'], [C.cn, 'NO-GO']].forEach(([c, txt], i) => { ctx.fillStyle = c; ctx.fillRect(lx + i * 96, ly - 4, 8, 8); tag(lx + i * 96 + 14, ly, txt, C.dim); });
+        }
+      }
+    }
+  };
+
 /*@SCENES*/
 
   /* ---------------- scroll engine ---------------- */
