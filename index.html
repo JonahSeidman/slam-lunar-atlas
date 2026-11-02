@@ -103,7 +103,8 @@ p strong{color:var(--ink);font-weight:600}
     <div class="panel">
       <div class="brand"><b>SLAM</b><span>Subsurface Lunar Atlas Mission</span></div>
       <h1>The race back to the Moon is on again.</h1>
-      <p class="lede">Fifty years after Apollo, the United States and China are both going back, and this time they plan to stay. Some of the best places to stay may be underground.</p>
+      <p class="lede">The United States and China are both going back, and this time they plan to stay. The safest places to stay may be underground, in lava tubes nobody has ever mapped.</p>
+      <p class="callout">SLAM is the robot that maps them first.</p>
       <div class="cue"><i></i>Scroll</div>
     </div>
   </section>
@@ -123,7 +124,7 @@ p strong{color:var(--ink);font-weight:600}
       <p class="eyebrow">The new objective</p>
       <h2>Apollo was a visit. This race is about who stays.</h2>
       <p>NASA's Moon Base plan sends robots through 2029 to pick infrastructure sites before astronauts arrive. China describes the ILRS as a long-duration base with its own power, transport and resource use. Both are aiming for the <strong>south pole</strong>, where permanently shadowed craters may hold water ice.</p>
-      <p class="callout">Staying means living somewhere. The question is where.</p>
+      <p class="callout">Staying means living somewhere. SLAM finds out where.</p>
     </div>
   </section>
 
@@ -178,7 +179,7 @@ p strong{color:var(--ink);font-weight:600}
       <h2>Nobody has measured one from the inside.</h2>
       <p>From orbit you see a hole, a shadow and a sunlit sliver of wall. You can't see how far the cave goes, how high the ceiling is, whether the floor is drivable or whether a habitat would fit.</p>
       <p>Without those answers, no agency can commit a mission, and no company can design a habitat for a cave.</p>
-      <p class="callout">A cave doesn't become infrastructure until it's measured.</p>
+      <p class="callout">A cave doesn't become infrastructure until it's measured. SLAM measures it.</p>
     </div>
   </section>
 
@@ -201,7 +202,7 @@ p strong{color:var(--ink);font-weight:600}
       <div class="panel">
         <p class="eyebrow">Simultaneous localization and mapping</p>
         <p class="lede">At the bottom, it drives into the dark.</p>
-        <p>3D LiDAR, cameras with their own lighting, an IMU and wheel odometry feed SLAM: the rover works out where it is from the shape of what it sees, with no GPS and no line of sight to Earth. People set the objective and the safety limits. The rover handles the next meter.</p>
+        <p>3D LiDAR, an IMU and wheel odometry feed SLAM: the LiDAR brings its own laser, so the rover works out where it is from the shape of the cave in total darkness, with no GPS and no line of sight to Earth. People set the objective and the safety limits. The rover handles the next meter.</p>
       </div>
     </div>
     <div class="step">
@@ -219,6 +220,7 @@ p strong{color:var(--ink);font-weight:600}
         <p class="eyebrow">The device</p>
         <h2>A small rover built for one job.</h2>
         <p>Small enough to lower through a skylight, low and wide enough to drive a rubble floor in total darkness. Everything it needs to map is on board, and everything it learns goes up the cable.</p>
+        <p>Later missions add an <strong>alpha particle X-ray spectrometer</strong> on a small arm, pressed against the walls and floor to measure what the cave is made of.</p>
       </div>
     </div>
   </section>
@@ -228,7 +230,7 @@ p strong{color:var(--ink);font-weight:600}
       <div class="panel">
         <p class="eyebrow">The product</p>
         <h2>Google Maps and Street View for the lunar underground.</h2>
-        <p>Every scan is registered into one 3D model of the cave: geometry, matching imagery, the rover's path, where the floor is drivable, a fixed reference frame and a confidence value on every measurement.</p>
+        <p>Every scan is registered into one 3D model of the cave: geometry, the rover's path, where the floor is drivable, a fixed reference frame and a confidence value on every measurement.</p>
         <p><strong>That map is the product.</strong> Here is what people do with it.</p>
       </div>
     </div>
@@ -620,34 +622,64 @@ p strong{color:var(--ink);font-weight:600}
   };
 
   /* beyond: the Moon becomes the training ground, Mars is next */
-  const MARS_LON0 = -105;
-  const marsTex = (() => {
-    let cv = null;
-    return () => {
-      if (cv) return cv;
-      const N = 320; cv = document.createElement('canvas'); cv.width = cv.height = N;
-      const g = cv.getContext('2d'), img = g.createImageData(N, N), d = img.data;
-      const fbm = (x, y) => vnoise(x, y, 3) * .55 + vnoise(x * 2.1, y * 2.1, 4) * .27 + vnoise(x * 4.3, y * 4.3, 5) * .13 + vnoise(x * 9, y * 9, 6) * .05;
-      for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) {
-        const nx = (i + .5) / N * 2 - 1, ny = 1 - (j + .5) / N * 2, rr = nx * nx + ny * ny, o = (j * N + i) * 4;
-        if (rr > 1) { d[o + 3] = 0; continue; }
-        const nz = Math.sqrt(1 - rr), lat = Math.asin(ny) / D2R, lon = Math.atan2(nx, nz) / D2R + MARS_LON0;
-        let a = fbm(lon / 28 + 40, lat / 24 + 10);
-        // Valles Marineris and the dark southern highlands
-        const vm = Math.exp(-(((lat + 9 + (lon + 70) * .08) / 2.6) ** 2)) * sstep(-100, -88, lon) * (1 - sstep(-45, -35, lon));
-        a = a - vm * .35 - sstep(-10, -45, lat) * .08;
-        // Tharsis shields
-        let sh = 0; for (const [vl, vo, vr] of [[-8.3, -120.5, 6], [1.5, -113, 5], [-1.5, -104, 5], [18.6, -134, 9]]) { const dd = Math.hypot(lat - vl, (lon - vo) * Math.cos(lat * D2R)) / vr; sh += Math.exp(-dd * dd) * .18 - Math.exp(-((dd - 1) ** 2) * 18) * .05; }
-        a += sh;
-        let c = mixC([92, 38, 22], [196, 104, 62], clamp(a * 1.25 - .15, 0, 1));
-        const cap = sstep(72, 80, lat); c = mixC(c, [238, 232, 224], cap);
-        const L = clamp(nx * -.45 + ny * .35 + nz * .82, 0, 1), sh2 = .12 + .88 * Math.pow(L, .9), limb = .75 + .25 * nz;
-        d[o] = c[0] * sh2 * limb; d[o + 1] = c[1] * sh2 * limb; d[o + 2] = c[2] * sh2 * limb; d[o + 3] = 255 * clamp((1 - Math.sqrt(rr)) * N * .5, 0, 1);
+  const MARS_LON0 = -82, MARS_TILT = 18 * D2R;
+  const marsShade = (() => {
+    const fbm = (x, y) => { let a = 0, f = 1, w = .5; for (let o = 0; o < 6; o++) { a += vnoise(x * f, y * f, 3 + o) * w; f *= 2.03; w *= .5; } return a / .984; };
+    const gs = (lat, lon, la, lo, r) => { const d = Math.hypot(lat - la, (lon - lo) * Math.cos(lat * D2R)) / r; return Math.exp(-d * d); };
+    const VM = [[-3.5, -100], [-6, -88], [-8.5, -75], [-10.5, -62], [-12.5, -50], [-9, -40], [-5, -33]];
+    const segDist = (lat, lon) => { let best = 1e9; const cl = Math.cos(lat * D2R); for (let i = 0; i < VM.length - 1; i++) { const [a1, o1] = VM[i], [a2, o2] = VM[i + 1]; const ax = (o1 - lon) * cl, ay = a1 - lat, bx = (o2 - lon) * cl, by = a2 - lat, vx = bx - ax, vy = by - ay; const u = clamp(-(ax * vx + ay * vy) / (vx * vx + vy * vy), 0, 1); best = Math.min(best, Math.hypot(ax + vx * u, ay + vy * u)); } return best; };
+    const VOLC = [[18.6, -134, 9, 1.6], [11.8, -104.5, 4.2, 1], [1.5, -113, 4, 1], [-8.3, -120.5, 4.6, 1], [40, -110, 6, .5]];
+    const crater = (lat, lon) => {
+      let v = 0; const cs = 3.2, ci = Math.floor(lon / cs), cj = Math.floor(lat / cs);
+      for (let di = -1; di <= 1; di++) for (let dj = -1; dj <= 1; dj++) {
+        const i = ci + di, j = cj + dj, hx = hash3(i, j, 31);
+        if (hx > .55) continue;
+        const ccx = (i + hash3(i, j, 32)) * cs, ccy = (j + hash3(i, j, 33)) * cs, rr = .35 + Math.pow(hash3(i, j, 34), 3) * 2.6;
+        const dxx = (lon - ccx) * Math.cos(lat * D2R), dyy = lat - ccy, d = Math.hypot(dxx, dyy) / rr;
+        if (d > 1.3) continue;
+        const dir = (-dxx * .6 + dyy * .5) / (rr * d + 1e-6);
+        v += d < 1 ? -.16 * (1 - d * d) * (.5 - dir * .5) + .05 * dir : .1 * Math.exp(-(((d - 1.05) / .1) ** 2)) * (.5 + dir * .5);
       }
-      g.putImageData(img, 0, 0); return cv;
+      return v;
+    };
+    const PAL = [[0, [70, 32, 20]], [.35, [128, 58, 32]], [.6, [178, 92, 54]], [.8, [214, 132, 86]], [1, [232, 170, 124]]];
+    const pal = a => { a = clamp(a, 0, 1); for (let i = 1; i < PAL.length; i++) if (a <= PAL[i][0]) { const [p0, c0] = PAL[i - 1], [p1, c1] = PAL[i]; return mixC(c0, c1, (a - p0) / (p1 - p0)); } return PAL[PAL.length - 1][1]; };
+    const lx = -.5, ly = .38, lz = .78, ll = Math.hypot(lx, ly, lz);
+    return (N) => (i, j, d, o) => {
+      const nx = (i + .5) / N * 2 - 1, ny = 1 - (j + .5) / N * 2, rr = nx * nx + ny * ny;
+      if (rr > 1) { d[o + 3] = 0; return; }
+      const nz = Math.sqrt(1 - rr), wy = ny * Math.cos(MARS_TILT) + nz * Math.sin(MARS_TILT), wz = -ny * Math.sin(MARS_TILT) + nz * Math.cos(MARS_TILT);
+      const lat = Math.asin(clamp(wy, -1, 1)) / D2R, lon = Math.atan2(nx, wz) / D2R + MARS_LON0;
+      let a = .48 + (fbm(lon / 22 + 40, lat / 18 + 10) - .5) * .7;
+      a -= .32 * gs(lat, lon, -24, -40, 16) + .22 * gs(lat, lon, -14, -52, 7) + .3 * gs(lat, lon, 46, -28, 15) + .25 * gs(lat, lon, -32, -150, 16) + .28 * gs(lat, lon, -26, -86, 4.5) + .12 * gs(lat, lon, 25, -60, 10);
+      a += .22 * gs(lat, lon, 4, -108, 24) + .12 * gs(lat, lon, -20, -95, 12) + .1 * gs(lat, lon, 20, -150, 14);
+      let rel = 0;
+      for (const [vl, vo, vr, st] of VOLC) { const dd = Math.hypot(lat - vl, (lon - vo) * Math.cos(lat * D2R)) / vr; if (dd < 1.6) { rel += st * (.12 * Math.exp(-dd * dd * 1.5) - .1 * Math.exp(-(((dd - 1) / .12) ** 2)) * .5 - .18 * Math.exp(-((dd / .14) ** 2))); } }
+      const vd = segDist(lat, lon), ns = vnoise(lon * .8, lat * .8, 21);
+      const cw = 1.5 + ns * 1.2;
+      if (vd < cw * 2.4) { rel -= .32 * Math.exp(-((vd / cw) ** 2)); rel += .08 * Math.exp(-(((vd - cw * 1.4) / (cw * .35)) ** 2)); }
+      const nl = gs(lat, lon, -7, -103, 7); if (nl > .05) rel -= nl * .22 * Math.max(0, Math.sin(lon * 1.7 + vnoise(lat * 1.4, lon * 1.4, 22) * 6) * Math.sin(lat * 2.1));
+      if (lat < 15 && gs(lat, lon, 4, -108, 22) < .5) rel += crater(lat, lon) * (lat < 0 ? 1 : .55);
+      a += rel;
+      let c = pal(a);
+      const cap = clamp((lat - 74 - (vnoise(lon * .2, 3, 24) - .5) * 6) / 3, 0, 1); c = mixC(c, [240, 236, 228], cap * .95);
+      const haze = Math.pow(1 - nz, 2.2); c = mixC(c, [226, 168, 132], haze * .45);
+      const L = clamp((nx * lx + ny * ly + nz * lz) / ll, -1, 1), lit = clamp(L * 1.1 + .06, 0, 1), sh = .05 + .95 * Math.pow(lit, .8);
+      d[o] = clamp(c[0] * sh * 1.04, 0, 255); d[o + 1] = clamp(c[1] * sh, 0, 255); d[o + 2] = clamp(c[2] * sh * .97, 0, 255);
+      d[o + 3] = 255 * clamp((1 - Math.sqrt(rr)) * N * .5, 0, 1);
     };
   })();
-  const marsPt = (lat, lon, cx, cy, r) => { const la = lat * D2R, lo = (lon - MARS_LON0) * D2R; return [cx + r * Math.cos(la) * Math.sin(lo), cy - r * Math.sin(la), Math.cos(la) * Math.cos(lo) > .05]; };
+  let marsImg = null, marsN = 0;
+  const marsTex = need => {
+    const N = Math.min(820, Math.ceil(need / 64) * 64);
+    if (N > marsN * 1.15) { marsN = N; queue(rasterJob(N, N, marsShade(N), c => { marsImg = c; })); }
+    return marsImg;
+  };
+  const marsPt = (lat, lon, cx, cy, r) => {
+    const la = lat * D2R, lo = (lon - MARS_LON0) * D2R, wx = Math.cos(la) * Math.sin(lo), wy = Math.sin(la), wz = Math.cos(la) * Math.cos(lo);
+    const ny = wy * Math.cos(MARS_TILT) - wz * Math.sin(MARS_TILT), nz = wy * Math.sin(MARS_TILT) + wz * Math.cos(MARS_TILT);
+    return [cx + r * wx, cy - r * ny, nz > .08];
+  };
   SCN.beyond = {
     moon(p) {
       const R = region(), w = R.x1 - R.x0, h = R.y1 - R.y0, b = moonPlace(.4);
@@ -661,13 +693,19 @@ p strong{color:var(--ink);font-weight:600}
         const rr = mr * lerp(.85, 1, km);
         alpha(km * .5); const gl = ctx.createRadialGradient(mx, my, rr * .9, mx, my, rr * 1.35); gl.addColorStop(0, 'rgba(220,120,70,.25)'); gl.addColorStop(1, 'rgba(220,120,70,0)');
         ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(mx, my, rr * 1.35, 0, TAU); ctx.fill();
-        alpha(km); ctx.drawImage(marsTex(), mx - rr, my - rr, rr * 2, rr * 2);
+        const img = marsTex(mr * 2 * DPR);
+        if (img) { alpha(km); ctx.drawImage(img, mx - rr, my - rr, rr * 2, rr * 2); }
+        else { alpha(km); const pg = ctx.createRadialGradient(mx - rr * .35, my - rr * .3, rr * .1, mx, my, rr); pg.addColorStop(0, '#c97a4c'); pg.addColorStop(1, '#2a120a'); ctx.fillStyle = pg; ctx.beginPath(); ctx.arc(mx, my, rr, 0, TAU); ctx.fill(); }
+        alpha(km * .9); const at2 = ctx.createRadialGradient(mx, my, rr * .97, mx, my, rr * 1.06); at2.addColorStop(0, 'rgba(255,170,130,.35)'); at2.addColorStop(1, 'rgba(255,170,130,0)');
+        ctx.save(); ctx.beginPath(); ctx.arc(mx, my, rr * 1.07, 0, TAU); ctx.arc(mx, my, rr * .97, 0, TAU, true); ctx.clip(); ctx.fillStyle = at2; ctx.fillRect(mx - rr * 1.1, my - rr * 1.1, rr * 2.2, rr * 2.2); ctx.restore();
+        const vmk = marsPt(-9, -62, mx, my, rr), olk = marsPt(18.6, -134, mx, my, rr), k2b = sstep(.3, .5, p);
+        if (k2b > 0 && !mob) { alpha(km * k2b * .9); if (vmk[2]) tag(vmk[0] - 20, vmk[1] + 24, 'VALLES MARINERIS', C.dim, 'center'); if (olk[2]) tag(olk[0] - 10, olk[1] - 14, 'OLYMPUS MONS', C.dim, 'right'); }
         const k2 = sstep(.3, .5, p);
         if (k2 > 0) {
           ctx.fillStyle = C.accent;
           const r2 = rng(5);
           for (let i = 0; i < 46; i++) {
-            const la = -12 + r2() * 30, lo = -140 + r2() * 45, q = marsPt(la, lo, mx, my, rr);
+            const la = -14 + r2() * 30, lo = -128 + r2() * 30, q = marsPt(la, lo, mx, my, rr);
             if (!q[2] || r2() > k2 * 1.2) continue;
             alpha(km * k2 * .8); ctx.beginPath(); ctx.arc(q[0], q[1], 1.3, 0, TAU); ctx.fill();
           }
@@ -1030,24 +1068,77 @@ p strong{color:var(--ink);font-weight:600}
     for (let x = rx + 6; x >= px1; x -= 5) ctx.lineTo(x, ceil(x));
     ctx.lineTo(px1, ceil(px1)); ctx.lineTo(px1, g); ctx.closePath();
   }
-  function roverDraw(x, y, ang, rw, t, roll, lights) {
-    const rh = rw * .42, wr = rh * .42;
-    ctx.save(); ctx.translate(x, y); ctx.rotate(ang);
-    for (const wx of [-rw * .32, rw * .32]) {
-      ctx.fillStyle = '#18181b'; ctx.beginPath(); ctx.arc(wx, rh * .38, wr, 0, TAU); ctx.fill();
-      ctx.strokeStyle = '#6b665d'; ctx.lineWidth = 1; ctx.stroke();
-      ctx.beginPath(); for (let k = 0; k < 3; k++) { const a = roll + k * TAU / 3; ctx.moveTo(wx, rh * .38); ctx.lineTo(wx + Math.cos(a) * wr * .8, rh * .38 + Math.sin(a) * wr * .8); } ctx.stroke();
+  // shared rover parts: grousered wheel, strut, joint, LiDAR puck
+  function wheelDraw(x, y, r, a, far) {
+    ctx.save(); ctx.translate(x, y);
+    const tg = ctx.createRadialGradient(-r * .3, -r * .35, r * .1, 0, 0, r);
+    tg.addColorStop(0, far ? '#34332f' : '#77736b'); tg.addColorStop(.7, far ? '#1c1b19' : '#3d3b36'); tg.addColorStop(1, far ? '#111110' : '#1f1e1b');
+    ctx.fillStyle = tg; ctx.beginPath(); ctx.arc(0, 0, r, 0, TAU); ctx.fill();
+    ctx.fillStyle = far ? '#0b0b0a' : '#161614';
+    const ng = r > 14 ? 18 : 10;
+    for (let k = 0; k < ng; k++) { ctx.save(); ctx.rotate(a + k * TAU / ng); ctx.fillRect(r * .88, -r * .07, r * .16, r * .14); ctx.restore(); }
+    if (!far) {
+      ctx.strokeStyle = 'rgba(236,232,223,.28)'; ctx.lineWidth = Math.max(.8, r * .05); ctx.beginPath(); ctx.arc(0, 0, r * .76, 0, TAU); ctx.stroke();
+      ctx.strokeStyle = '#aaa498'; ctx.lineWidth = Math.max(.8, r * .07); ctx.lineCap = 'round';
+      for (let k = 0; k < 6; k++) { const b = a + k * TAU / 6; ctx.beginPath(); ctx.moveTo(Math.cos(b) * r * .2, Math.sin(b) * r * .2); ctx.quadraticCurveTo(Math.cos(b + .55) * r * .5, Math.sin(b + .55) * r * .5, Math.cos(b + .3) * r * .72, Math.sin(b + .3) * r * .72); ctx.stroke(); }
+      ctx.lineCap = 'butt';
+      const hg = ctx.createRadialGradient(-r * .06, -r * .08, 0, 0, 0, r * .22); hg.addColorStop(0, '#f6f2e8'); hg.addColorStop(1, '#8d877c');
+      ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(0, 0, r * .2, 0, TAU); ctx.fill();
+      if (r > 14) { ctx.fillStyle = '#3a3834'; for (let k = 0; k < 5; k++) { const b = k * TAU / 5; ctx.beginPath(); ctx.arc(Math.cos(b) * r * .12, Math.sin(b) * r * .12, r * .022, 0, TAU); ctx.fill(); } }
     }
-    const gb = ctx.createLinearGradient(0, -rh * .45, 0, rh * .3);
-    gb.addColorStop(0, '#ece7dc'); gb.addColorStop(1, '#7d776c');
-    ctx.fillStyle = gb; ctx.beginPath(); ctx.roundRect(-rw / 2, -rh * .45, rw, rh * .72, 3); ctx.fill();
-    ctx.fillStyle = 'rgba(5,7,13,.35)'; ctx.fillRect(-rw * .3, -rh * .2, rw * .4, 1.2);
-    ctx.fillStyle = '#3a3833'; ctx.fillRect(rw * .16 - 1, -rh * 1.05, 2, rh * .6);
-    ctx.fillStyle = '#1e1e22'; ctx.beginPath(); ctx.roundRect(rw * .16 - rh * .26, -rh * 1.3, rh * .52, rh * .3, 2); ctx.fill();
-    ctx.fillStyle = C.accent; ctx.fillRect(rw * .16 + Math.sin(t * 9) * rh * .2 - 1, -rh * 1.2, 2, rh * .1);
-    ctx.fillStyle = lights ? '#fff3d6' : '#6b665d'; ctx.fillRect(rw / 2 - 1.5, -rh * .4, 2.5, rh * .4);
-    ctx.fillStyle = '#222'; ctx.fillRect(rw / 2 - 5, -rh * .62, 4, rh * .18);
-    ctx.fillStyle = C.accent; ctx.fillRect(-rw / 2 - 1, -rh * .5, 4, 3);
+    ctx.restore();
+  }
+  function strut(pts, wd, far) {
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.beginPath(); pts.forEach((q, i) => i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]));
+    ctx.strokeStyle = far ? '#22211e' : '#2c2a26'; ctx.lineWidth = wd; ctx.stroke();
+    if (!far) { ctx.strokeStyle = '#9c968a'; ctx.lineWidth = wd * .42; ctx.stroke(); ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = Math.max(.6, wd * .12); ctx.stroke(); }
+    ctx.lineJoin = 'miter'; ctx.lineCap = 'butt';
+  }
+  function joint(x, y, r) {
+    ctx.fillStyle = '#2c2a26'; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill();
+    const g = ctx.createRadialGradient(x - r * .3, y - r * .3, 0, x, y, r * .8); g.addColorStop(0, '#f2eee4'); g.addColorStop(1, '#8d877c');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r * .72, 0, TAU); ctx.fill();
+  }
+  function lidarPuck(x, yt, rx, hgt, t, on) {
+    const ry = rx * .28, yb = yt + hgt;
+    const g = ctx.createLinearGradient(x - rx, 0, x + rx, 0);
+    g.addColorStop(0, '#141417'); g.addColorStop(.32, '#55555e'); g.addColorStop(.55, '#25252b'); g.addColorStop(1, '#0d0d10');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(x, yb, rx, ry, 0, 0, Math.PI); ctx.lineTo(x - rx, yt); ctx.ellipse(x, yt, rx, ry, 0, Math.PI, 0, true); ctx.closePath(); ctx.fill();
+    const w0 = yt + hgt * .34, w1 = yt + hgt * .7;
+    const wg = ctx.createLinearGradient(x - rx, 0, x + rx, 0); wg.addColorStop(0, '#05070d'); wg.addColorStop(.35, '#1b2440'); wg.addColorStop(1, '#05070d');
+    ctx.fillStyle = wg; ctx.fillRect(x - rx, w0, rx * 2, w1 - w0);
+    ctx.fillStyle = '#6a6a74'; ctx.beginPath(); ctx.ellipse(x, yt, rx, ry, 0, 0, TAU); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(x, yt, rx * .62, ry * .62, 0, 0, TAU); ctx.stroke();
+    if (on > 0) {
+      const sx = x + Math.sin(RM ? .6 : t * 3.2) * rx * .82, sy = (w0 + w1) / 2;
+      ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha *= on;
+      const sg = ctx.createRadialGradient(sx, sy, 0, sx, sy, rx * 1.1); sg.addColorStop(0, 'rgba(255,140,60,.9)'); sg.addColorStop(.25, 'rgba(255,122,47,.35)'); sg.addColorStop(1, 'rgba(255,122,47,0)');
+      ctx.fillStyle = sg; ctx.fillRect(sx - rx * 1.1, sy - rx * 1.1, rx * 2.2, rx * 2.2);
+      ctx.fillStyle = '#ffd2a8'; ctx.fillRect(sx - 1, w0 + 1, 2, w1 - w0 - 2); ctx.restore();
+    }
+  }
+  function roverDraw(x, y, ang, rw, t, roll, lights) {
+    const rh = rw * .42, wr = rh * .36, wy = rh * .8 - wr;
+    ctx.save(); ctx.translate(x, y); ctx.rotate(ang);
+    const wxs = [-rw * .36, 0, rw * .36];
+    wxs.forEach((wx, i) => wheelDraw(wx + rw * .05, wy - rh * .06, wr, roll + i, true));
+    strut([[wxs[0], wy], [-rw * .08, rh * .12], [rw * .18, wy - rh * .1], [wxs[1], wy]], Math.max(1.6, rh * .1));
+    strut([[rw * .18, wy - rh * .1], [wxs[2], wy]], Math.max(1.6, rh * .1));
+    const yT = -rh * .45, yB = rh * .22;
+    const gb = ctx.createLinearGradient(0, yT, 0, yB);
+    gb.addColorStop(0, '#f6f2e9'); gb.addColorStop(.55, '#cdc7bb'); gb.addColorStop(1, '#8a857b');
+    ctx.fillStyle = gb; ctx.beginPath(); ctx.roundRect(-rw / 2, yT, rw, yB - yT, Math.max(1.5, rh * .1)); ctx.fill();
+    const mg = ctx.createLinearGradient(0, yB - rh * .16, 0, yB); mg.addColorStop(0, '#f0cb74'); mg.addColorStop(1, '#94631f');
+    ctx.fillStyle = mg; ctx.fillRect(-rw / 2 + 1, yB - rh * .16, rw - 2, rh * .14);
+    ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.fillRect(-rw / 2 + 2, yT, rw - 4, 1);
+    ctx.fillStyle = 'rgba(5,7,13,.25)'; ctx.fillRect(-rw * .05, yT + 2, 1, yB - yT - rh * .2);
+    wxs.forEach((wx, i) => wheelDraw(wx, wy, wr, roll + i * .7, false));
+    joint(-rw * .08, rh * .12, Math.max(1.5, rh * .09)); joint(rw * .18, wy - rh * .1, Math.max(1.3, rh * .07));
+    ctx.fillStyle = '#4a4740'; ctx.fillRect(rw * .2 - 1, yT - rh * .5, 2, rh * .5);
+    lidarPuck(rw * .2, yT - rh * .78, rh * .2, rh * .3, t, lights ? 1 : 0);
+    ctx.fillStyle = '#26262a'; ctx.fillRect(-rw / 2 - rh * .14, -rh * .2, rh * .16, rh * .2);
+    ctx.fillStyle = C.accent; ctx.fillRect(-rw / 2 - rh * .05, -rh * .18, Math.max(1.5, rh * .05), rh * .16);
     ctx.restore();
   }
   const rot = (x, y, a) => [x * Math.cos(a) - y * Math.sin(a), x * Math.sin(a) + y * Math.cos(a)];
@@ -1056,7 +1147,7 @@ p strong{color:var(--ink);font-weight:600}
     ctx.strokeStyle = '#8d877c'; ctx.lineWidth = 1.4; ctx.beginPath();
     for (const sgn of [-1, 1]) { ctx.moveTo(sx + sgn * bw * .35, by + bh); ctx.lineTo(sx + sgn * bw * .62, g + dy); }
     ctx.stroke();
-    ctx.fillStyle = '#8d877c'; for (const sgn of [-1, 1]) ctx.fillRect(sx + sgn * bw * .62 - 4, g + dy - 2, 8, 2);
+    ctx.fillStyle = '#b9b3a7'; for (const sgn of [-1, 1]) { ctx.beginPath(); ctx.ellipse(sx + sgn * bw * .62, g + dy - 1.5, 6, 2, 0, 0, TAU); ctx.fill(); }
     if (kPl > 0) {
       const pg = ctx.createRadialGradient(sx, by + bh + 4, 0, sx, by + bh + 4, S * .9);
       pg.addColorStop(0, `rgba(255,214,160,${(.55 * kPl).toFixed(3)})`); pg.addColorStop(1, 'rgba(255,214,160,0)');
@@ -1066,7 +1157,7 @@ p strong{color:var(--ink);font-weight:600}
     const mx = sx - bw * .28, my = by - S * .55;
     ctx.fillStyle = '#5a564f'; ctx.fillRect(mx - 1, my, 2, S * .55);
     ctx.save(); ctx.translate(mx, my); ctx.rotate(-.32);
-    ctx.fillStyle = '#18233f'; ctx.fillRect(-S * .5, -S * .17, S, S * .34);
+    const sg = ctx.createLinearGradient(-S * .5, -S * .17, S * .5, S * .17); sg.addColorStop(0, '#2a3d72'); sg.addColorStop(.5, '#121c38'); sg.addColorStop(.62, '#3b528f'); sg.addColorStop(1, '#0e1630'); ctx.fillStyle = sg; ctx.fillRect(-S * .5, -S * .17, S, S * .34);
     ctx.strokeStyle = 'rgba(127,166,255,.4)'; ctx.lineWidth = .8; ctx.beginPath();
     for (let k = 1; k < 6; k++) { ctx.moveTo(-S * .5 + S * k / 6, -S * .17); ctx.lineTo(-S * .5 + S * k / 6, S * .17); }
     ctx.moveTo(-S * .5, 0); ctx.lineTo(S * .5, 0); ctx.stroke();
@@ -1079,7 +1170,7 @@ p strong{color:var(--ink);font-weight:600}
     ctx.strokeStyle = 'rgba(255,240,200,.22)'; ctx.lineWidth = .8; ctx.beginPath();
     for (let k = 0; k < 6; k++) { const xx = sx - bw / 2 + bw * (k + .3) / 6; ctx.moveTo(xx, by + 2); ctx.lineTo(xx + bw * .07, by + bh - 2); }
     ctx.stroke();
-    ctx.fillStyle = '#dcd8cf'; ctx.fillRect(sx - bw / 2, by - 3, bw, 3);
+    ctx.fillStyle = '#dcd8cf'; ctx.fillRect(sx - bw / 2, by - 3, bw, 3); ctx.fillStyle = 'rgba(255,250,230,.55)'; ctx.fillRect(sx - bw / 2, by, bw, 1); ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.fillRect(sx + bw / 2 - 3, by, 3, bh);
     // dish
     const dx = sx + bw * .12, dyy = by - S * .28;
     ctx.fillStyle = '#5a564f'; ctx.fillRect(dx - 1, dyy, 2, S * .28);
@@ -1191,15 +1282,6 @@ p strong{color:var(--ink);font-weight:600}
       if (kv >= 1) { path.push([tip[0], fl(tip[0]) - 1.5]); for (let x = tip[0] + 8; x < attach[0]; x += 8) path.push([x, fl(x) - 1.5]); }
       path.push(attach);
       ctx.strokeStyle = '#d9c39a'; ctx.lineWidth = 1.3; ctx.beginPath(); path.forEach((q, i) => i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])); ctx.stroke();
-      // headlight
-      if (kv > .3) {
-        const hl = rot(rw / 2, -rh * .2, ang), hx = cx + hl[0], hy = cy + hl[1], hr = Math.min(range * .9, 180);
-        ctx.save(); voidPath(L); ctx.clip(); ctx.globalCompositeOperation = 'lighter'; alpha(clamp((kv - .3) / .5, 0, 1));
-        const hg = ctx.createRadialGradient(hx, hy, 0, hx, hy, hr);
-        hg.addColorStop(0, 'rgba(255,236,200,.32)'); hg.addColorStop(1, 'rgba(255,236,200,0)');
-        ctx.fillStyle = hg; ctx.beginPath(); ctx.moveTo(hx, hy); ctx.arc(hx, hy, hr, ang - .38, ang + .38); ctx.closePath(); ctx.fill();
-        ctx.restore(); alpha(1);
-      }
       roverDraw(cx, cy, ang, rw, t, cxD / (rh * .42), kv > .3);
       // packets climbing the tether
       if (scan) {
@@ -1244,7 +1326,7 @@ p strong{color:var(--ink);font-weight:600}
       const k2 = sstep(2.1, 2.35, s) * (1 - sstep(2.9, 3.1, s));
       if (k2 > 0) {
         alpha(k2);
-        tag(cx, ceil(cx) - 14 < g + 10 ? g + 14 : cy - rh * 3.2, 'LIDAR · CAMERAS · IMU · ODOMETRY', C.accent, 'center');
+        tag(cx, ceil(cx) - 14 < g + 10 ? g + 14 : cy - rh * 3.2, 'LIDAR · IMU · WHEEL ODOMETRY', C.accent, 'center');
         tag((px1 + rx) / 2 + w * .08, g + 16, 'NO GPS · NO LINE OF SIGHT TO EARTH', C.dim, 'center');
       }
       const k3 = sstep(2.9, 3.1, s);
@@ -1277,203 +1359,145 @@ p strong{color:var(--ink);font-weight:600}
     return [v * v * v * p0[0] + 3 * v * v * u * p1[0] + 3 * v * u * u * p2[0] + u * u * u * p3[0],
             v * v * v * p0[1] + 3 * v * v * u * p1[1] + 3 * v * u * u * p2[1] + u * u * u * p3[1]];
   }
-  function bigWheel(x, y, r, shade) {
-    ctx.fillStyle = shade ? '#101012' : '#18181b'; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill();
-    ctx.strokeStyle = shade ? '#2a2927' : '#3d3b37'; ctx.lineWidth = Math.max(1, r * .08);
-    ctx.beginPath(); for (let k = 0; k < 14; k++) { const a = k * TAU / 14; ctx.moveTo(x + Math.cos(a) * r * .86, y + Math.sin(a) * r * .86); ctx.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r); } ctx.stroke();
-    if (shade) return;
-    ctx.fillStyle = '#8d877c'; ctx.beginPath(); ctx.arc(x, y, r * .5, 0, TAU); ctx.fill();
-    ctx.strokeStyle = '#4a4740'; ctx.lineWidth = Math.max(1, r * .06); ctx.beginPath();
-    for (let k = 0; k < 5; k++) { const a = k * TAU / 5 + .3; ctx.moveTo(x + Math.cos(a) * r * .16, y + Math.sin(a) * r * .16); ctx.lineTo(x + Math.cos(a) * r * .46, y + Math.sin(a) * r * .46); } ctx.stroke();
-    ctx.fillStyle = '#d8d4cb'; ctx.beginPath(); ctx.arc(x, y, r * .14, 0, TAU); ctx.fill();
+  const VIOLET = '#c9aaff';
+  const REGO = (() => { const r = rng(404); return Array.from({ length: 140 }, () => [r() * 2.4 - 1.2, r(), r()]); })();
+  function rock(x, y, w, h, seed) {
+    const r = rng(seed), n = 9, pts = [];
+    for (let i = 0; i <= n; i++) { const a = Math.PI + i / n * Math.PI, k = .8 + r() * .3; pts.push([x + Math.cos(a) * w * k, y + Math.sin(a) * h * k]); }
+    const g = ctx.createLinearGradient(x - w, y - h, x + w * .6, y);
+    g.addColorStop(0, '#8a8276'); g.addColorStop(.5, '#4d473f'); g.addColorStop(1, '#221f1b');
+    ctx.fillStyle = g; ctx.beginPath(); pts.forEach((q, i) => i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,.12)'; ctx.lineWidth = 1; ctx.beginPath(); pts.slice(1, 5).forEach((q, i) => i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])); ctx.stroke();
   }
   SCN.device = {
     moon: () => null,
     draw(p, t) {
       const s = p * .9, R = region(), w = R.x1 - R.x0, h = R.y1 - R.y0, mob = W < 900;
-      const k3s = ease(sstep(2.0, 2.3, s));
-      const L = Math.min(w * (mob ? .5 : .46), h * .62) * lerp(1, .9, k3s);
-      const cx = R.x0 + w * lerp(.5, .64, k3s), cy = R.y0 + h * lerp(.56, .62, k3s);
+      const L = Math.min(w * (mob ? .46 : .42), h * .6);
+      const cx = R.x0 + w * (mob ? .5 : .46), cy = R.y0 + h * .55;
       const X = x => cx + x * L, Y = y => cy + y * L, dx = .07, dy = -.05;
       const kA = ease(clamp((s - .02) / .45, 0, 1)), e = 1 - kA;
       const off = (o, f) => { ctx.save(); ctx.translate(o[0] * L * e, o[1] * L * e); f(); ctx.restore(); };
-      const k2 = sstep(1.0, 1.25, s) * (1 - sstep(2.0, 2.2, s)), lights = sstep(.9, 1.2, s);
+      const poly = pts => { ctx.beginPath(); pts.forEach(([x, y], i) => i ? ctx.lineTo(X(x), Y(y)) : ctx.moveTo(X(x), Y(y))); ctx.closePath(); };
+      const roll = RM ? 0 : t * .15;
       alpha(1);
-      // floor
-      const fy = Y(.3);
-      const fg = ctx.createLinearGradient(0, fy, 0, fy + L * .25);
-      fg.addColorStop(0, 'rgba(110,104,94,.35)'); fg.addColorStop(1, 'rgba(110,104,94,0)');
-      const fx0 = Math.max(R.x0, X(-1.1)), fx1 = Math.min(R.x1, X(1.1));
-      ctx.fillStyle = fg; ctx.fillRect(fx0, fy, fx1 - fx0, L * .25);
-      ctx.strokeStyle = 'rgba(160,152,140,.45)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(fx0, fy); ctx.lineTo(fx1, fy); ctx.stroke();
-      ctx.fillStyle = '#3c3832';
-      for (const [u, r] of [[-.86, .03], [-.74, .018], [.72, .025], [.9, .04], [1.02, .02]]) { ctx.beginPath(); ctx.ellipse(X(u), fy, r * L, r * L * .6, 0, Math.PI, TAU); ctx.fill(); }
-      // light bar + camera cones (behind the rover)
-      if (lights > 0) {
-        ctx.save(); ctx.globalCompositeOperation = 'lighter'; alpha(lights * .9);
-        const lx0 = X(.5 + dx * .5), ly0 = Y(-.04 + dy * .5);
-        const lg = ctx.createRadialGradient(lx0, ly0, 0, lx0, ly0, L * .75);
-        lg.addColorStop(0, 'rgba(255,236,200,.38)'); lg.addColorStop(1, 'rgba(255,236,200,0)');
-        ctx.fillStyle = lg; ctx.beginPath(); ctx.moveTo(lx0, ly0); ctx.arc(lx0, ly0, L * .75, -.42, .5); ctx.closePath(); ctx.fill();
-        ctx.restore(); alpha(1);
+      // ground
+      const fy = Y(.3), fx0 = Math.max(R.x0, X(-1.15)), fx1 = Math.min(R.x1, X(1.15));
+      const fg = ctx.createLinearGradient(0, fy, 0, fy + L * .3);
+      fg.addColorStop(0, 'rgba(120,113,102,.45)'); fg.addColorStop(1, 'rgba(120,113,102,0)');
+      ctx.fillStyle = fg; ctx.fillRect(fx0, fy, fx1 - fx0, L * .3);
+      for (const [u, v, k] of REGO) { const gx = X(u); if (gx < fx0 || gx > fx1) continue; ctx.fillStyle = `rgba(236,232,223,${(.04 + k * .1 * (1 - v)).toFixed(3)})`; ctx.fillRect(gx, fy + v * v * L * .26, 1 + k * 1.5, 1 + k); }
+      const hl = ctx.createLinearGradient(fx0, 0, fx1, 0); hl.addColorStop(0, 'rgba(180,172,160,0)'); hl.addColorStop(.5, 'rgba(180,172,160,.5)'); hl.addColorStop(1, 'rgba(180,172,160,0)');
+      ctx.fillStyle = hl; ctx.fillRect(fx0, fy, fx1 - fx0, 1);
+      for (const [u, rw, rh, sd] of [[-.95, .05, .03, 1], [-.8, .028, .02, 2], [1.0, .06, .04, 4], [1.12, .03, .02, 5]]) { if (X(u) > fx0 && X(u) < fx1) rock(X(u), fy, rw * L, rh * L, sd); }
+      // contact shadow
+      const sh = ctx.createRadialGradient(X(0), fy, 0, X(0), fy, L * .6);
+      sh.addColorStop(0, `rgba(0,0,0,${(.55 * kA).toFixed(3)})`); sh.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.save(); ctx.translate(X(0), fy); ctx.scale(1, .12); ctx.translate(-X(0), -fy); ctx.fillStyle = sh; ctx.beginPath(); ctx.arc(X(0), fy, L * .6, 0, TAU); ctx.fill(); ctx.restore();
+      // LiDAR sweep on the floor
+      const kl = sstep(.5, .7, s);
+      if (kl > 0) {
+        const ph = RM ? .3 : (t * .45) % 1;
+        for (let k = 0; k < 3; k++) { const q = (k + ph) / 3, rk = .25 + q * .85; alpha(kl * (1 - q) * .55); ctx.strokeStyle = C.accent; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(X(.2), fy, rk * L, rk * L * .07, 0, 0, TAU); ctx.stroke(); }
+        alpha(1);
       }
-      // back wheels
-      off([0, .35], () => { for (const u of [-.33, .33]) bigWheel(X(u + dx), Y(.17 + dy), L * .13, true); });
-      // tether cable (drawn early so the boot sits over it)
-      const c0 = [X(-.58), Y(-.02)], c1 = [X(-.78), Y(-.02)], c2 = [X(-.82), Y(-.45)], c3 = [X(-1.0), Y(-.78)];
-      off([-.35, 0], () => {
-        ctx.strokeStyle = '#2b2a27'; ctx.lineWidth = Math.max(3, L * .022); ctx.lineCap = 'round';
-        ctx.beginPath(); ctx.moveTo(...c0); ctx.bezierCurveTo(...c1, ...c2, ...c3); ctx.stroke();
-        ctx.strokeStyle = 'rgba(217,195,154,.55)'; ctx.lineWidth = 1; ctx.stroke(); ctx.lineCap = 'butt';
+      // geometry
+      const wr = L * .095, wyN = fy - wr, wyF = wyN + dy * L * .7;
+      const WX = [-.36, .05, .4], piv = [-.06, .1], bog = [.22, .19];
+      // far side
+      off([0, .35], () => {
+        WX.forEach((u, i) => wheelDraw(X(u + dx * .7), wyF, wr, roll + i, true));
+        strut([[X(WX[0] + dx * .7), wyF], [X(piv[0] + dx * .7), Y(piv[1] + dy * .7)], [X(bog[0] + dx * .7), Y(bog[1] + dy * .7)]], L * .028, true);
+        strut([[X(WX[1] + dx * .7), wyF], [X(bog[0] + dx * .7), Y(bog[1] + dy * .7)], [X(WX[2] + dx * .7), wyF]], L * .028, true);
       });
-      // compute module, sliding into the body
+      // tether cable
+      const c0 = [X(-.56), Y(-.03)], c1 = [X(-.78), Y(-.03)], c2 = [X(-.84), Y(-.45)], c3 = [X(-1.02), Y(-.8)];
+      off([-.35, 0], () => {
+        ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(...c0); ctx.bezierCurveTo(...c1, ...c2, ...c3);
+        ctx.strokeStyle = '#1d1c1a'; ctx.lineWidth = Math.max(3, L * .024); ctx.stroke();
+        ctx.strokeStyle = '#5a5246'; ctx.lineWidth = Math.max(1.5, L * .012); ctx.stroke();
+        ctx.save(); ctx.translate(-1, -1); ctx.strokeStyle = 'rgba(232,212,170,.5)'; ctx.lineWidth = 1; ctx.stroke(); ctx.restore(); ctx.lineCap = 'butt';
+      });
+      // compute module slides into the body
       const kc = 1 - sstep(.72, .95, kA);
       if (kc > 0) off([0, -.65], () => {
         alpha(kc);
-        ctx.fillStyle = '#0f1914'; ctx.fillRect(X(-.22), Y(-.08), L * .32, L * .13);
-        ctx.strokeStyle = rgba(C.accent, .5); ctx.lineWidth = 1; ctx.strokeRect(X(-.22), Y(-.08), L * .32, L * .13);
+        ctx.fillStyle = '#0f1914'; ctx.beginPath(); ctx.roundRect(X(-.22), Y(-.08), L * .32, L * .13, 3); ctx.fill();
+        ctx.strokeStyle = rgba(C.accent, .5); ctx.lineWidth = 1; ctx.stroke();
         ctx.fillStyle = '#2b302c'; ctx.fillRect(X(-.17), Y(-.055), L * .09, L * .08); ctx.fillRect(X(-.05), Y(-.05), L * .05, L * .05); ctx.fillRect(X(.03), Y(-.05), L * .04, L * .07);
-        ctx.strokeStyle = rgba(C.accent, .3); ctx.beginPath(); for (let k = 0; k < 4; k++) { ctx.moveTo(X(-.08), Y(-.045 + k * .022)); ctx.lineTo(X(-.05), Y(-.045 + k * .022)); } ctx.stroke();
         alpha(1);
       });
       // body
-      const top = [[-.5, -.12], [.5, -.12], [.5 + dx, -.12 + dy], [-.5 + dx, -.12 + dy]], end = [[.5, -.12], [.5 + dx, -.12 + dy], [.5 + dx, .12 + dy], [.5, .12]];
-      const poly = pts => { ctx.beginPath(); pts.forEach(([x, y], i) => i ? ctx.lineTo(X(x), Y(y)) : ctx.moveTo(X(x), Y(y))); ctx.closePath(); };
-      ctx.fillStyle = '#d6d1c6'; poly(top); ctx.fill();
-      ctx.fillStyle = '#8a857b'; poly(end); ctx.fill();
-      const bg = ctx.createLinearGradient(0, Y(-.12), 0, Y(.12));
-      bg.addColorStop(0, '#efeae0'); bg.addColorStop(.6, '#bdb7ac'); bg.addColorStop(1, '#8a857b');
-      ctx.fillStyle = bg; ctx.beginPath(); ctx.roundRect(X(-.5), Y(-.12), L, L * .24, L * .02); ctx.fill();
-      ctx.strokeStyle = 'rgba(5,7,13,.28)'; ctx.lineWidth = 1; ctx.beginPath();
-      ctx.moveTo(X(-.2), Y(-.12)); ctx.lineTo(X(-.2), Y(.12)); ctx.moveTo(X(.22), Y(-.12)); ctx.lineTo(X(.22), Y(.12)); ctx.stroke();
-      for (let k = 0; k < 6; k++) { ctx.fillStyle = 'rgba(5,7,13,.3)'; ctx.fillRect(X(-.45 + k * .035), Y(-.06), Math.max(1.5, L * .012), L * .1); }
-      ctx.font = `600 ${Math.max(9, Math.round(L * .04))}px "IBM Plex Mono", monospace`; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-      ctx.fillStyle = C.accent; ctx.fillText('SLAM-01', X(-.16), Y(.06));
-      // light bar on the front face
-      ctx.strokeStyle = lights > .1 ? '#fff3d6' : '#6b665d'; ctx.lineWidth = Math.max(2, L * .016);
-      ctx.beginPath(); ctx.moveTo(X(.5 + dx * .15), Y(-.04 + dy * .15)); ctx.lineTo(X(.5 + dx * .85), Y(-.04 + dy * .85)); ctx.stroke();
-      // suspension + front wheels
+      const x0 = -.46, x1 = .46, yT = -.13, yB = .08;
+      const tg = ctx.createLinearGradient(0, Y(yT + dy), 0, Y(yT)); tg.addColorStop(0, '#d9d4c9'); tg.addColorStop(1, '#efebe2');
+      ctx.fillStyle = tg; poly([[x0, yT], [x1, yT], [x1 + dx, yT + dy], [x0 + dx, yT + dy]]); ctx.fill();
+      ctx.strokeStyle = 'rgba(120,140,175,.55)'; ctx.lineWidth = 1; ctx.beginPath();
+      for (let u = -.34; u <= .02; u += .028) { ctx.moveTo(X(u + dx * .12), Y(yT + dy * .12)); ctx.lineTo(X(u + dx * .88), Y(yT + dy * .88)); }
+      ctx.stroke();
+      const fgr = ctx.createLinearGradient(0, Y(yT), 0, Y(yB)); fgr.addColorStop(0, '#b7b1a5'); fgr.addColorStop(1, '#6f6a61');
+      ctx.fillStyle = fgr; poly([[x1, yT], [x1 + dx, yT + dy], [x1 + dx, yB + dy], [x1, yB]]); ctx.fill();
+      const bg = ctx.createLinearGradient(0, Y(yT), 0, Y(yB));
+      bg.addColorStop(0, '#fbf8f1'); bg.addColorStop(.45, '#dcd6ca'); bg.addColorStop(1, '#9d978b');
+      ctx.fillStyle = bg; ctx.beginPath(); ctx.roundRect(X(x0), Y(yT), L * (x1 - x0), L * (yB - yT), L * .016); ctx.fill();
+      const mg = ctx.createLinearGradient(0, Y(yB - .045), 0, Y(yB)); mg.addColorStop(0, '#f6d384'); mg.addColorStop(.5, '#c8913a'); mg.addColorStop(1, '#7a4f16');
+      ctx.fillStyle = mg; ctx.fillRect(X(x0 + .01), Y(yB - .045), L * (x1 - x0 - .02), L * .04);
+      ctx.strokeStyle = 'rgba(90,55,10,.45)'; ctx.lineWidth = 1; ctx.beginPath();
+      for (let u = x0 + .03; u < x1 - .02; u += .045) { ctx.moveTo(X(u), Y(yB - .043)); ctx.lineTo(X(u + .02 + Math.sin(u * 40) * .008), Y(yB - .006)); }
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.fillRect(X(x0 + .015), Y(yT), L * (x1 - x0 - .03), 1.2);
+      ctx.strokeStyle = 'rgba(5,7,13,.22)'; ctx.beginPath(); ctx.moveTo(X(-.2), Y(yT + .01)); ctx.lineTo(X(-.2), Y(yB - .05)); ctx.moveTo(X(.24), Y(yT + .01)); ctx.lineTo(X(.24), Y(yB - .05)); ctx.stroke();
+      ctx.fillStyle = 'rgba(5,7,13,.35)';
+      for (const [u, v] of [[-.44, -.11], [-.22, -.11], [-.18, -.11], [.22, -.11], [.26, -.11], [.44, -.11]]) { ctx.beginPath(); ctx.arc(X(u), Y(v), Math.max(1, L * .005), 0, TAU); ctx.fill(); }
+      for (let k = 0; k < 6; k++) { const vg = ctx.createLinearGradient(0, Y(-.08), 0, Y(.0)); vg.addColorStop(0, 'rgba(5,7,13,.45)'); vg.addColorStop(1, 'rgba(5,7,13,.15)'); ctx.fillStyle = vg; ctx.beginPath(); ctx.roundRect(X(-.42 + k * .032), Y(-.085), Math.max(2, L * .013), L * .085, 2); ctx.fill(); }
+      ctx.font = `600 ${Math.max(9, Math.round(L * .038))}px "IBM Plex Mono", monospace`; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = C.accent; ctx.fillText('SLAM-01', X(-.13), Y(-.035));
+      ctx.fillRect(X(-.13), Y(-.005), L * .16, Math.max(1.5, L * .006));
+      // near side rocker-bogie and wheels
       off([0, .35], () => {
-        ctx.strokeStyle = '#5a564f'; ctx.lineWidth = Math.max(2, L * .018); ctx.beginPath();
-        ctx.moveTo(X(-.33), Y(.17)); ctx.lineTo(X(-.05), Y(.09)); ctx.lineTo(X(.33), Y(.17)); ctx.stroke();
-        for (const u of [-.33, .33]) bigWheel(X(u), Y(.17), L * .13, false);
+        strut([[X(WX[0]), wyN], [X(piv[0]), Y(piv[1])], [X(bog[0]), Y(bog[1])]], L * .03);
+        strut([[X(WX[1]), wyN], [X(bog[0]), Y(bog[1])], [X(WX[2]), wyN]], L * .03);
+        WX.forEach((u, i) => wheelDraw(X(u), wyN, wr, roll + i * .7, false));
+        joint(X(piv[0]), Y(piv[1]), L * .022); joint(X(bog[0]), Y(bog[1]), L * .018);
       });
       // LiDAR mast
-      const pu = [X(.21), Y(-.435)];
+      const px = X(.2), pt0 = Y(-.47);
       off([0, -.42], () => {
-        ctx.fillStyle = '#4a4740'; ctx.fillRect(X(.2), Y(-.4), Math.max(2, L * .02), L * .23);
-        ctx.fillStyle = '#1e1e22'; ctx.fillRect(X(.15), Y(-.47), L * .12, L * .07);
-        ctx.beginPath(); ctx.ellipse(X(.21), Y(-.47), L * .06, L * .016, 0, 0, TAU); ctx.fillStyle = '#34343a'; ctx.fill();
-        ctx.fillStyle = '#26324e'; ctx.fillRect(X(.15), Y(-.448), L * .12, L * .022);
-        ctx.fillStyle = C.accent; ctx.fillRect(X(.21) + Math.sin(t * 6) * L * .05 - 1.5, Y(-.448), 3, L * .022);
+        const mg2 = ctx.createLinearGradient(px - 3, 0, px + 3, 0); mg2.addColorStop(0, '#2c2a26'); mg2.addColorStop(.5, '#8d877c'); mg2.addColorStop(1, '#2c2a26');
+        ctx.fillStyle = mg2; ctx.fillRect(px - Math.max(1.5, L * .011), Y(-.36), Math.max(3, L * .022), L * .24);
+        ctx.fillStyle = '#3a3834'; ctx.beginPath(); ctx.ellipse(px, Y(yT + dy * .4), L * .04, L * .01, 0, 0, TAU); ctx.fill();
+        lidarPuck(px, pt0, L * .06, L * .1, t, kl);
       });
-      // stereo camera head
-      off([.38, -.12], () => {
-        ctx.fillStyle = '#4a4740'; ctx.fillRect(X(.42), Y(-.2), Math.max(2, L * .014), L * .08);
-        ctx.fillStyle = '#26262a'; ctx.fillRect(X(.36), Y(-.25), L * .14, L * .055);
-        ctx.fillStyle = '#3c3c42'; poly([[.5, -.25], [.5 + dx * .9, -.25 + dy * .9], [.5 + dx * .9, -.195 + dy * .9], [.5, -.195]]); ctx.fill();
-        for (const q of [.25, .7]) { ctx.fillStyle = '#9fc4ff'; ctx.beginPath(); ctx.arc(X(.5 + dx * q), Y(-.222 + dy * q), Math.max(1.5, L * .011), 0, TAU); ctx.fill(); }
+      // APXS arm reaching a rock in front
+      const S0 = [X(.48), Y(-.02)], E0 = [X(.66), Y(-.17)], W0 = [X(.8), Y(.1)], rkX = X(.8), rkTop = fy - L * .062;
+      off([.5, -.1], () => {
+        rock(rkX, fy, L * .085, L * .07, 9);
+        strut([S0, E0, W0], L * .026);
+        joint(...S0, L * .02); joint(...E0, L * .017); joint(...W0, L * .015);
+        const hw = L * .022, hb = rkTop - 1;
+        const hg = ctx.createLinearGradient(W0[0] - hw, 0, W0[0] + hw, 0); hg.addColorStop(0, '#5e5a52'); hg.addColorStop(.4, '#e9e4d9'); hg.addColorStop(1, '#6b665d');
+        ctx.fillStyle = hg; ctx.fillRect(W0[0] - hw, W0[1] + L * .01, hw * 2, hb - W0[1] - L * .01);
+        const gg = ctx.createLinearGradient(W0[0] - hw, 0, W0[0] + hw, 0); gg.addColorStop(0, '#9c6a1e'); gg.addColorStop(.4, '#ffe2a0'); gg.addColorStop(1, '#9c6a1e');
+        ctx.fillStyle = gg; ctx.fillRect(W0[0] - hw * 1.15, hb - L * .03, hw * 2.3, L * .018);
+        ctx.fillStyle = '#1b1b1f'; ctx.fillRect(W0[0] - hw * .9, hb - L * .012, hw * 1.8, L * .012);
+        const kx = sstep(.55, .75, s) * (RM ? .8 : .6 + .4 * Math.sin(t * 3));
+        if (kx > 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; alpha(kx); const xg = ctx.createRadialGradient(W0[0], hb, 0, W0[0], hb, L * .07); xg.addColorStop(0, 'rgba(201,170,255,.7)'); xg.addColorStop(1, 'rgba(201,170,255,0)'); ctx.fillStyle = xg; ctx.fillRect(W0[0] - L * .07, hb - L * .07, L * .14, L * .14); ctx.restore(); alpha(1); }
       });
       // tether termination boot
       off([-.35, 0], () => {
-        ctx.fillStyle = '#26262a'; poly([[-.5, -.055], [-.5, .015], [-.585, -.005], [-.585, -.035]]); ctx.fill();
-        ctx.fillStyle = C.accent; ctx.fillRect(X(-.53), Y(-.047), Math.max(2, L * .01), L * .055);
+        const bgg = ctx.createLinearGradient(0, Y(-.07), 0, Y(.02)); bgg.addColorStop(0, '#4a4a52'); bgg.addColorStop(1, '#141417');
+        ctx.fillStyle = bgg; poly([[-.46, -.07], [-.46, .02], [-.53, -.008], [-.565, -.02], [-.565, -.04], [-.53, -.052]]); ctx.fill();
+        ctx.fillStyle = C.accent; ctx.fillRect(X(-.5), Y(-.06), Math.max(2, L * .01), L * .06);
       });
-
-      // step 1 callouts
-      const k1 = sstep(.38, .55, s) * (1 - sstep(1.0, 1.15, s));
+      // callouts
+      const k1 = sstep(.38, .55, s);
       if (k1 > 0) {
         alpha(k1);
-        callout(pu[0], pu[1] - L * .04, X(.42), Y(-.62), '3D LIDAR MAST', C.ink);
-        callout(X(.45), Y(-.23), X(.78), Y(-.38), 'STEREO CAMERAS', C.ink);
-        callout(X(.53), Y(-.06), X(.8), Y(.0), 'LIGHT BAR', C.ink);
-        callout(X(-.05), Y(-.05), X(-.18), Y(-.42), 'COMPUTE · SLAM + AUTONOMY', C.accent, 'right');
-        callout(X(-.55), Y(-.02), X(-.72), Y(.2), 'TETHER TERMINATION', C.ink, 'right');
-        callout(X(.33), Y(.28), X(.55), Y(.48), 'LOW, WIDE STANCE FOR RUBBLE', C.ink);
-      }
-      // step 2: the sensors working
-      if (k2 > 0) {
-        alpha(k2);
-        const ph = RM ? 0 : (t * .5) % 1;
-        for (let k = 0; k < 4; k++) {
-          const rk = (.3 + (k + ph) * .2); ctx.strokeStyle = rgba(C.accent, .55 * (1 - (k + ph) / 4.2));
-          ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(pu[0], fy, rk * L, rk * L * .14, 0, 0, TAU); ctx.stroke();
-        }
-        const sweep = RM ? 0 : t * 1.6;
-        for (let k = 0; k < 26; k++) {
-          const a = -.35 + k / 25 * 1.4 * Math.PI * .5 + .08, hx = pu[0] + Math.cos(a + .1) * L * .9, hy = Math.min(fy, pu[1] + Math.sin(a) * L * .9);
-          const hit = hy >= fy - .5, ex = hit ? pu[0] + (fy - pu[1]) / Math.tan(a) : hx;
-          const b = .12 + .5 * Math.max(0, Math.cos(a * 3 - sweep));
-          ctx.strokeStyle = rgba(C.accent, b * .6); ctx.beginPath(); ctx.moveTo(pu[0], pu[1]); ctx.lineTo(ex, hit ? fy : hy); ctx.stroke();
-          if (hit && ex < Math.min(R.x1, X(1.1))) { ctx.fillStyle = rgba('#ffd59a', .9); ctx.fillRect(ex - 1.2, fy - 1.2, 2.4, 2.4); }
-          const am = Math.PI - a, mx = pu[0] + (fy - pu[1]) / Math.tan(am);
-          if (Math.tan(am) < 0 && mx > Math.max(R.x0, X(-1.1))) { ctx.strokeStyle = rgba(C.accent, b * .35); ctx.beginPath(); ctx.moveTo(pu[0], pu[1]); ctx.lineTo(mx, fy); ctx.stroke(); ctx.fillStyle = rgba('#ffd59a', .7); ctx.fillRect(mx - 1.2, fy - 1.2, 2.4, 2.4); }
-        }
-        // camera frustum
-        const cxF = X(.5 + dx * .5), cyF = Y(-.222 + dy * .5);
-        ctx.fillStyle = 'rgba(159,196,255,.07)'; ctx.strokeStyle = 'rgba(159,196,255,.45)';
-        ctx.beginPath(); ctx.moveTo(cxF, cyF); ctx.lineTo(X(1.05), Y(-.5)); ctx.lineTo(X(1.05), Y(.05)); ctx.closePath(); ctx.fill(); ctx.stroke();
-        // IMU triad
-        const ix = X(-.05), iy = Y(-.02), al = L * .09;
-        const arrow = (x2, y2, c) => { ctx.strokeStyle = c; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(ix, iy); ctx.lineTo(x2, y2); ctx.stroke(); const a = Math.atan2(y2 - iy, x2 - ix); ctx.fillStyle = c; ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x2 - Math.cos(a - .4) * 6, y2 - Math.sin(a - .4) * 6); ctx.lineTo(x2 - Math.cos(a + .4) * 6, y2 - Math.sin(a + .4) * 6); ctx.fill(); };
-        ctx.fillStyle = 'rgba(5,7,13,.6)'; ctx.fillRect(ix - al * .5, iy - al * 1.2, al * 1.8, al * 1.7);
-        arrow(ix + al, iy, C.accent); arrow(ix, iy - al, C.ink); arrow(ix + al * .55, iy - al * .5, C.us);
-        // odometry arc
-        const wx = X(-.33), wy = Y(.17), wr = L * .18;
-        ctx.strokeStyle = C.ink; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.arc(wx, wy, wr, -2.5, -1.0); ctx.stroke();
-        const ea = -1.0; ctx.fillStyle = C.ink; ctx.beginPath(); const ax = wx + Math.cos(ea) * wr, ay = wy + Math.sin(ea) * wr;
-        ctx.moveTo(ax + 4, ay + 5); ctx.lineTo(ax - 5, ay + 1); ctx.lineTo(ax + 1, ay - 6); ctx.fill();
-        callout(pu[0] + L * .06, pu[1], X(.55), Y(-.62), '3D LIDAR · OWN LASER, NO DAYLIGHT', C.accent);
-        callout(X(.75), Y(-.36), X(.86), Y(-.5), 'STEREO CAMERAS', '#9fc4ff');
-        callout(X(.62), Y(.0), X(.8), Y(.1), 'ONBOARD LIGHTING', '#ffd59a');
-        callout(ix - al * .5, iy - al * .6, X(-.3), Y(-.4), 'IMU', C.ink, 'right');
-        callout(wx - wr * .8, wy - wr * .6, X(-.7), Y(-.12), 'WHEEL ODOMETRY', C.ink, 'right');
-        alpha(1);
-      }
-      // step 3: tether cross-section and flows
-      const k3 = sstep(2.0, 2.3, s);
-      if (k3 > 0) {
-        alpha(k3);
-        const n = 7, T = RM ? 0 : t;
-        for (let k = 0; k < n; k++) {
-          const ud = ((T * .25 + k / n) % 1), [x1, y1] = bez(c0, c1, c2, c3, ud);
-          ctx.fillStyle = '#fff3d6'; ctx.fillRect(x1 - 2, y1 - 2, 4, 4); ctx.fillStyle = rgba(C.accent, .3); ctx.fillRect(x1 - 4, y1 - 4, 8, 8);
-          const uc = 1 - ((T * .18 + (k + .5) / n) % 1), [x2, y2] = bez(c0, c1, c2, c3, uc);
-          ctx.fillStyle = '#e8a15a'; ctx.beginPath(); ctx.arc(x2 + 5, y2, 2.2, 0, TAU); ctx.fill();
-        }
-        const ir = clamp(Math.min(w, h) * (mob ? .15 : .17), 46, 118), icx = R.x0 + w * (mob ? .2 : .2), icy = R.y0 + h * (mob ? .24 : .22);
-        const [ax, ay] = bez(c0, c1, c2, c3, .6);
-        ctx.setLineDash([3, 4]); ctx.strokeStyle = rgba(C.ink, .5); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(ax, ay);
-        const ang = Math.atan2(ay - icy, ax - icx); ctx.lineTo(icx + Math.cos(ang) * ir, icy + Math.sin(ang) * ir); ctx.stroke(); ctx.setLineDash([]);
-        ctx.strokeStyle = C.ink; ctx.beginPath(); ctx.arc(ax, ay, 6, 0, TAU); ctx.stroke();
-        // jacket
-        ctx.fillStyle = '#26251f'; ctx.beginPath(); ctx.arc(icx, icy, ir, 0, TAU); ctx.fill(); ctx.strokeStyle = '#6b665d'; ctx.lineWidth = 1.2; ctx.stroke();
-        // braid
-        ctx.save(); ctx.beginPath(); ctx.arc(icx, icy, ir * .92, 0, TAU); ctx.arc(icx, icy, ir * .74, 0, TAU, true); ctx.clip();
-        ctx.fillStyle = '#7d6a45'; ctx.fillRect(icx - ir, icy - ir, ir * 2, ir * 2);
-        ctx.strokeStyle = '#c4a970'; ctx.lineWidth = 1.2; ctx.beginPath();
-        for (let k = 0; k < 60; k++) { const a = k * TAU / 60, r1 = ir * .74, r2 = ir * .92, sgn = k % 2 ? 1 : -1;
-          ctx.moveTo(icx + Math.cos(a) * r1, icy + Math.sin(a) * r1); ctx.lineTo(icx + Math.cos(a + sgn * .12) * r2, icy + Math.sin(a + sgn * .12) * r2); }
-        ctx.stroke(); ctx.restore();
-        ctx.fillStyle = '#141414'; ctx.beginPath(); ctx.arc(icx, icy, ir * .74, 0, TAU); ctx.fill();
-        const cu = [];
-        for (let k = 0; k < 3; k++) {
-          const a = -Math.PI / 2 + k * TAU / 3 + .5, x = icx + Math.cos(a) * ir * .42, y = icy + Math.sin(a) * ir * .42; cu.push([x, y]);
-          ctx.fillStyle = '#3d3630'; ctx.beginPath(); ctx.arc(x, y, ir * .2, 0, TAU); ctx.fill();
-          const cg = ctx.createRadialGradient(x - ir * .04, y - ir * .04, 0, x, y, ir * .13);
-          cg.addColorStop(0, '#f4b878'); cg.addColorStop(1, '#9c5a23'); ctx.fillStyle = cg; ctx.beginPath(); ctx.arc(x, y, ir * .13, 0, TAU); ctx.fill();
-        }
-        ctx.fillStyle = '#e9e4d8'; ctx.beginPath(); ctx.arc(icx, icy, ir * .12, 0, TAU); ctx.fill();
-        const pulse = RM ? 1 : .6 + .4 * Math.sin(t * 5);
-        const fg2 = ctx.createRadialGradient(icx, icy, 0, icx, icy, ir * .12);
-        fg2.addColorStop(0, `rgba(190,232,255,${pulse.toFixed(3)})`); fg2.addColorStop(1, 'rgba(190,232,255,0)');
-        ctx.fillStyle = fg2; ctx.beginPath(); ctx.arc(icx, icy, ir * .12, 0, TAU); ctx.fill();
-        ctx.fillStyle = '#bfe8ff'; ctx.beginPath(); ctx.arc(icx, icy, ir * .04, 0, TAU); ctx.fill();
-        const lx = icx + ir + 18;
-        callout(icx + ir * .83 * Math.cos(-.9), icy + ir * .83 * Math.sin(-.9), lx, icy - ir * .7, 'TENSILE BRAID · CARRIES THE LOAD', '#c4a970');
-        callout(cu[0][0], cu[0][1], lx, icy - ir * .1, 'COPPER · POWER DOWN', '#e8a15a');
-        callout(icx, icy, lx, icy + ir * .5, 'OPTICAL FIBER · SCANS UP', '#bfe8ff');
-        tag(icx, icy + ir + 16, 'TETHER CROSS-SECTION · ILLUSTRATIVE', C.faint, 'center');
+        callout(px + L * .06, pt0 + L * .05, X(.42), Y(-.64), '3D LIDAR · SEES BY ITS OWN LASER', C.accent);
+        callout(X(-.33), Y(-.09), X(-.3), Y(-.44), 'COMPUTE · SLAM + AUTONOMY', C.accent, 'right');
+        callout(W0[0] + L * .025, (W0[1] + rkTop) / 2, X(.9), Y(-.2), 'APXS ARM · ROCK CHEMISTRY · LATER MISSIONS', VIOLET);
+        callout(X(-.545), Y(-.03), X(-.72), Y(.18), 'TETHER · POWER, DATA, LOAD', C.ink, 'right');
+        callout(X(bog[0]), Y(bog[1]), X(.36), Y(.52), 'ROCKER-BOGIE · LOW, WIDE STANCE', C.ink);
+        callout(X(WX[0]), wyN, X(-.6), Y(.5), 'IMU + WHEEL ODOMETRY', C.ink, 'right');
         alpha(1);
       }
     }
@@ -1575,7 +1599,7 @@ p strong{color:var(--ink);font-weight:600}
           tag(mid[0], mid[1] - 22, 'REGISTERED 3D POINT CLOUD', C.accent, 'center');
           callout(skT[0], skT[1], skT[0] - 30, skT[1] - 26, 'SKYLIGHT', C.ink, 'right');
           callout(skB[0], skB[1], skB[0] - 40, skB[1] + 30, 'FIXED REFERENCE FRAME', C.ink, 'right');
-          callout(cam[0], cam[1], cam[0] + 10, cam[1] + 54, 'CAMERA POSES · IMAGERY', '#9fc4ff');
+          callout(cam[0], cam[1], cam[0] + 10, cam[1] + 54, 'SCAN POSES', '#9fc4ff');
           callout(rp[0], rp[1], rp[0] + 20, rp[1] + 40, 'ROVER PATH', C.ink);
         }
       }
@@ -1645,7 +1669,7 @@ p strong{color:var(--ink);font-weight:600}
           alpha(w3 * k3);
           tag(hz[0] + 22, hz[1] - 18, 'REPEAT SCAN · ROCKFALL DETECTED', C.cn);
           const pin = (u, lat, txt, c) => { const b = PP(T.at(u, lat, T.floorH(u, lat))), tp = [b[0], b[1] - 34]; line([b, tp], c, 1.2); ctx.fillStyle = c; ctx.beginPath(); ctx.arc(tp[0], tp[1], 3, 0, TAU); ctx.fill(); tag(tp[0], tp[1] - 12, txt, c, 'center'); };
-          pin(.3, .1, 'GPR TARGET', '#c9aaff'); pin(.6, -.12, 'SPECTROMETER', '#ffd59a'); pin(.9, .1, 'RADIATION', '#9fc4ff');
+          pin(.3, .1, 'GPR TARGET', '#c9aaff'); pin(.6, -.12, 'APXS · COMPOSITION', '#c9aaff'); pin(.9, .1, 'RADIATION', '#9fc4ff');
           const lx = R.x0 + 8, ly = R.y1 - 10;
           [[GOOD, 'DRIVABLE'], ['#ffc861', 'CAUTION'], [C.cn, 'NO-GO']].forEach(([c, txt], i) => { ctx.fillStyle = c; ctx.fillRect(lx + i * 96, ly - 4, 8, 8); tag(lx + i * 96 + 14, ly, txt, C.dim); });
         }
