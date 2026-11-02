@@ -1462,7 +1462,7 @@ p strong{color:var(--ink);font-weight:600}
       const s = p * 4, R = region(), w = R.x1 - R.x0, h = R.y1 - R.y0, mob = W < 900;
       const w0 = 1 - sstep(.8, 1.1, s), w1 = sstep(.8, 1.1, s) * (1 - sstep(1.8, 2.1, s)), w2 = sstep(1.8, 2.1, s) * (1 - sstep(2.8, 3.1, s)), w3 = sstep(2.8, 3.1, s);
       const yaw = -.32 + p * .75 + (RM ? 0 : Math.sin(t * .15) * .06), pit = .5 - .1 * w2;
-      const S = Math.min(w * .36, h * .58) * (mob ? 1.05 : 1), ocx = R.x0 + w * .5, ocy = R.y0 + h * (mob ? .52 : .55);
+      const S = Math.min(w * (mob ? .3 : .36), h * .58), ocx = R.x0 + w * .5, ocy = R.y0 + h * (mob ? .52 : .55);
       const cy_ = Math.cos(yaw), sy_ = Math.sin(yaw), cp = Math.cos(pit), sp = Math.sin(pit);
       const P = (x, y, z) => {
         const x1 = x * cy_ - z * sy_, z1 = x * sy_ + z * cy_, y2 = y * cp - z1 * sp, z2 = y * sp + z1 * cp, f = 3.4 / (3.4 + z2);
