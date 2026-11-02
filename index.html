@@ -632,6 +632,200 @@ p strong{color:var(--ink);font-weight:600}
     draw(p, t, M) { site(at(TRANQ, M), C.accent, 'SLAM · FIRST TARGET', sstep(.2, .4, p), t); }
   };
 
+  /* ---------------- why caves: surface habitat vs lava-tube habitat, side by side ---------------- */
+  const GRAIN = (() => { const r = rng(91); return Array.from({ length: 320 }, () => [r(), r(), r()]); })();
+  const hh = (i, k) => hash3(i, k, 77);
+  // Equatorial surface temperature over one lunar day (ph 0 = dawn, .5 = dusk); illustrative curve between ~+120 and ~-170 C
+  const surfT = ph => { const s = Math.sin(ph * TAU); return s > 0 ? -170 + 290 * Math.pow(s, .45) : -170; };
+  function shelterLayout() {
+    const R = region(), gap = Math.max(14, (R.x1 - R.x0) * .05);
+    const w = (R.x1 - R.x0 - gap) / 2, h = R.y1 - R.y0;
+    return [0, 1].map(i => {
+      const x = R.x0 + i * (w + gap), y = R.y0, g = y + h * .3;
+      const ceil = g + h * .17, floor = ceil + h * .27;
+      const hw = w * .32, hhgt = Math.min(h * .085, hw * .36);
+      return { x, y, w, h, g, ceil, floor, cave: i === 1, hw, hh: hhgt, hx: x + w / 2, hy: i ? floor : g };
+    });
+  }
+  function caveVoid(L) {
+    const { x, w, ceil, floor } = L, cx = x + w / 2, l = x + w * .08, r = x + w * .92, mid = ceil + (floor - ceil) * .3;
+    ctx.beginPath(); ctx.moveTo(l, floor);
+    ctx.bezierCurveTo(l - w * .03, mid, cx - w * .3, ceil, cx, ceil);
+    ctx.bezierCurveTo(cx + w * .3, ceil, r + w * .03, mid, r, floor);
+    for (let k = 1; k <= 12; k++) ctx.lineTo(lerp(r, l, k / 12), floor + Math.sin(k * 2.3) * 1.6 + 1);
+    ctx.closePath();
+  }
+  function habitat(cx, by, w, h, a = 1, tint = null) {
+    alpha(a);
+    const x = cx - w / 2, y = by - h, rr = h * .48;
+    ctx.fillStyle = '#4a4740'; ctx.fillRect(x + w * .14, by - 3, 2, 3); ctx.fillRect(x + w * .84, by - 3, 2, 3);
+    const gr = ctx.createLinearGradient(0, y, 0, by - 2);
+    gr.addColorStop(0, '#e6e1d6'); gr.addColorStop(.55, '#b4afa4'); gr.addColorStop(1, '#6e6a62');
+    ctx.fillStyle = gr; ctx.beginPath(); ctx.roundRect(x, y - 2, w, h, rr); ctx.fill();
+    ctx.strokeStyle = 'rgba(5,7,13,.35)'; ctx.lineWidth = 1;
+    for (let k = 1; k < 5; k++) { const xx = x + w * k / 5; ctx.beginPath(); ctx.moveTo(xx, y); ctx.lineTo(xx, by - 3); ctx.stroke(); }
+    ctx.fillStyle = '#ffd59a';
+    for (let k = 0; k < 3; k++) { ctx.beginPath(); ctx.arc(x + w * (.3 + k * .2), y + h * .42, Math.max(1.2, h * .09), 0, TAU); ctx.fill(); }
+    if (tint) { ctx.fillStyle = tint; ctx.beginPath(); ctx.roundRect(x, y - 2, w, h, rr); ctx.fill(); }
+  }
+  function rockPanel(L, t) {
+    const { x, y, w, h, g } = L;
+    alpha(1);
+    ctx.fillStyle = 'rgba(5,7,13,.55)'; ctx.fillRect(x, y, w, g - y);
+    const gr = ctx.createLinearGradient(0, g, 0, y + h);
+    gr.addColorStop(0, '#4a443c'); gr.addColorStop(.12, '#2f2a24'); gr.addColorStop(1, '#14110e');
+    ctx.fillStyle = gr; ctx.fillRect(x, g, w, y + h - g);
+    for (const [u, v, s] of GRAIN) {
+      const gy = g + 4 + v * (y + h - g - 4);
+      ctx.fillStyle = `rgba(236,232,223,${(.03 + s * .07).toFixed(3)})`; ctx.fillRect(x + u * w, gy, 1 + s * 2, 1 + s * 1.5);
+    }
+    ctx.strokeStyle = 'rgba(0,0,0,.28)'; ctx.lineWidth = 1;
+    for (let k = 1; k < 6; k++) {
+      const yy = g + (y + h - g) * k / 6; ctx.beginPath(); ctx.moveTo(x, yy);
+      for (let s = 1; s <= 16; s++) ctx.lineTo(x + w * s / 16, yy + Math.sin(s * 1.7 + k * 3) * 2.2);
+      ctx.stroke();
+    }
+    ctx.fillStyle = '#6a655c'; ctx.beginPath(); ctx.moveTo(x, g + 3);
+    for (let s = 0; s <= 24; s++) ctx.lineTo(x + w * s / 24, g + Math.sin(s * 2.1) * 1.2 - (s % 7 === 3 ? 1.5 : 0));
+    ctx.lineTo(x + w, g + 5); ctx.lineTo(x, g + 5); ctx.closePath(); ctx.fill();
+  }
+  SCN.shelter = {
+    moon: () => null,
+    draw(p, t, M) {
+      const s = p * 4, Ls = shelterLayout();
+      const wR = 1 - sstep(.8, 1.1, s), wT = sstep(.8, 1.1, s) * (1 - sstep(1.8, 2.1, s));
+      const wM = sstep(1.8, 2.1, s) * (1 - sstep(2.8, 3.1, s)), wV = sstep(2.8, 3.1, s);
+      const uT = clamp((s - .95) / 1.05, 0, 1), dph = (.8 + uT * 1.05) % 1, T = surfT(dph), sun = Math.sin(dph * TAU);
+      const uV = clamp((s - 2.95) / .8, 0, 1);
+      for (const L of Ls) {
+        const { x, y, w, h, g, ceil, floor, cave, hw, hh: hH, hx, hy } = L;
+        ctx.save(); ctx.beginPath(); ctx.roundRect(x, y, w, h, 4); ctx.clip();
+        rockPanel(L, t);
+        if (wT > 0 && sun > 0) { alpha(wT * sun * .35); ctx.fillStyle = '#d9d2c2'; ctx.fillRect(x, g - 1, w, 5); }
+        if (cave) {
+          alpha(1); caveVoid(L); ctx.fillStyle = '#06070a'; ctx.fill();
+          ctx.strokeStyle = 'rgba(236,232,223,.14)'; ctx.lineWidth = 1; ctx.stroke();
+          ctx.save(); caveVoid(L); ctx.clip();
+          const gl = ctx.createRadialGradient(hx, hy - hH, 2, hx, hy - hH, w * .45);
+          gl.addColorStop(0, 'rgba(255,200,140,.22)'); gl.addColorStop(1, 'rgba(255,200,140,0)');
+          ctx.fillStyle = gl; ctx.fillRect(x, ceil, w, floor - ceil + 4);
+          ctx.restore();
+        }
+        let tint = null;
+        if (wT > 0 && !cave) tint = T > 0 ? rgba(C.accent, (T / 120 * .45 * wT).toFixed(3)) : rgba(C.us, (-T / 170 * .45 * wT).toFixed(3));
+        if (wR > 0 && !cave) tint = rgba('#b58cff', (.22 * wR * (.6 + .4 * Math.sin(t * 9))).toFixed(3));
+        habitat(hx, hy, hw, hH, 1, tint);
+        if (cave && wV > 0) {
+          const k = ease(uV * 1.4 - .1);
+          habitat(hx - w * .29 - (1 - k) * w * .3, hy, hw * .62, hH * .82, k);
+          habitat(hx + w * .29 + (1 - k) * w * .3, hy, hw * .62, hH * .82, k);
+        }
+        if (!cave && wV > 0) {
+          const bh = hH * 2.7 * ease(uV * 1.3), bw = hw * 1.05;
+          alpha(wV);
+          const bg = ctx.createLinearGradient(0, g - bh, 0, g);
+          bg.addColorStop(0, '#6a655c'); bg.addColorStop(1, '#3d3832');
+          ctx.fillStyle = bg; ctx.beginPath(); ctx.moveTo(hx - bw * 1.25, g + 2);
+          ctx.bezierCurveTo(hx - bw * .9, g - bh * .9, hx - bw * .45, g - bh, hx, g - bh);
+          ctx.bezierCurveTo(hx + bw * .45, g - bh, hx + bw * .9, g - bh * .9, hx + bw * 1.25, g + 2); ctx.closePath(); ctx.fill();
+          for (let i = 0; i < 40; i++) {
+            const u = hh(i, 4) * 2 - 1, v = hh(i, 5);
+            const yy = g - bh * (1 - u * u) * v * .9; if (yy > g) continue;
+            ctx.fillStyle = 'rgba(236,232,223,.08)'; ctx.fillRect(hx + u * bw * 1.1, yy, 1.5, 1.5);
+          }
+        }
+        // radiation: galactic cosmic rays and solar particles
+        if (wR > .01) {
+          for (let i = 0; i < 30; i++) {
+            const ph = (t * .45 + hh(i, 1)) % 1, x0 = x + w * (.04 + .92 * hh(i, 2)), sl = (hh(i, 3) - .5) * .5;
+            const y0 = y - 20, xAt = yy => x0 + (yy - y0) * sl;
+            let stop;
+            if (cave) stop = g + (ceil - g) * (.2 + .65 * hh(i, 6));
+            else { const xs = xAt(hy - hH); stop = Math.abs(xs - hx) < hw / 2 ? hy - hH : g + 2 + hh(i, 6) * 6; }
+            const k = ph * 1.35, yy = y0 + Math.min(1, k) * (stop - y0);
+            alpha(wR);
+            const tl = 34, gr = ctx.createLinearGradient(xAt(yy - tl), yy - tl, xAt(yy), yy);
+            gr.addColorStop(0, 'rgba(181,140,255,0)'); gr.addColorStop(1, 'rgba(201,170,255,.95)');
+            if (k < 1) { ctx.strokeStyle = gr; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(xAt(yy - tl), yy - tl); ctx.lineTo(xAt(yy), yy); ctx.stroke(); }
+            else { const f = 1 - (k - 1) / .35; alpha(wR * f); ctx.fillStyle = '#d9c4ff'; ctx.beginPath(); ctx.arc(xAt(stop), stop, 1.5 + (1 - f) * 4, 0, TAU); ctx.fill(); }
+          }
+          alpha(wR);
+          ctx.fillStyle = 'rgba(236,232,223,.12)'; ctx.fillRect(x + 10, y + 34, w * .42, 4);
+          ctx.fillStyle = cave ? '#9ad7a0' : '#c9aaff'; ctx.fillRect(x + 10, y + 34, w * .42 * (cave ? .1 : .9), 4);
+        }
+        // micrometeoroids and dust
+        if (wM > .01) {
+          for (let i = 0; i < 12; i++) {
+            const ph = (t * .5 + hh(i, 11)) % 1, ix = x + w * (.06 + .88 * hh(i, 12));
+            const nearHab = !cave && hh(i, 13) < .35, tx = nearHab ? hx + (hh(i, 14) - .5) * hw * 1.4 : ix;
+            const ty = nearHab && Math.abs(tx - hx) < hw / 2 ? hy - hH : g + 1;
+            if (ph < .22) {
+              const k = ph / .22, sx = tx + 90 * (1 - k), sy = ty - 120 * (1 - k);
+              alpha(wM); ctx.strokeStyle = 'rgba(255,214,160,.9)'; ctx.lineWidth = 1.3;
+              ctx.beginPath(); ctx.moveTo(sx + 14, sy - 18); ctx.lineTo(sx, sy); ctx.stroke();
+            } else {
+              const k = (ph - .22) / .78, f = 1 - k;
+              alpha(wM * f * f); ctx.fillStyle = '#ffe2b8'; ctx.beginPath(); ctx.arc(tx, ty, 1 + k * 5, 0, TAU); ctx.fill();
+              ctx.fillStyle = 'rgba(200,190,170,.8)';
+              for (let d = 0; d < 7; d++) {
+                const a = -Math.PI * (.1 + .8 * hh(i * 7 + d, 15)), v = 30 + 40 * hh(i * 7 + d, 16);
+                const px = tx + Math.cos(a) * v * k, py = ty + Math.sin(a) * v * k + 60 * k * k;
+                if (py <= ty + 1) ctx.fillRect(px, py, 1.6, 1.6);
+              }
+            }
+          }
+          if (!cave) { alpha(wM * .5); ctx.fillStyle = 'rgba(150,140,120,.6)'; ctx.beginPath(); ctx.roundRect(hx - hw / 2, hy - hH - 2, hw, hH * .35, hH * .3); ctx.fill(); }
+        }
+        // day/night: sun crossing the sky
+        if (wT > .01 && sun > 0) {
+          const sx = x + w * (.1 + .8 * (dph / .5)), sy = g - (g - y - 26) * .85 * sun;
+          alpha(wT); const sg = ctx.createRadialGradient(sx, sy, 1, sx, sy, 22);
+          sg.addColorStop(0, 'rgba(255,240,210,1)'); sg.addColorStop(.25, 'rgba(255,220,170,.6)'); sg.addColorStop(1, 'rgba(255,200,140,0)');
+          ctx.fillStyle = sg; ctx.beginPath(); ctx.arc(sx, sy, 22, 0, TAU); ctx.fill();
+        }
+        if (wT > .01) {
+          const c0 = x + w * .08, c1 = x + w * .92, cy0 = y + h * .8, chH = h * .14;
+          const ty = v => cy0 + chH * (1 - (v + 170) / 290);
+          alpha(wT);
+          ctx.fillStyle = 'rgba(5,7,13,.6)'; ctx.fillRect(c0 - 6, cy0 - 14, c1 - c0 + 12, chH + 26);
+          ctx.strokeStyle = 'rgba(236,232,223,.14)'; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(c0, ty(0)); ctx.lineTo(c1, ty(0)); ctx.stroke();
+          const tr = u => cave ? 17 : surfT((.8 + u * 1.05) % 1);
+          ctx.strokeStyle = 'rgba(236,232,223,.18)'; ctx.beginPath();
+          for (let k = 0; k <= 80; k++) { const u = k / 80; ctx.lineTo(lerp(c0, c1, u), ty(tr(u))); } ctx.stroke();
+          ctx.strokeStyle = cave ? '#9ad7a0' : C.accent; ctx.lineWidth = 1.6; ctx.beginPath();
+          for (let k = 0; k <= 80 * uT; k++) { const u = k / 80; ctx.lineTo(lerp(c0, c1, u), ty(tr(u))); } ctx.stroke();
+          ctx.fillStyle = ctx.strokeStyle; ctx.beginPath(); ctx.arc(lerp(c0, c1, uT), ty(tr(uT)), 3, 0, TAU); ctx.fill();
+          ctx.font = '500 9px "IBM Plex Mono", monospace'; ctx.fillStyle = C.faint; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+          ctx.fillText('+120', c0 - 2, ty(120) - 7); ctx.fillText('−170', c0 - 2, ty(-170) + 8); ctx.fillText('0 °C', c1 - 22, ty(0) - 7);
+        }
+        ctx.restore();
+        // labels (outside clip so they never get cut)
+        alpha(1);
+        tag(x + 10, y + 16, cave ? 'LAVA TUBE HABITAT' : 'SURFACE HABITAT', cave ? '#9ad7a0' : C.ink);
+        if (cave) {
+          const lx = x + w - 10;
+          alpha(.9); ctx.strokeStyle = rgba(C.ink, .5); ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(lx, g + 5); ctx.lineTo(lx, ceil); ctx.moveTo(lx - 4, g + 5); ctx.lineTo(lx + 4, g + 5); ctx.moveTo(lx - 4, ceil); ctx.lineTo(lx + 4, ceil); ctx.stroke();
+          tag(lx - 8, (g + ceil) / 2, 'METERS OF ROCK', C.ink, 'right');
+        }
+        if (wR > .01) { alpha(wR); tag(x + 10, y + 50, cave ? 'DOSE · STOPPED IN ROCK' : 'DOSE · UNSHIELDED', cave ? '#9ad7a0' : '#c9aaff'); }
+        if (wT > .01) {
+          alpha(wT);
+          const v = cave ? '+17 °C' : (T > 0 ? '+' : '−') + Math.abs(Math.round(T)) + ' °C';
+          tag(x + w / 2, y + h * .8 - 26, cave ? 'PIT FLOOR ' + v + ' · MODELED' : 'SURFACE ' + v, cave ? '#9ad7a0' : (T > 0 ? C.accent : C.us), 'center');
+          if (!cave) tag(x + 10, y + 34, sun > 0 ? 'LUNAR DAY · ~14 EARTH DAYS' : 'LUNAR NIGHT · ~14 EARTH DAYS', C.dim);
+        }
+        if (wM > .01) { alpha(wM); tag(x + 10, y + 34, cave ? 'ROOF TAKES THE HITS' : 'IMPACTS + ABRASIVE DUST', cave ? '#9ad7a0' : '#ffd6a0'); }
+        if (wV > .01) {
+          alpha(wV);
+          if (cave) tag(hx, floor + 18, 'VOLUME ALREADY THERE', '#9ad7a0', 'center');
+          else tag(hx, g - hH * 2.7 * ease(uV * 1.3) - 16, 'SHIELDING YOU HAVE TO BUILD', '#ffd6a0', 'center');
+        }
+      }
+    }
+  };
+
 /*@SCENES*/
 
   /* ---------------- scroll engine ---------------- */
