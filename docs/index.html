@@ -1,0 +1,1671 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SLAM · Subsurface Lunar Atlas Mission</title>
+</head>
+<body>
+<title>SLAM Lunar Atlas</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="The second race to the Moon is about who stays. SLAM maps the lunar underground.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one fixed full-bleed canvas behind a left reading column. Every scene is scrubbed by scroll position and scenes blend into each other across section boundaries. */
+:root{
+  --void:#05070d;
+  --ink:#ece8df;
+  --dim:#9a9ca6;
+  --faint:#5d606c;
+  --accent:#ff7a2f;
+  --us:#7fa6ff;
+  --cn:#ff5468;
+  --panel:rgba(5,7,13,.84);
+  --f-display:"Big Shoulders Display","Arial Narrow","Helvetica Neue",sans-serif;
+  --f-body:"Instrument Sans","Helvetica Neue",Arial,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--void);color:var(--ink);font-family:var(--f-body);font-size:1.0625rem;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+#sky{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block}
+.veil{position:fixed;inset:0;z-index:0;pointer-events:none;background:linear-gradient(90deg,rgba(5,7,13,.94) 0%,rgba(5,7,13,.8) 30%,rgba(5,7,13,0) 47%)}
+@media (max-width:899px){.veil{display:none}}
+
+.story{position:relative;z-index:1;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+@media (min-width:900px){.story{padding-left:max(5vw,env(safe-area-inset-left,0px))}}
+
+.scene{min-height:115vh;display:flex;align-items:center;padding-block:14vh}
+.hero{min-height:160vh;align-items:flex-start;padding-top:14vh}
+.chapter{display:block}
+.step{min-height:100vh;display:flex;align-items:center;padding-block:10vh}
+.panel{max-width:33rem;min-width:0;display:grid;gap:1.1rem;will-change:opacity,transform}
+.panel.wide{max-width:40rem}
+@media (max-width:899px){
+  .scene,.step{align-items:flex-end}
+  .hero{align-items:flex-end;padding-bottom:8vh}
+  .panel{background:var(--panel);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);padding:1.4rem 1.25rem;border:1px solid rgba(236,232,223,.08);border-radius:4px;width:100%}
+}
+
+.eyebrow{font-family:var(--f-mono);font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0}
+h1,h2{font-family:var(--f-display);font-weight:800;text-transform:uppercase;line-height:.92;letter-spacing:.005em;margin:0;text-wrap:balance}
+h1{font-size:clamp(3.2rem,8.4vw,7rem)}
+h2{font-size:clamp(2.3rem,5vw,3.9rem)}
+p{margin:0;color:var(--dim);max-width:62ch}
+p strong{color:var(--ink);font-weight:600}
+.lede{font-size:1.2rem;color:var(--ink)}
+.callout{font-family:var(--f-display);font-weight:600;font-size:1.55rem;line-height:1.15;color:var(--ink);text-transform:uppercase;letter-spacing:.01em;border-left:2px solid var(--accent);padding-left:1rem;text-wrap:balance}
+.note{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.04em;color:var(--faint)}
+
+.brand{display:flex;align-items:baseline;gap:.8rem;flex-wrap:wrap;margin-bottom:1.6rem}
+.brand b{font-family:var(--f-display);font-weight:800;font-size:2rem;letter-spacing:.06em}
+.brand span{font-family:var(--f-mono);font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+.cue{font-family:var(--f-mono);font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);display:flex;align-items:center;gap:.6rem;margin-top:1rem}
+.cue i{display:block;width:1px;height:2.4rem;background:linear-gradient(var(--accent),transparent);animation:drip 2.2s ease-in-out infinite}
+@keyframes drip{0%{transform:scaleY(.2);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}100%{transform:scaleY(.2);transform-origin:bottom}}
+@media (prefers-reduced-motion:reduce){.cue i{animation:none}}
+
+.tracks{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1.6rem 2rem}
+.track{min-width:0}
+.track h3{font-family:var(--f-mono);font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;margin:0 0 .7rem;display:flex;align-items:center;gap:.5rem}
+.track h3::before{content:"";width:.6rem;height:.6rem;border-radius:50%;background:currentColor}
+.track.us h3{color:var(--us)} .track.cn h3{color:var(--cn)}
+.track ol{list-style:none;margin:0;padding:0;display:grid;gap:.75rem}
+.track li{display:grid;grid-template-columns:4.2rem 1fr;gap:.6rem;font-size:.95rem;line-height:1.45;color:var(--dim)}
+.track li time{font-family:var(--f-mono);font-size:.78rem;color:var(--ink);padding-top:.12rem;font-variant-numeric:tabular-nums}
+.track li.target time{color:var(--faint)}
+.track li b{color:var(--ink);font-weight:600}
+
+.facts{list-style:none;margin:0;padding:0;display:grid;gap:.55rem}
+.facts li{display:grid;grid-template-columns:1.2rem 1fr;gap:.5rem;color:var(--dim);font-size:.97rem}
+.facts li::before{content:"";width:.5rem;height:1px;background:var(--accent);margin-top:.8rem}
+.facts b{color:var(--ink);font-weight:600}
+
+.close h2{font-size:clamp(2.6rem,6.4vw,5.2rem)}
+.tagline{font-family:var(--f-mono);font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink)}
+
+.sources{position:relative;z-index:1;background:var(--void);border-top:1px solid rgba(236,232,223,.08);padding-block:3.5rem calc(5rem + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+@media (min-width:900px){.sources{padding-left:max(5vw,env(safe-area-inset-left,0px))}}
+.sources h2{font-size:1.6rem;margin-bottom:1rem}
+.sources ol{margin:0;padding-left:1.2rem;display:grid;gap:.45rem;max-width:62rem;color:var(--dim);font-size:.85rem;line-height:1.5}
+.sources a{color:var(--ink);text-underline-offset:3px}
+.sources a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.sources p{margin-top:1.4rem;font-size:.8rem;color:var(--faint);max-width:62rem}
+
+.hud{position:fixed;z-index:2;left:max(16px,env(safe-area-inset-left,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));font-family:var(--f-mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);display:flex;gap:.6rem;align-items:center;pointer-events:none}
+.hud #hud-n{color:var(--accent);font-variant-numeric:tabular-nums}
+.hud .bar{width:4.5rem;height:1px;background:var(--faint);position:relative;overflow:hidden}
+.hud .bar i{position:absolute;inset:0;background:var(--accent);transform-origin:left;transform:scaleX(0)}
+@media (max-width:899px){.hud{top:calc(10px + env(safe-area-inset-top,0px));bottom:auto;right:max(16px,env(safe-area-inset-right,0px));left:auto}}
+</style>
+
+<canvas id="sky" aria-hidden="true"></canvas>
+<div class="veil" aria-hidden="true"></div>
+<div class="hud" aria-hidden="true"><span id="hud-n">01</span><span class="bar"><i id="hud-bar"></i></span><span id="hud-t">Prologue</span></div>
+
+<main class="story">
+
+  <section class="scene hero" data-scene="moon" data-chapter="Prologue">
+    <div class="panel">
+      <div class="brand"><b>SLAM</b><span>Subsurface Lunar Atlas Mission</span></div>
+      <h1>The race back to the Moon is on again.</h1>
+      <p class="lede">Fifty years after Apollo, the United States and China are both going back, and this time they plan to stay. Some of the best places to stay may be underground.</p>
+      <div class="cue"><i></i>Scroll</div>
+    </div>
+  </section>
+
+  <section class="scene" data-scene="apollo" data-chapter="The first race">
+    <div class="panel">
+      <p class="eyebrow">1969 – 1972</p>
+      <h2>Twelve people walked on the Moon. Then everyone went home.</h2>
+      <p>Six Apollo landings added up to about 80 hours of moonwalking, all on the near side and all close to the equator. The last crew left in December 1972.</p>
+      <p><strong>Nobody went back for over fifty years.</strong> The first race was won by arriving. Nobody had a reason to stay.</p>
+    </div>
+  </section>
+
+  <section class="scene" data-scene="race" data-chapter="The new race">
+    <div class="panel wide">
+      <p class="eyebrow">2019 – 2035</p>
+      <h2>Now there are two serious programs, and both are moving.</h2>
+      <div class="tracks">
+        <div class="track cn">
+          <h3>China · CNSA / CMSA</h3>
+          <ol>
+            <li><time>2019</time><span><b>Chang'e-4</b> makes the first soft landing on the far side.</span></li>
+            <li><time>2020</time><span><b>Chang'e-5</b> returns the first lunar samples since 1976.</span></li>
+            <li><time>2024</time><span><b>Chang'e-6</b> returns the first samples ever taken from the far side.</span></li>
+            <li><time>2026</time><span><b>Chang'e-7</b>: orbiter, lander, rover and hopper aimed at south-pole water ice.</span></li>
+            <li class="target"><time>&lt;2030</time><span><b>First Chinese astronauts on the Moon</b>: an official commitment to land a crew before 2030, using Mengzhou, the Lanyue lander and Long March 10.</span></li>
+            <li class="target"><time>2035</time><span>International Lunar Research Station basic model (stated target).</span></li>
+          </ol>
+        </div>
+        <div class="track us">
+          <h3>United States · NASA + industry</h3>
+          <ol>
+            <li><time>2022</time><span><b>Artemis I</b> sends an uncrewed Orion around the Moon and back.</span></li>
+            <li><time>2024</time><span><b>IM-1 Odysseus</b>: first US landing since 1972, flown by a company.</span></li>
+            <li><time>2025</time><span><b>Blue Ghost 1</b> lands and runs a full commercial surface mission.</span></li>
+            <li><time>Apr 2026</time><span><b>Artemis II</b> flies four astronauts around the far side, the first crew near the Moon in 54 years.</span></li>
+            <li class="target"><time>→2029</time><span>Moon Base Phase One: robots scout infrastructure sites before crews arrive.</span></li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene" data-scene="stay" data-chapter="Why stay">
+    <div class="panel">
+      <p class="eyebrow">The new objective</p>
+      <h2>Apollo was a visit. This race is about who stays.</h2>
+      <p><strong>China has committed to landing its first astronauts on the Moon before 2030.</strong> That deadline is why this is a race again and not a schedule.</p>
+      <p>NASA's Moon Base plan sends robots through 2029 to pick infrastructure sites before astronauts arrive. China describes the ILRS as a long-duration base with its own power, transport and resource use. Both are aiming for the <strong>south pole</strong>, where permanently shadowed craters may hold water ice.</p>
+      <p class="callout">Staying means living somewhere. The question is where.</p>
+    </div>
+  </section>
+
+  <section class="chapter" data-scene="shelter" data-chapter="Why caves">
+    <div class="step">
+      <div class="panel">
+        <p class="eyebrow">Why go underground · 1 of 4</p>
+        <h2>The surface is hostile. A lava tube is a ready-made shelter.</h2>
+        <p>The Moon has no atmosphere and no global magnetic field. Galactic cosmic rays and solar particle storms hit the ground unfiltered, and a crew in a surface habitat absorbs all of it.</p>
+        <p><strong>Several meters of rock overhead stop most of that dose before it reaches anyone.</strong> A lava tube comes with the rock already in place.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="panel">
+        <p class="eyebrow">Why go underground · 2 of 4</p>
+        <h2>No 300-degree temperature swings.</h2>
+        <p>A lunar day lasts 29.5 Earth days. Near the equator the surface climbs to about <strong>+120 °C</strong> in the afternoon and drops to about <strong>−170 °C</strong> through two weeks of night. Every surface system has to survive that cycle again and again.</p>
+        <p>In the shaded floor of the Mare Tranquillitatis pit, models fit to orbiter data put the temperature near <strong>+17 °C</strong>, day and night. Steady temperatures mean smaller heaters, smaller radiators and less power spent just staying alive.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="panel">
+        <p class="eyebrow">Why go underground · 3 of 4</p>
+        <h2>Out of the line of fire.</h2>
+        <p>Micrometeoroids hit the surface constantly and fast. Every landing and every impact throws abrasive dust that wears out seals, joints, optics and radiators.</p>
+        <p>Underground, the roof takes the impacts and very little dust settles. <strong>Equipment lasts longer and needs less maintenance.</strong></p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="panel">
+        <p class="eyebrow">Why go underground · 4 of 4</p>
+        <h2>The volume is already there.</h2>
+        <p>Protecting a surface base means launching shielding from Earth or having robots pile regolith over it. Both cost mass, power and time.</p>
+        <p>Inside a lava tube, <strong>nature has already built the shield and the room</strong>. Every kilogram not spent on shielding can go to life support, science or more crew.</p>
+        <p class="callout">A protected void is only valuable once you know its shape, how to get in and what's inside.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene" data-scene="pits" data-chapter="Second geography">
+    <div class="panel">
+      <p class="eyebrow">They exist</p>
+      <h2>The Moon has holes in it. Some of them lead somewhere.</h2>
+      <p>Lunar Reconnaissance Orbiter imagery has turned up <strong>more than 200 pits</strong>. A few, in the dark lava plains, look like collapsed skylights into lava tubes.</p>
+      <p>In 2024 a team re-analyzing radar data from 2010 found a cave conduit running sideways from the Mare Tranquillitatis pit. It was the first direct evidence of an accessible cave below the lunar surface.</p>
+    </div>
+  </section>
+
+  <section class="scene" data-scene="orbit" data-chapter="The gap">
+    <div class="panel">
+      <p class="eyebrow">The problem</p>
+      <h2>Nobody has measured one from the inside.</h2>
+      <p>From orbit you see a hole, a shadow and a sunlit sliver of wall. You can't see how far the cave goes, how high the ceiling is, whether the floor is drivable or whether a habitat would fit.</p>
+      <p>Without those answers, no agency can commit a mission, and no company can design a habitat for a cave.</p>
+      <p class="callout">A cave doesn't become infrastructure until it's measured.</p>
+    </div>
+  </section>
+
+  <section class="chapter" data-scene="descent" data-chapter="The solution">
+    <div class="step">
+      <div class="panel">
+        <p class="eyebrow">The solution · SLAM</p>
+        <h2>Lower a mapping robot into the cave on a tether.</h2>
+        <p>A surface station sets down near the rim. It carries solar power, the radio link to Earth, the data archive, the tether reel and a fixed reference point for the whole survey.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="panel">
+        <p class="eyebrow">Descent</p>
+        <p class="lede">A compact autonomous rover is lowered over the edge on one tether that carries power, fiber-optic data and the load.</p>
+        <p>The reel measures payout and tension, so the station always knows how far down the rover is and whether the line has snagged.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="panel">
+        <p class="eyebrow">Simultaneous localization and mapping</p>
+        <p class="lede">At the bottom, it drives into the dark.</p>
+        <p>3D LiDAR, cameras with their own lighting, an IMU and wheel odometry feed SLAM: the rover works out where it is from the shape of what it sees, with no GPS and no line of sight to Earth. People set the objective and the safety limits. The rover handles the next meter.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="panel">
+        <p class="eyebrow">Failure-tolerant data</p>
+        <p class="lede">Every scan streams up the tether the moment it's taken.</p>
+        <p>If the rover stops, everything it already mapped is safe at the surface. A survey that ends early still returns a usable map.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="chapter" data-scene="device" data-chapter="The device">
+    <div class="step">
+      <div class="panel">
+        <p class="eyebrow">The device</p>
+        <h2>A small rover built for one job.</h2>
+        <p>Small enough to lower through a skylight, low and wide enough to drive a rubble floor in total darkness. Everything it needs to map is on board, and everything it learns goes up the cable.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="panel">
+        <p class="eyebrow">Sensors</p>
+        <h2>It sees without daylight.</h2>
+        <ul class="facts">
+          <li><span><b>3D LiDAR</b> measures the cave as millions of points with its own laser, so it works in total darkness.</span></li>
+          <li><span><b>Stereo cameras with onboard lighting</b> record what each wall actually looks like.</span></li>
+          <li><span><b>IMU and wheel odometry</b> track motion between scans.</span></li>
+          <li><span><b>Onboard compute</b> runs SLAM and the autonomy loop: sense, localize, map, choose, move.</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="step">
+      <div class="panel">
+        <p class="eyebrow">Tether</p>
+        <h2>One cable does three jobs.</h2>
+        <ul class="facts">
+          <li><span><b>Copper conductors</b> carry power down from the station's solar array, so the rover doesn't need a large battery.</span></li>
+          <li><span><b>Optical fiber</b> carries every scan up to the surface as it's taken.</span></li>
+          <li><span><b>A tensile braid</b> takes the load for lowering, holding and recovering the rover.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="chapter" data-scene="map" data-chapter="The map">
+    <div class="step">
+      <div class="panel">
+        <p class="eyebrow">The product</p>
+        <h2>Google Maps and Street View for the lunar underground.</h2>
+        <p>Every scan is registered into one 3D model of the cave: geometry, matching imagery, the rover's path, where the floor is drivable, a fixed reference frame and a confidence value on every measurement.</p>
+        <p><strong>That map is the product.</strong> Here is what people do with it.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="panel">
+        <p class="eyebrow">Use 1 · Select</p>
+        <h2>Pick the right cave before anything flies.</h2>
+        <p>Mission planners compare candidate caves on ceiling height, narrowest clearance, floor slope, rockfall hazards and usable volume, each with an uncertainty attached.</p>
+        <p><strong>A bad site gets rejected on Earth instead of after landing.</strong></p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="panel">
+        <p class="eyebrow">Use 2 · Design</p>
+        <h2>Build the habitat to fit the real cave.</h2>
+        <p>Habitat and infrastructure teams fit modules against measured walls instead of an assumed tube. They route power and comms from the skylight, place anchors and lighting, and plan an emergency exit before any hardware leaves Earth.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="panel">
+        <p class="eyebrow">Use 3 · Operate</p>
+        <h2>Then run the base from the same map.</h2>
+        <p>Rovers and crews navigate with it. Repeat scans catch rockfall and change over time. Science teams use it to aim ground-penetrating radar, spectrometers and radiation sensors, and to find ice or other resources.</p>
+        <p class="callout">The value is the decision the map lets someone make before hardware leaves Earth.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene close" data-scene="close" data-chapter="Epilogue">
+    <div class="panel">
+      <h2>Before anyone builds underground, someone has to map underground.</h2>
+      <p class="lede">SLAM intends to own that map.</p>
+      <p class="tagline">Map the Moon. Build from the map.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="sources">
+  <h2>Sources</h2>
+  <ol>
+    <li>L. Carrer et al., "Radar evidence of an accessible cave conduit on the Moon below the Mare Tranquillitatis pit," <i>Nature Astronomy</i> (2024).</li>
+    <li>T. Horvath, P. Hayne, D. Paige, "Thermal and illumination environments of lunar pits and caves," <i>Geophysical Research Letters</i> (2022).</li>
+    <li>R. Wagner, M. Robinson, "Distribution, formation mechanisms, and significance of lunar pits," <i>Icarus</i> (2014).</li>
+    <li>C. Ding et al., "Towards a habitable Moon: probing subsurface cavities with global penetrating radar," <i>npj Space Exploration</i> 1, 11 (2025).</li>
+    <li>NASA: Artemis II mission (April 2026); Moon Base development (2026); <a href="https://www.nasa.gov/commercial-lunar-payload-services/" target="_blank" rel="noopener">Commercial Lunar Payload Services</a>.</li>
+    <li>China Manned Space Agency: crewed lunar landing before 2030. CNSA: ILRS basic model by 2035; Chang'e-4, -5, -6 and -7 mission records.</li>
+    <li>NASA KNaCK: SLAM LiDAR for exploration and mapping of lunar pits and caves (IPCC 2023).</li>
+  </ol>
+  <p>All graphics are illustrative: the Moon, pit, cave cross-sections, rover and point clouds are generated in the browser and are not to scale or real sensor data. Google Maps and Street View are a functional analogy only; no affiliation with Google, NASA, CNSA or any cited organization is implied.</p>
+</footer>
+
+<script>
+(() => {
+  const cv = document.getElementById('sky');
+  const ctx = cv.getContext('2d');
+  const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const css = getComputedStyle(document.documentElement);
+  const tok = n => css.getPropertyValue(n).trim();
+  const C = { void: tok('--void'), ink: tok('--ink'), dim: tok('--dim'), faint: tok('--faint'), accent: tok('--accent'), us: tok('--us'), cn: tok('--cn') };
+  const MONO = '500 10.5px "IBM Plex Mono", ui-monospace, Menlo, monospace';
+  const D2R = Math.PI / 180, TAU = Math.PI * 2;
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const ease = k => { k = clamp(k, 0, 1); return k * k * (3 - 2 * k); };
+  const lerp = (a, b, k) => a + (b - a) * k;
+  const bump = (p, a, b, e = .05) => ease((p - a) / e) * (1 - ease((p - b) / e));
+  function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function rgba(hex, a) { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`; }
+  function hash3(x, y, z) {
+    let h = (Math.imul(x, 374761393) + Math.imul(y, 668265263) + Math.imul(z, 1274126177)) | 0;
+    h = Math.imul(h ^ (h >>> 13), 1274126177); h ^= h >>> 16; return (h >>> 0) / 4294967296;
+  }
+  function vnoise(x, y, z) {
+    const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
+    const xf = x - xi, yf = y - yi, zf = z - zi;
+    const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf), w = zf * zf * (3 - 2 * zf);
+    return lerp(lerp(lerp(hash3(xi, yi, zi), hash3(xi + 1, yi, zi), u), lerp(hash3(xi, yi + 1, zi), hash3(xi + 1, yi + 1, zi), u), v),
+                lerp(lerp(hash3(xi, yi, zi + 1), hash3(xi + 1, yi, zi + 1), u), lerp(hash3(xi, yi + 1, zi + 1), hash3(xi + 1, yi + 1, zi + 1), u), v), w);
+  }
+  // crater height field: bowl + raised rim + ejecta falloff, in units of the input space
+  function craterH(px, py, pz, k, seed, dens) {
+    const x = px * k, y = py * k, z = pz * k;
+    const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
+    const ox = x - xi < .5 ? -1 : 0, oy = y - yi < .5 ? -1 : 0, oz = z - zi < .5 ? -1 : 0;
+    let h = 0;
+    for (let dx = 0; dx < 2; dx++) for (let dy = 0; dy < 2; dy++) for (let dz = 0; dz < 2; dz++) {
+      const cx = xi + ox + dx, cy = yi + oy + dy, cz = zi + oz + dz;
+      if (hash3(cx + seed, cy, cz) > dens) continue;
+      const fx = cx + .2 + .6 * hash3(cx, cy + seed, cz), fy = cy + .2 + .6 * hash3(cx, cy, cz + seed), fz = cz + .2 + .6 * hash3(cx + seed, cy + seed, cz);
+      const rad = .12 + .3 * hash3(cz, cx, cy + seed);
+      const ex = x - fx, ey = y - fy, ez = z - fz;
+      const q = Math.sqrt(ex * ex + ey * ey + ez * ez) / rad;
+      if (q >= 1.7) continue;
+      const dep = rad * .45, rim = dep * .32;
+      h += q < 1 ? dep * (q * q - 1) + rim * q * q * q * q : rim * Math.exp(-(q - 1) * 5);
+    }
+    return h / k;
+  }
+
+  let W = 0, H = 0, DPR = 1, NOW = 0, SA = 1;
+  const alpha = k => { ctx.globalAlpha = SA * k; };
+  const r0 = rng(42);
+  const stars = Array.from({ length: 300 }, () => ({ x: r0(), y: r0(), r: r0() * 1.1 + .25, a: r0() * .55 + .15, ph: r0() * 6.28, z: r0() }));
+
+  function region() {
+    return W >= 900 ? { x0: W * .44, x1: W * .97, y0: H * .1, y1: H * .9 } : { x0: 12, x1: W - 12, y0: H * .07, y1: H * .56 };
+  }
+  function tag(x, y, text, color = C.ink, align = 'left') {
+    ctx.font = MONO; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    const w = ctx.measureText(text).width;
+    let bx = align === 'left' ? x - 4 : align === 'right' ? x - w - 4 : x - w / 2 - 4;
+    bx = clamp(bx, 4, W - w - 12);
+    ctx.fillStyle = 'rgba(5,7,13,.72)'; ctx.fillRect(bx, y - 8, w + 8, 16);
+    ctx.fillStyle = color; ctx.fillText(text, bx + 4, y);
+  }
+  function ring(x, y, rad, color, t, a = 1) {
+    ctx.lineWidth = 1.2; ctx.strokeStyle = rgba(color, a); ctx.beginPath(); ctx.arc(x, y, rad, 0, TAU); ctx.stroke();
+    const k = (t * .6) % 1;
+    ctx.strokeStyle = rgba(color, a * (1 - k) * .8); ctx.beginPath(); ctx.arc(x, y, rad + k * rad * 2.2, 0, TAU); ctx.stroke();
+  }
+
+  // background raster jobs: heavy textures render in small slices so scrolling never stalls
+  const jobs = []; let jobsOn = false;
+  function queue(job) { jobs.push(job); if (!jobsOn) { jobsOn = true; setTimeout(runJobs, 30); } }
+  function runJobs() {
+    const t0 = performance.now();
+    while (jobs.length && performance.now() - t0 < 12) { if (jobs[0].step()) jobs.shift(); }
+    if (jobs.length) setTimeout(runJobs, 0); else jobsOn = false;
+  }
+  function rasterJob(w, h, shade, done) {
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    const g = c.getContext('2d'); const img = g.createImageData(w, h); let row = 0;
+    return { step() {
+      const end = Math.min(h, row + 3);
+      for (; row < end; row++) for (let x = 0; x < w; x++) shade(x, row, img.data, (row * w + x) * 4);
+      if (row >= h) { g.putImageData(img, 0, 0); done(c); return true; }
+      return false;
+    } };
+  }
+
+  const SCN = {};
+  let drawMoon = () => {};
+  const resizers = [];
+  const moonPlace = (scale = 1) => { const R = region(); return { x: (R.x0 + R.x1) / 2, y: (R.y0 + R.y1) / 2, r: Math.min(R.x1 - R.x0, R.y1 - R.y0) * .42 * scale, a: 1, w: 0 }; };
+  function project(lat, lon, lat0, M) {
+    const px = Math.cos(lat * D2R) * Math.sin(lon * D2R), py = Math.sin(lat * D2R), pz = Math.cos(lat * D2R) * Math.cos(lon * D2R);
+    const s0 = Math.sin(lat0 * D2R), c0 = Math.cos(lat0 * D2R);
+    const vy = py * c0 - pz * s0, vz = py * s0 + pz * c0;
+    return { x: M.x + M.r * px, y: M.y - M.r * vy, vis: vz > 0.02 };
+  }
+  const TRANQ = [8.335, 33.222], MARIUS = [14.09, -56.8];
+
+  /* ---------------- moon renderer ---------------- */
+  const sstep = (a, b, v) => ease((v - a) / (b - a));
+  const vec = (lat, lon) => [Math.cos(lat * D2R) * Math.sin(lon * D2R), Math.sin(lat * D2R), Math.cos(lat * D2R) * Math.cos(lon * D2R)];
+  const MARE = [[33,-16,17],[28,17,10],[8,31,11],[17,59,7.5],[-6,51,9],[-15,35,6],[-21,-17,10],[18,-55,20],[0,-42,15],[56,0,8],[54,-28,7],[-24,-39,6],[-10,-23,7],[13,4,5],[7,-30,9],[-2,-15,6]]
+    .map(([la, lo, r]) => [...vec(la, lo), r * D2R]);
+  function mareAt(x, y, z) {
+    const wn = (o, f, a) => (vnoise(x * f + o, y * f + o * 2, z * f - o) - .5) * a;
+    const wx = x + wn(1, 3, .3) + wn(5, 9, .1), wy = y + wn(13, 3, .3) + wn(17, 9, .1), wz = z + wn(29, 3, .3) + wn(31, 9, .1);
+    x = wx; y = wy; z = wz;
+    let v = 0;
+    for (const m of MARE) { const d = Math.acos(clamp(x * m[0] + y * m[1] + z * m[2], -1, 1)) / m[3]; if (d < 3) v += Math.exp(-d * d); }
+    v += (vnoise(x * 5 + 9, y * 5, z * 5) - .5) * .7 + (vnoise(x * 13, y * 13 + 3, z * 13) - .5) * .25;
+    return sstep(0, 1, (v - .62) * 1.5 + (vnoise(x * 24, y * 24, z * 24) - .5) * .35);
+  }
+  function pnoise(u, N, seed) { const i = Math.floor(u), f = u - i, s = f * f * (3 - 2 * f); return lerp(hash3(((i % N) + N) % N, seed, 7), hash3((((i + 1) % N) + N) % N, seed, 7), s); }
+  const RAYS = [[-43.3, -11.2, 1.1, 24, 11], [9.6, -20.1, 1.25, 12, 23], [8.1, -38, .45, 7, 37], [23.7, -47.4, .5, 6, 51]].map(([la, lo, rad, len, seed]) => {
+    const c = vec(la, lo), el = Math.hypot(c[2], c[0]), e = [c[2] / el, 0, -c[0] / el];
+    const n = [c[1] * e[2] - c[2] * e[1], c[2] * e[0] - c[0] * e[2], c[0] * e[1] - c[1] * e[0]];
+    return { c, e, n, rad: rad * D2R, len: len * D2R, seed };
+  });
+  function rays(x, y, z) {
+    let b = 0;
+    for (const r of RAYS) {
+      const d = Math.acos(clamp(x * r.c[0] + y * r.c[1] + z * r.c[2], -1, 1));
+      if (d > r.len * 3.5) continue;
+      if (d < r.rad) { b += .26; continue; }
+      const az = Math.atan2(x * r.n[0] + y * r.n[1] + z * r.n[2], x * r.e[0] + y * r.e[1] + z * r.e[2]);
+      const u = (az + Math.PI) / TAU;
+      const s = pnoise(u * 70, 70, r.seed) * .55 + pnoise(u * 190, 190, r.seed + 3) * .45;
+      b += sstep(.55, .9, s) * Math.exp(-d / r.len) * .5 * sstep(.25, .75, vnoise(d * 30, r.seed, u * 60)) + Math.exp(-(((d - r.rad) / (r.rad * 1.3)) ** 2)) * .22;
+    }
+    return b;
+  }
+  const heightAt = (x, y, z, m) =>
+    craterH(x, y, z, 5, 11, .3) + craterH(x, y, z, 12, 23, .42) * (1 - .5 * m) + craterH(x, y, z, 30, 37, .5) * (1 - .6 * m) +
+    craterH(x, y, z, 75, 53, .55) * (1 - .5 * m) + (vnoise(x * 9, y * 9, z * 9) - .5) * .012 * (1 - m) - m * .0015;
+
+  const LAT0 = [0, -20, -40, -60];
+  const SUN = (() => { const l = Math.hypot(.84, .22, .5); return [.84 / l, .22 / l, .5 / l]; })();
+  const moonTex = [null, null, null, null], moonSize = [0, 0, 0, 0], moonBorn = [0, 0, 0, 0];
+  function moonJob(slot, S) {
+    const s0 = Math.sin(LAT0[slot] * D2R), c0 = Math.cos(LAT0[slot] * D2R);
+    let prev = new Float32Array(S), cur = new Float32Array(S), row = -1;
+    const sc = S / 2;
+    return rasterJob(S, S, (x, y, d, o) => {
+      if (y !== row) { const tmp = prev; prev = cur; cur = tmp; row = y; }
+      const vx = (x + .5) / sc - 1, vy = 1 - (y + .5) / sc, rr = vx * vx + vy * vy;
+      if (rr > 1) { cur[x] = NaN; d[o + 3] = 0; return; }
+      const vz = Math.sqrt(1 - rr);
+      const px = vx, py = vy * c0 + vz * s0, pz = -vy * s0 + vz * c0;
+      const m = mareAt(px, py, pz), h = heightAt(px, py, pz, m);
+      cur[x] = h;
+      let gx = x > 0 && cur[x - 1] === cur[x - 1] ? (h - cur[x - 1]) * sc : 0;
+      let gy = y > 0 && prev[x] === prev[x] ? (prev[x] - h) * sc : 0;
+      gx = clamp(gx, -2.5, 2.5); gy = clamp(gy, -2.5, 2.5);
+      let nx = vx - gx, ny = vy - gy, nz = vz; const nl = Math.hypot(nx, ny, nz); nx /= nl; ny /= nl; nz /= nl;
+      const mu0 = nx * SUN[0] + ny * SUN[1] + nz * SUN[2], mu = Math.max(.08, nz);
+      let I = mu0 > 0 ? 2 * mu0 / (mu0 + mu) : 0;
+      I *= sstep(-.05, .1, vx * SUN[0] + vy * SUN[1] + vz * SUN[2]);
+      const n1 = vnoise(px * 22, py * 22, pz * 22), n2 = vnoise(px * 70 + 5, py * 70, pz * 70);
+      const n3 = vnoise(px * 7 + 2, py * 7, pz * 7);
+      const alb = lerp(.64 + (n1 - .5) * .16 + (n2 - .5) * .1, .39 + (n3 - .5) * .16 + (n1 - .5) * .08 + (n2 - .5) * .05, m) + rays(px, py, pz) * (1 - .3 * m);
+      const v = 255 * Math.min(1.05, alb * I * .95 + alb * .028);
+      const e = clamp((1 - Math.sqrt(rr)) * sc, 0, 1);
+      d[o] = Math.min(255, v * 1.01); d[o + 1] = v * .975; d[o + 2] = v * (.92 + .03 * m); d[o + 3] = 255 * e;
+    }, c => { if (S >= moonSize[slot]) { moonTex[slot] = c; moonSize[slot] = S; moonBorn[slot] = performance.now(); } });
+  }
+  const pending = [0, 0, 0, 0];
+  function ensureMoon() {
+    const R = region(), base = Math.min(R.x1 - R.x0, R.y1 - R.y0) * .84 * 1.6 * DPR;
+    for (let s = 0; s < 4; s++) {
+      const want = Math.round(clamp(base * (s ? .7 : 1), 256, s ? 640 : 1024) / 32) * 32;
+      if (want > Math.max(moonSize[s], pending[s]) * 1.2) { pending[s] = want; queue(moonJob(s, want)); }
+    }
+  }
+  resizers.push(ensureMoon);
+  drawMoon = M => {
+    if (!M || M.a < .003 || M.r < 1) return;
+    ctx.save();
+    ctx.globalAlpha = M.a;
+    const g = ctx.createRadialGradient(M.x, M.y, M.r * .95, M.x, M.y, M.r * 1.45);
+    g.addColorStop(0, 'rgba(236,232,223,.08)'); g.addColorStop(1, 'rgba(236,232,223,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(M.x, M.y, M.r * 1.45, 0, TAU); ctx.fill();
+    const w = clamp(M.w, 0, 3), i0 = Math.floor(w), i1 = Math.min(3, i0 + 1), fr = w - i0;
+    const k0 = moonTex[i0] ? clamp((NOW - moonBorn[i0]) / 700, 0, 1) : 0;
+    if (k0 < 1) {
+      const f = ctx.createRadialGradient(M.x + M.r * .4, M.y - M.r * .15, M.r * .05, M.x, M.y, M.r);
+      f.addColorStop(0, '#a9a69e'); f.addColorStop(.6, '#5d5b56'); f.addColorStop(1, '#151517');
+      ctx.fillStyle = f; ctx.beginPath(); ctx.arc(M.x, M.y, M.r, 0, TAU); ctx.fill();
+    }
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+    if (k0 > 0) { ctx.globalAlpha = M.a * k0; ctx.drawImage(moonTex[i0], M.x - M.r, M.y - M.r, M.r * 2, M.r * 2); }
+    if (fr > .002 && moonTex[i1]) { ctx.globalAlpha = M.a * fr * clamp((NOW - moonBorn[i1]) / 700, 0, 1); ctx.drawImage(moonTex[i1], M.x - M.r, M.y - M.r, M.r * 2, M.r * 2); }
+    ctx.restore();
+  };
+  const at = (ll, M) => project(ll[0], ll[1], -20 * M.w, M);
+  function site(pt, color, label, k, t, align = 'left') {
+    if (!pt.vis || k <= 0) return;
+    alpha(k); ctx.fillStyle = color; ctx.beginPath(); ctx.arc(pt.x, pt.y, 3, 0, TAU); ctx.fill();
+    ring(pt.x, pt.y, 6, color, t, .7);
+    if (label) tag(pt.x + (align === 'left' ? 12 : -12), pt.y, label, color, align);
+  }
+
+  /* hero: the moon drifts in and the pit target slides toward center */
+  SCN.moon = {
+    moon(p) {
+      const b = moonPlace(1), k = ease(p), r = b.r * lerp(1, 1.6, k), u = project(TRANQ[0], TRANQ[1], 0, { x: 0, y: 0, r: 1 });
+      return { x: b.x - u.x * r * k * .7, y: b.y - u.y * r * k * .7, r, a: ease(p * 6 + .35), w: 0 };
+    },
+    draw(p, t, M) {
+      const k = sstep(.3, .55, p); if (k <= 0) return;
+      const pt = at(TRANQ, M);
+      site(pt, C.accent, 'MARE TRANQUILLITATIS PIT · 8.3°N 33.2°E', k, t);
+    }
+  };
+
+  const APOLLO = [['11', .67, 23.47], ['12', -3.01, -23.42], ['14', -3.65, -17.47], ['15', 26.13, 3.63], ['16', -8.97, 15.5], ['17', 20.19, 30.77]];
+  SCN.apollo = {
+    moon: () => moonPlace(1),
+    draw(p, t, M) {
+      APOLLO.forEach(([n, la, lo], i) => {
+        const k = sstep(.08 + i * .07, .14 + i * .07, p), pt = at([la, lo], M);
+        if (!pt.vis || k <= 0) return;
+        alpha(k); ctx.fillStyle = C.ink; ctx.beginPath(); ctx.arc(pt.x, pt.y, 2.6, 0, TAU); ctx.fill();
+        ctx.strokeStyle = rgba(C.ink, .5); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(pt.x, pt.y); ctx.lineTo(pt.x + 10, pt.y - 10); ctx.stroke();
+        tag(pt.x + 14, pt.y - 12, 'A' + n, C.ink);
+      });
+      const k = sstep(.55, .7, p); if (k <= 0) return;
+      alpha(k); tag(M.x, Math.min(H - 40, M.y + M.r + 26), '6 LANDINGS · 12 MOONWALKERS · ~80 H EVA · LAST LIFTOFF 14 DEC 1972', C.dim, 'center');
+    }
+  };
+
+  SCN.race = {
+    moon: p => ({ ...moonPlace(.92), w: lerp(0, .7, ease(p)) }),
+    draw(p, t, M) {
+      const cn = [['CHANG\'E-3', 44.12, -19.51], ['CHANG\'E-5', 43.06, -51.92]], us = [['IM-1', -80.13, 1.44], ['BLUE GHOST 1', 18.56, 61.81]];
+      cn.forEach(([n, la, lo], i) => site(at([la, lo], M), C.cn, n, sstep(.08 + i * .08, .16 + i * .08, p), t, i ? 'right' : 'left'));
+      us.forEach(([n, la, lo], i) => site(at([la, lo], M), C.us, n, sstep(.12 + i * .08, .2 + i * .08, p), t));
+      const kf = sstep(.3, .4, p);
+      if (kf > 0) { alpha(kf); tag(M.x - M.r - 8, M.y - M.r * .55, '← CHANG\'E-4 · CHANG\'E-6 · FAR SIDE', C.cn, 'right'); }
+      const ka = sstep(.35, .5, p); if (ka <= 0) return;
+      alpha(ka * .8); ctx.strokeStyle = rgba(C.us, .65); ctx.lineWidth = 1.2; ctx.setLineDash([4, 6]);
+      ctx.beginPath(); ctx.ellipse(M.x + M.r * .3, M.y + M.r * .05, M.r * 1.5, M.r * .42, -.12, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
+      const a = -Math.PI * .5 + ease((p - .35) / .6) * TAU * .9;
+      const ox = M.x + M.r * .3 + Math.cos(a) * M.r * 1.5 * Math.cos(-.12) - Math.sin(a) * M.r * .42 * Math.sin(-.12);
+      const oy = M.y + M.r * .05 + Math.cos(a) * M.r * 1.5 * Math.sin(-.12) + Math.sin(a) * M.r * .42 * Math.cos(-.12);
+      const behind = Math.sin(a) < 0 && Math.hypot(ox - M.x, oy - M.y) < M.r;
+      if (!behind) { alpha(ka); ctx.fillStyle = C.us; ctx.beginPath(); ctx.arc(ox, oy, 3.5, 0, TAU); ctx.fill(); }
+      alpha(ka); tag(M.x + M.r * .3, M.y + M.r * .62, 'ARTEMIS II · CREWED FLYBY · APR 2026', C.us, 'center');
+    }
+  };
+
+  SCN.stay = {
+    moon: p => ({ ...moonPlace(1.04), w: lerp(.7, 3, ease(p * 1.5)) }),
+    draw(p, t, M) {
+      const k = sstep(.3, .45, p); if (k <= 0) return;
+      const sp = project(-89.9, 0, -20 * M.w, M); if (!sp.vis) return;
+      alpha(k); ring(sp.x, sp.y, 9, C.accent, t, .9);
+      ctx.fillStyle = C.accent; ctx.beginPath(); ctx.arc(sp.x, sp.y, 2.5, 0, TAU); ctx.fill();
+      tag(sp.x, sp.y + 26, 'SOUTH POLE · SHADOWED CRATERS · WATER ICE?', C.accent, 'center');
+      const k2 = sstep(.45, .6, p); if (k2 <= 0) return;
+      alpha(k * k2);
+      ctx.strokeStyle = rgba(C.cn, .6); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(sp.x - 12, sp.y - 6); ctx.lineTo(sp.x - 60, sp.y - 46); ctx.stroke();
+      tag(sp.x - 64, sp.y - 54, 'CN · CREW BEFORE 2030', C.cn, 'right');
+      ctx.strokeStyle = rgba(C.us, .6); ctx.beginPath(); ctx.moveTo(sp.x + 12, sp.y - 6); ctx.lineTo(sp.x + 60, sp.y - 46); ctx.stroke();
+      tag(sp.x + 64, sp.y - 54, 'US · MOON BASE → 2029', C.us);
+    }
+  };
+
+  const PITS = (() => {
+    const r = rng(7), out = [];
+    while (out.length < 210) {
+      const la = (r() * 2 - 1) * 62, lo = (r() * 2 - 1) * 82, v = vec(la, lo), m = mareAt(...v);
+      if (r() < (m > .4 ? .9 : .12)) out.push([la, lo, r()]);
+    }
+    return out;
+  })();
+  SCN.pits = {
+    moon: () => moonPlace(1),
+    draw(p, t, M) {
+      ctx.fillStyle = C.accent;
+      for (const [la, lo, o] of PITS) {
+        const k = sstep(o * .5, o * .5 + .08, p); if (k <= 0) continue;
+        const pt = at([la, lo], M); if (!pt.vis) continue;
+        alpha(k * .85); ctx.beginPath(); ctx.arc(pt.x, pt.y, 1.5, 0, TAU); ctx.fill();
+      }
+      const k = sstep(.45, .6, p);
+      alpha(1); site(at(MARIUS, M), C.ink, 'MARIUS HILLS PIT', k, t, 'right');
+      site(at(TRANQ, M), C.accent, 'TRANQUILLITATIS PIT · CAVE CONDUIT CONFIRMED 2024', sstep(.55, .7, p), t);
+      const kc = sstep(.1, .25, p);
+      if (kc > 0) { alpha(kc); tag(M.x, Math.min(H - 40, M.y + M.r + 26), '200+ PITS IDENTIFIED · ILLUSTRATIVE PLACEMENT', C.dim, 'center'); }
+    }
+  };
+
+  SCN.close = {
+    moon: p => ({ ...moonPlace(.9), a: 1 }),
+    draw(p, t, M) { site(at(TRANQ, M), C.accent, 'SLAM · FIRST TARGET', sstep(.2, .4, p), t); }
+  };
+
+  /* ---------------- why caves: surface habitat vs lava-tube habitat, side by side ---------------- */
+  const GRAIN = (() => { const r = rng(91); return Array.from({ length: 320 }, () => [r(), r(), r()]); })();
+  const hh = (i, k) => hash3(i, k, 77);
+  // Equatorial surface temperature over one lunar day (ph 0 = dawn, .5 = dusk); illustrative curve between ~+120 and ~-170 C
+  const surfT = ph => { const s = Math.sin(ph * TAU); return s > 0 ? -170 + 290 * Math.pow(s, .45) : -170; };
+  function shelterLayout() {
+    const R = region(), gap = Math.max(14, (R.x1 - R.x0) * .05);
+    const w = (R.x1 - R.x0 - gap) / 2, h = R.y1 - R.y0;
+    return [0, 1].map(i => {
+      const x = R.x0 + i * (w + gap), y = R.y0, g = y + h * .3;
+      const ceil = g + h * .17, floor = ceil + h * .27;
+      const hw = w * .32, hhgt = Math.min(h * .085, hw * .36);
+      return { x, y, w, h, g, ceil, floor, cave: i === 1, hw, hh: hhgt, hx: x + w / 2, hy: i ? floor : g };
+    });
+  }
+  function caveVoid(L) {
+    const { x, w, ceil, floor } = L, cx = x + w / 2, l = x + w * .08, r = x + w * .92, mid = ceil + (floor - ceil) * .3;
+    ctx.beginPath(); ctx.moveTo(l, floor);
+    ctx.bezierCurveTo(l - w * .03, mid, cx - w * .3, ceil, cx, ceil);
+    ctx.bezierCurveTo(cx + w * .3, ceil, r + w * .03, mid, r, floor);
+    for (let k = 1; k <= 12; k++) ctx.lineTo(lerp(r, l, k / 12), floor + Math.sin(k * 2.3) * 1.6 + 1);
+    ctx.closePath();
+  }
+  function habitat(cx, by, w, h, a = 1, tint = null) {
+    alpha(a);
+    const x = cx - w / 2, y = by - h, rr = h * .48;
+    ctx.fillStyle = '#4a4740'; ctx.fillRect(x + w * .14, by - 3, 2, 3); ctx.fillRect(x + w * .84, by - 3, 2, 3);
+    const gr = ctx.createLinearGradient(0, y, 0, by - 2);
+    gr.addColorStop(0, '#e6e1d6'); gr.addColorStop(.55, '#b4afa4'); gr.addColorStop(1, '#6e6a62');
+    ctx.fillStyle = gr; ctx.beginPath(); ctx.roundRect(x, y - 2, w, h, rr); ctx.fill();
+    ctx.strokeStyle = 'rgba(5,7,13,.35)'; ctx.lineWidth = 1;
+    for (let k = 1; k < 5; k++) { const xx = x + w * k / 5; ctx.beginPath(); ctx.moveTo(xx, y); ctx.lineTo(xx, by - 3); ctx.stroke(); }
+    ctx.fillStyle = '#ffd59a';
+    for (let k = 0; k < 3; k++) { ctx.beginPath(); ctx.arc(x + w * (.3 + k * .2), y + h * .42, Math.max(1.2, h * .09), 0, TAU); ctx.fill(); }
+    if (tint) { ctx.fillStyle = tint; ctx.beginPath(); ctx.roundRect(x, y - 2, w, h, rr); ctx.fill(); }
+  }
+  function rockPanel(L, t) {
+    const { x, y, w, h, g } = L;
+    alpha(1);
+    ctx.fillStyle = 'rgba(5,7,13,.55)'; ctx.fillRect(x, y, w, g - y);
+    const gr = ctx.createLinearGradient(0, g, 0, y + h);
+    gr.addColorStop(0, '#4a443c'); gr.addColorStop(.12, '#2f2a24'); gr.addColorStop(1, '#14110e');
+    ctx.fillStyle = gr; ctx.fillRect(x, g, w, y + h - g);
+    for (const [u, v, s] of GRAIN) {
+      const gy = g + 4 + v * (y + h - g - 4);
+      ctx.fillStyle = `rgba(236,232,223,${(.03 + s * .07).toFixed(3)})`; ctx.fillRect(x + u * w, gy, 1 + s * 2, 1 + s * 1.5);
+    }
+    ctx.strokeStyle = 'rgba(0,0,0,.28)'; ctx.lineWidth = 1;
+    for (let k = 1; k < 6; k++) {
+      const yy = g + (y + h - g) * k / 6; ctx.beginPath(); ctx.moveTo(x, yy);
+      for (let s = 1; s <= 16; s++) ctx.lineTo(x + w * s / 16, yy + Math.sin(s * 1.7 + k * 3) * 2.2);
+      ctx.stroke();
+    }
+    ctx.fillStyle = '#6a655c'; ctx.beginPath(); ctx.moveTo(x, g + 3);
+    for (let s = 0; s <= 24; s++) ctx.lineTo(x + w * s / 24, g + Math.sin(s * 2.1) * 1.2 - (s % 7 === 3 ? 1.5 : 0));
+    ctx.lineTo(x + w, g + 5); ctx.lineTo(x, g + 5); ctx.closePath(); ctx.fill();
+  }
+  SCN.shelter = {
+    moon: () => null,
+    draw(p, t, M) {
+      const s = p * 4, Ls = shelterLayout();
+      const wR = 1 - sstep(.8, 1.1, s), wT = sstep(.8, 1.1, s) * (1 - sstep(1.8, 2.1, s));
+      const wM = sstep(1.8, 2.1, s) * (1 - sstep(2.8, 3.1, s)), wV = sstep(2.8, 3.1, s);
+      const uT = clamp((s - .95) / 1.05, 0, 1), dph = (.8 + uT * 1.05) % 1, T = surfT(dph), sun = Math.sin(dph * TAU);
+      const uV = clamp((s - 2.95) / .8, 0, 1);
+      for (const L of Ls) {
+        const { x, y, w, h, g, ceil, floor, cave, hw, hh: hH, hx, hy } = L;
+        ctx.save(); ctx.beginPath(); ctx.roundRect(x, y, w, h, 4); ctx.clip();
+        rockPanel(L, t);
+        if (wT > 0 && sun > 0) { alpha(wT * sun * .35); ctx.fillStyle = '#d9d2c2'; ctx.fillRect(x, g - 1, w, 5); }
+        if (cave) {
+          alpha(1); caveVoid(L); ctx.fillStyle = '#06070a'; ctx.fill();
+          ctx.strokeStyle = 'rgba(236,232,223,.14)'; ctx.lineWidth = 1; ctx.stroke();
+          ctx.save(); caveVoid(L); ctx.clip();
+          const gl = ctx.createRadialGradient(hx, hy - hH, 2, hx, hy - hH, w * .45);
+          gl.addColorStop(0, 'rgba(255,200,140,.22)'); gl.addColorStop(1, 'rgba(255,200,140,0)');
+          ctx.fillStyle = gl; ctx.fillRect(x, ceil, w, floor - ceil + 4);
+          ctx.restore();
+        }
+        let tint = null;
+        if (wT > 0 && !cave) tint = T > 0 ? rgba(C.accent, (T / 120 * .45 * wT).toFixed(3)) : rgba(C.us, (-T / 170 * .45 * wT).toFixed(3));
+        if (wR > 0 && !cave) tint = rgba('#b58cff', (.22 * wR * (.6 + .4 * Math.sin(t * 9))).toFixed(3));
+        habitat(hx, hy, hw, hH, 1, tint);
+        if (cave && wV > 0) {
+          const k = ease(uV * 1.4 - .1);
+          habitat(hx - w * .29 - (1 - k) * w * .3, hy, hw * .62, hH * .82, k);
+          habitat(hx + w * .29 + (1 - k) * w * .3, hy, hw * .62, hH * .82, k);
+        }
+        if (!cave && wV > 0) {
+          const bh = hH * 2.7 * ease(uV * 1.3), bw = hw * 1.05;
+          alpha(wV);
+          const bg = ctx.createLinearGradient(0, g - bh, 0, g);
+          bg.addColorStop(0, '#6a655c'); bg.addColorStop(1, '#3d3832');
+          ctx.fillStyle = bg; ctx.beginPath(); ctx.moveTo(hx - bw * 1.25, g + 2);
+          ctx.bezierCurveTo(hx - bw * .9, g - bh * .9, hx - bw * .45, g - bh, hx, g - bh);
+          ctx.bezierCurveTo(hx + bw * .45, g - bh, hx + bw * .9, g - bh * .9, hx + bw * 1.25, g + 2); ctx.closePath(); ctx.fill();
+          for (let i = 0; i < 40; i++) {
+            const u = hh(i, 4) * 2 - 1, v = hh(i, 5);
+            const yy = g - bh * (1 - u * u) * v * .9; if (yy > g) continue;
+            ctx.fillStyle = 'rgba(236,232,223,.08)'; ctx.fillRect(hx + u * bw * 1.1, yy, 1.5, 1.5);
+          }
+        }
+        // radiation: galactic cosmic rays and solar particles
+        if (wR > .01) {
+          for (let i = 0; i < 30; i++) {
+            const ph = (t * .45 + hh(i, 1)) % 1, x0 = x + w * (.04 + .92 * hh(i, 2)), sl = (hh(i, 3) - .5) * .5;
+            const y0 = y - 20, xAt = yy => x0 + (yy - y0) * sl;
+            let stop;
+            if (cave) stop = g + (ceil - g) * (.2 + .65 * hh(i, 6));
+            else { const xs = xAt(hy - hH); stop = Math.abs(xs - hx) < hw / 2 ? hy - hH : g + 2 + hh(i, 6) * 6; }
+            const k = ph * 1.35, yy = y0 + Math.min(1, k) * (stop - y0);
+            alpha(wR);
+            const tl = 34, gr = ctx.createLinearGradient(xAt(yy - tl), yy - tl, xAt(yy), yy);
+            gr.addColorStop(0, 'rgba(181,140,255,0)'); gr.addColorStop(1, 'rgba(201,170,255,.95)');
+            if (k < 1) { ctx.strokeStyle = gr; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(xAt(yy - tl), yy - tl); ctx.lineTo(xAt(yy), yy); ctx.stroke(); }
+            else { const f = 1 - (k - 1) / .35; alpha(wR * f); ctx.fillStyle = '#d9c4ff'; ctx.beginPath(); ctx.arc(xAt(stop), stop, 1.5 + (1 - f) * 4, 0, TAU); ctx.fill(); }
+          }
+          alpha(wR);
+          ctx.fillStyle = 'rgba(236,232,223,.12)'; ctx.fillRect(x + 10, y + 34, w * .42, 4);
+          ctx.fillStyle = cave ? '#9ad7a0' : '#c9aaff'; ctx.fillRect(x + 10, y + 34, w * .42 * (cave ? .1 : .9), 4);
+        }
+        // micrometeoroids and dust
+        if (wM > .01) {
+          for (let i = 0; i < 12; i++) {
+            const ph = (t * .5 + hh(i, 11)) % 1, ix = x + w * (.06 + .88 * hh(i, 12));
+            const nearHab = !cave && hh(i, 13) < .35, tx = nearHab ? hx + (hh(i, 14) - .5) * hw * 1.4 : ix;
+            const ty = nearHab && Math.abs(tx - hx) < hw / 2 ? hy - hH : g + 1;
+            if (ph < .22) {
+              const k = ph / .22, sx = tx + 90 * (1 - k), sy = ty - 120 * (1 - k);
+              alpha(wM); ctx.strokeStyle = 'rgba(255,214,160,.9)'; ctx.lineWidth = 1.3;
+              ctx.beginPath(); ctx.moveTo(sx + 14, sy - 18); ctx.lineTo(sx, sy); ctx.stroke();
+            } else {
+              const k = (ph - .22) / .78, f = 1 - k;
+              alpha(wM * f * f); ctx.fillStyle = '#ffe2b8'; ctx.beginPath(); ctx.arc(tx, ty, 1 + k * 5, 0, TAU); ctx.fill();
+              ctx.fillStyle = 'rgba(200,190,170,.8)';
+              for (let d = 0; d < 7; d++) {
+                const a = -Math.PI * (.1 + .8 * hh(i * 7 + d, 15)), v = 30 + 40 * hh(i * 7 + d, 16);
+                const px = tx + Math.cos(a) * v * k, py = ty + Math.sin(a) * v * k + 60 * k * k;
+                if (py <= ty + 1) ctx.fillRect(px, py, 1.6, 1.6);
+              }
+            }
+          }
+          if (!cave) { alpha(wM * .5); ctx.fillStyle = 'rgba(150,140,120,.6)'; ctx.beginPath(); ctx.roundRect(hx - hw / 2, hy - hH - 2, hw, hH * .35, hH * .3); ctx.fill(); }
+        }
+        // day/night: sun crossing the sky
+        if (wT > .01 && sun > 0) {
+          const sx = x + w * (.1 + .8 * (dph / .5)), sy = g - (g - y - 26) * .85 * sun;
+          alpha(wT); const sg = ctx.createRadialGradient(sx, sy, 1, sx, sy, 22);
+          sg.addColorStop(0, 'rgba(255,240,210,1)'); sg.addColorStop(.25, 'rgba(255,220,170,.6)'); sg.addColorStop(1, 'rgba(255,200,140,0)');
+          ctx.fillStyle = sg; ctx.beginPath(); ctx.arc(sx, sy, 22, 0, TAU); ctx.fill();
+        }
+        if (wT > .01) {
+          const c0 = x + w * .08, c1 = x + w * .92, cy0 = y + h * .8, chH = h * .14;
+          const ty = v => cy0 + chH * (1 - (v + 170) / 290);
+          alpha(wT);
+          ctx.fillStyle = 'rgba(5,7,13,.6)'; ctx.fillRect(c0 - 6, cy0 - 14, c1 - c0 + 12, chH + 26);
+          ctx.strokeStyle = 'rgba(236,232,223,.14)'; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(c0, ty(0)); ctx.lineTo(c1, ty(0)); ctx.stroke();
+          const tr = u => cave ? 17 : surfT((.8 + u * 1.05) % 1);
+          ctx.strokeStyle = 'rgba(236,232,223,.18)'; ctx.beginPath();
+          for (let k = 0; k <= 80; k++) { const u = k / 80; ctx.lineTo(lerp(c0, c1, u), ty(tr(u))); } ctx.stroke();
+          ctx.strokeStyle = cave ? '#9ad7a0' : C.accent; ctx.lineWidth = 1.6; ctx.beginPath();
+          for (let k = 0; k <= 80 * uT; k++) { const u = k / 80; ctx.lineTo(lerp(c0, c1, u), ty(tr(u))); } ctx.stroke();
+          ctx.fillStyle = ctx.strokeStyle; ctx.beginPath(); ctx.arc(lerp(c0, c1, uT), ty(tr(uT)), 3, 0, TAU); ctx.fill();
+          ctx.font = '500 9px "IBM Plex Mono", monospace'; ctx.fillStyle = C.faint; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+          ctx.fillText('+120', c0 - 2, ty(120) - 7); ctx.fillText('−170', c0 - 2, ty(-170) + 8); ctx.fillText('0 °C', c1 - 22, ty(0) - 7);
+        }
+        ctx.restore();
+        // labels (outside clip so they never get cut)
+        alpha(1);
+        tag(x + 10, y + 16, cave ? 'LAVA TUBE HABITAT' : 'SURFACE HABITAT', cave ? '#9ad7a0' : C.ink);
+        if (cave) {
+          const lx = x + w - 10;
+          alpha(.9); ctx.strokeStyle = rgba(C.ink, .5); ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(lx, g + 5); ctx.lineTo(lx, ceil); ctx.moveTo(lx - 4, g + 5); ctx.lineTo(lx + 4, g + 5); ctx.moveTo(lx - 4, ceil); ctx.lineTo(lx + 4, ceil); ctx.stroke();
+          tag(lx - 8, (g + ceil) / 2, 'METERS OF ROCK', C.ink, 'right');
+        }
+        if (wR > .01) { alpha(wR); tag(x + 10, y + 50, cave ? 'DOSE · STOPPED IN ROCK' : 'DOSE · UNSHIELDED', cave ? '#9ad7a0' : '#c9aaff'); }
+        if (wT > .01) {
+          alpha(wT);
+          const v = cave ? '+17 °C' : (T > 0 ? '+' : '−') + Math.abs(Math.round(T)) + ' °C';
+          tag(x + w / 2, y + h * .8 - 26, cave ? 'PIT FLOOR ' + v + ' · MODELED' : 'SURFACE ' + v, cave ? '#9ad7a0' : (T > 0 ? C.accent : C.us), 'center');
+          if (!cave) tag(x + 10, y + 34, sun > 0 ? 'LUNAR DAY · ~14 EARTH DAYS' : 'LUNAR NIGHT · ~14 EARTH DAYS', C.dim);
+        }
+        if (wM > .01) { alpha(wM); tag(x + 10, y + 34, cave ? 'ROOF TAKES THE HITS' : 'IMPACTS + ABRASIVE DUST', cave ? '#9ad7a0' : '#ffd6a0'); }
+        if (wV > .01) {
+          alpha(wV);
+          if (cave) tag(hx, floor + 18, 'VOLUME ALREADY THERE', '#9ad7a0', 'center');
+          else tag(hx, g - hH * 2.7 * ease(uV * 1.3) - 16, 'SHIELDING YOU HAVE TO BUILD', '#ffd6a0', 'center');
+        }
+      }
+    }
+  };
+
+  /* ---------------- the gap: zoom from the globe into an orbital view of the pit ---------------- */
+  let pitTex = null, pitBorn = 0, pitSize = 0;
+  function pitJob(S) {
+    let prev = new Float32Array(S), cur = new Float32Array(S), row = -1;
+    const L = (() => { const l = Math.hypot(.83, -.1, .5); return [.83 / l, -.1 / l, .5 / l]; })();
+    return rasterJob(S, S, (x, y, d, o) => {
+      if (y !== row) { const tmp = prev; prev = cur; cur = tmp; row = y; }
+      const u = x / S, v = y / S, dx = u - .5, dy = v - .5, ang = Math.atan2(dy, dx);
+      const rp = .19 * (1 + (vnoise(Math.cos(ang) * 2 + 5, Math.sin(ang) * 2 + 5, 3) - .5) * .22 + (vnoise(Math.cos(ang) * 7 + 9, Math.sin(ang) * 7, 1) - .5) * .06);
+      const q = Math.hypot(dx, dy) / rp;
+      let h = craterH(u, v, .37, 9, 5, .4) + craterH(u, v, .71, 24, 9, .5) * .8 + craterH(u, v, .13, 70, 13, .55) * .6 + (vnoise(u * 30, v * 30, 2) - .5) * .004;
+      if (q > 1) h += .01 * Math.exp(-(q - 1) * 3.5);
+      cur[x] = h;
+      const gx = x ? (h - cur[x - 1]) * S : 0, gy = y ? (h - prev[x]) * S : 0;
+      const nl = Math.hypot(gx, gy, 1);
+      const I = Math.max(0, (-gx * L[0] - gy * L[1] + L[2]) / nl) * 1.55;
+      const alb = .5 + (vnoise(u * 6, v * 6, 4) - .5) * .14 + (vnoise(u * 60, v * 60, 1) - .5) * .1 + (vnoise(u * 160, v * 160, 8) - .5) * .08;
+      let val = alb * I;
+      if (q < 1) {
+        const xr = dx / rp, yr = dy / rp;
+        const edge = -.05 - .55 * Math.sqrt(Math.max(0, 1 - yr * yr * 1.1)) + (vnoise(yr * 4 + 7, 1, 1) - .5) * .06;
+        const lit = 1 - sstep(edge - .04, edge + .04, xr);
+        if (q > .87) {
+          const wall = sstep(.05, .7, -xr) * (1 - sstep(.75, .95, Math.abs(yr)));
+          const strata = .8 + .2 * vnoise(ang * 30, q * 12, 2);
+          val = .015 + .55 * wall * strata * (.75 + .25 * vnoise(u * 90, v * 90, 3));
+        } else {
+          const r1 = vnoise(u * 18, v * 18, 5), r2 = vnoise(u * 55, v * 55, 6);
+          const boulder = 0, shade = (r1 - .5) * .16 + (r2 - .5) * .1 - craterH(u, v, .5, 140, 21, .7) * 4;
+          val = lerp(.014 + .01 * r1, .34 + shade + boulder - sstep(.0, .2, xr - edge + .2) * .08, lit);
+        }
+      }
+      const c = clamp(val, 0, 1.1) * 232;
+      d[o] = Math.min(255, c * 1.02); d[o + 1] = Math.min(255, c); d[o + 2] = Math.min(255, c * .95); d[o + 3] = 255;
+    }, c => { if (S >= pitSize) { pitTex = c; pitSize = S; pitBorn = performance.now(); } });
+  }
+  resizers.push(() => {
+    const R = region(), want = Math.round(clamp(Math.min(R.x1 - R.x0, R.y1 - R.y0) * DPR * .95, 320, 900) / 32) * 32;
+    if (want > pitSize * 1.2) queue(pitJob(want));
+  });
+  function pitFrame(p) {
+    const R = region(), cx = (R.x0 + R.x1) / 2, cy = (R.y0 + R.y1) / 2, s = Math.min(R.x1 - R.x0, R.y1 - R.y0) * .92 * lerp(.94, 1.04, ease(p));
+    return { cx, cy, s, x: cx - s / 2, y: cy - s / 2 };
+  }
+  function brackets(x, y, w, h, c, l = 18) {
+    ctx.strokeStyle = c; ctx.lineWidth = 1.3; ctx.beginPath();
+    ctx.moveTo(x, y + l); ctx.lineTo(x, y); ctx.lineTo(x + l, y);
+    ctx.moveTo(x + w - l, y); ctx.lineTo(x + w, y); ctx.lineTo(x + w, y + l);
+    ctx.moveTo(x + w, y + h - l); ctx.lineTo(x + w, y + h); ctx.lineTo(x + w - l, y + h);
+    ctx.moveTo(x + l, y + h); ctx.lineTo(x, y + h); ctx.lineTo(x, y + h - l); ctx.stroke();
+  }
+  SCN.orbit = {
+    moon(p) {
+      const b = moonPlace(1), u = project(TRANQ[0], TRANQ[1], 0, { x: 0, y: 0, r: 1 }), F = pitFrame(p);
+      const k = ease(p / .42), r = b.r * Math.pow(60, k);
+      return { x: lerp(b.x, F.cx - u.x * r, k), y: lerp(b.y, F.cy - u.y * r, k), r, a: 1 - sstep(.26, .4, p), w: 0 };
+    },
+    draw(p, t, M) {
+      const kz = sstep(.12, .3, p);
+      if (kz > 0 && kz < 1 && M.a > .05) {
+        const pt = at(TRANQ, M); alpha(kz * (1 - sstep(.3, .38, p)));
+        ctx.strokeStyle = rgba(C.accent, .9); ctx.lineWidth = 1.2; const rr = 14 + 40 * kz;
+        ctx.strokeRect(pt.x - rr, pt.y - rr, rr * 2, rr * 2);
+      }
+      const k = sstep(.27, .42, p); if (k <= 0) return;
+      const F = pitFrame(p), { x, y, s, cx, cy } = F;
+      alpha(k);
+      ctx.save(); ctx.beginPath(); ctx.rect(x, y, s, s); ctx.clip();
+      if (pitTex) { ctx.imageSmoothingQuality = 'high'; ctx.drawImage(pitTex, x, y, s, s); }
+      else { ctx.fillStyle = '#3c3a36'; ctx.fillRect(x, y, s, s); ctx.fillStyle = '#060606'; ctx.beginPath(); ctx.arc(cx, cy, s * .19, 0, TAU); ctx.fill(); }
+      const vg = ctx.createRadialGradient(cx, cy, s * .32, cx, cy, s * .75);
+      vg.addColorStop(0, 'rgba(5,7,13,0)'); vg.addColorStop(1, 'rgba(5,7,13,.78)');
+      ctx.fillStyle = vg; ctx.fillRect(x, y, s, s);
+      // scan line sweep, like a frame coming down from orbit
+      const sw = (t * .12) % 1; alpha(k * .5);
+      const sg = ctx.createLinearGradient(0, y + sw * s - 40, 0, y + sw * s);
+      sg.addColorStop(0, 'rgba(255,122,47,0)'); sg.addColorStop(1, 'rgba(255,122,47,.12)');
+      ctx.fillStyle = sg; ctx.fillRect(x, y + sw * s - 40, s, 40);
+      ctx.restore();
+      alpha(k); brackets(x, y, s, s, rgba(C.ink, .55));
+      tag(x + 4, y - 14, 'MARE TRANQUILLITATIS PIT · 8.3°N 33.2°E', C.accent);
+      tag(x + s, y + s + 16, 'ORBITAL VIEW · ILLUSTRATIVE', C.faint, 'right');
+      const pr = s * .19, bx = x + 16, by = y + s - 18;
+      ctx.strokeStyle = C.ink; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(bx, by - 4); ctx.lineTo(bx, by); ctx.lineTo(bx + pr * 2, by); ctx.lineTo(bx + pr * 2, by - 4); ctx.stroke();
+      tag(bx + pr, by - 12, '~100 M', C.ink, 'center');
+      // what orbit can't see: a sketched conduit running under the surface
+      const kc = sstep(.48, .6, p); if (kc <= 0) return;
+      const ax = cx - pr * .9, ay = cy + pr * .1, ex = cx - pr * 2.35, ey = cy + pr * .75, tw = pr * .42;
+      const nx = -(ey - ay), ny = ex - ax, nl = Math.hypot(nx, ny), ux = nx / nl * tw, uy = ny / nl * tw;
+      const reach = ease((p - .48) / .2);
+      const fx = lerp(ax, ex, reach), fy = lerp(ay, ey, reach);
+      alpha(kc); ctx.setLineDash([5, 5]); ctx.strokeStyle = rgba(C.accent, .95); ctx.lineWidth = 1.4;
+      ctx.beginPath(); ctx.moveTo(ax + ux, ay + uy); ctx.lineTo(fx + ux * .8, fy + uy * .8); ctx.moveTo(ax - ux, ay - uy); ctx.lineTo(fx - ux * .8, fy - uy * .8); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.font = '600 22px "Big Shoulders Display", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = C.accent;
+      if (reach > .9) ctx.fillText('?', ex - (ex - ax) * .12, ey - (ey - ay) * .12 + 1);
+      const qs = [['HOW FAR?', ex - 4, ey + pr * .55, 'center', .62], ['CEILING?', (ax + ex) / 2 + ux * 1.6, (ay + ey) / 2 + uy * 1.6 - 12, 'center', .68],
+                  ['FLOOR DRIVABLE?', (ax + ex) / 2 - ux * 1.6, (ay + ey) / 2 - uy * 1.6 + 14, 'center', .74], ['FITS A HABITAT?', cx + pr * .55, cy - pr * 1.25, 'center', .8]];
+      for (const [txt, qx, qy, al, at0] of qs) { const kk = sstep(at0, at0 + .06, p); if (kk > 0) { alpha(kc * kk); tag(qx, qy, txt, C.accent, al); } }
+      const kn = sstep(.62, .7, p); if (kn > 0) { alpha(kn); tag(x + 4, y + s + 16, 'CONDUIT OUTLINE SKETCHED · EXTENT UNKNOWN', C.faint); }
+    }
+  };
+
+  /* ---------------- descent: station, tether, rover, SLAM in the dark ---------------- */
+  let DL = null;
+  const mixC = (a, b, k) => a.map((v, i) => Math.round(lerp(v, b[i], k)));
+  function segD(px, py, ax, ay, bx, by) {
+    const dx = bx - ax, dy = by - ay, l2 = dx * dx + dy * dy, k = l2 ? clamp(((px - ax) * dx + (py - ay) * dy) / l2, 0, 1) : 0;
+    return Math.hypot(px - ax - dx * k, py - ay - dy * k);
+  }
+  function descentLayout() {
+    if (DL && DL.W === W && DL.H === H) return DL;
+    const R = region(), w = R.x1 - R.x0, h = R.y1 - R.y0, mob = W < 900;
+    const g = R.y0 + h * (mob ? .32 : .27), f = R.y1 - h * .03;
+    const sw = clamp(w * .13, 40, 92), sc = R.x0 + w * (mob ? .45 : .38), px0 = sc - sw / 2, px1 = sc + sw / 2;
+    const cb = g + (f - g) * .42, lx = px0 - w * .07, rx = R.x1;
+    const ceil = x => cb + Math.sin((x - px1) * .021) * h * .016 + (x - px1) / w * h * .05 + (vnoise(x * .03, 4, 4) - .5) * h * .03;
+    const fl = x => f - h * .075 * Math.exp(-(((x - sc + sw * .2) / (sw * 1.15)) ** 2)) - (vnoise(x * .025, 9, 2) - .5) * h * .022;
+    const wallL = y => lerp(px0, lx, sstep(cb - (f - g) * .05, f, y)) + (vnoise(y * .08, 3, 1) - .5) * 3;
+    const S = clamp(w * .09, 34, 62), sx = R.x0 + w * (mob ? .15 : .13), rw = clamp(w * .075, 24, 44);
+    const pts = [], r = rng(7), st = mob ? 6 : 5, top = [255, 213, 154], bot = [255, 122, 47];
+    const add = (x, y) => pts.push({ x, y, c: mixC(top, bot, clamp((y - g) / (f - g), 0, 1)) });
+    for (let y = g + 4; y < ceil(px1); y += st) add(px1 + (r() - .5) * 2, y);
+    for (let y = g + 4; y < f - 4; y += st) add(wallL(y) + (r() - .5) * 2, y);
+    for (let x = px1; x < rx - 4; x += st) add(x, ceil(x) + (r() - .5) * 2);
+    for (let x = lx; x < rx - 4; x += st) add(x, fl(x) + (r() - .5) * 2);
+    for (let k = 0; k < 70; k++) { const x = lerp(lx, rx, r()); add(x, fl(x) - r() * 7); }
+    for (let k = 0; k < 50; k++) { const x = lerp(px1, rx, r()); add(x, ceil(x) + r() * 6); }
+    const rock = [];
+    for (let k = 0; k < 220; k++) rock.push([r(), r(), r()]);
+    return DL = { W, H, R, w, h, g, f, sw, sc, px0, px1, cb, lx, rx, ceil, fl, wallL, S, sx, rw, pts, rock, mob };
+  }
+  function voidPath(L) {
+    const { g, f, px0, px1, lx, rx, ceil, fl, wallL } = L;
+    ctx.beginPath(); ctx.moveTo(px0, g);
+    for (let y = g; y <= f; y += 5) ctx.lineTo(wallL(y), y);
+    for (let x = lx; x <= rx + 6; x += 5) ctx.lineTo(x, fl(x));
+    for (let x = rx + 6; x >= px1; x -= 5) ctx.lineTo(x, ceil(x));
+    ctx.lineTo(px1, ceil(px1)); ctx.lineTo(px1, g); ctx.closePath();
+  }
+  function roverDraw(x, y, ang, rw, t, roll, lights) {
+    const rh = rw * .42, wr = rh * .42;
+    ctx.save(); ctx.translate(x, y); ctx.rotate(ang);
+    for (const wx of [-rw * .32, rw * .32]) {
+      ctx.fillStyle = '#18181b'; ctx.beginPath(); ctx.arc(wx, rh * .38, wr, 0, TAU); ctx.fill();
+      ctx.strokeStyle = '#6b665d'; ctx.lineWidth = 1; ctx.stroke();
+      ctx.beginPath(); for (let k = 0; k < 3; k++) { const a = roll + k * TAU / 3; ctx.moveTo(wx, rh * .38); ctx.lineTo(wx + Math.cos(a) * wr * .8, rh * .38 + Math.sin(a) * wr * .8); } ctx.stroke();
+    }
+    const gb = ctx.createLinearGradient(0, -rh * .45, 0, rh * .3);
+    gb.addColorStop(0, '#ece7dc'); gb.addColorStop(1, '#7d776c');
+    ctx.fillStyle = gb; ctx.beginPath(); ctx.roundRect(-rw / 2, -rh * .45, rw, rh * .72, 3); ctx.fill();
+    ctx.fillStyle = 'rgba(5,7,13,.35)'; ctx.fillRect(-rw * .3, -rh * .2, rw * .4, 1.2);
+    ctx.fillStyle = '#3a3833'; ctx.fillRect(rw * .16 - 1, -rh * 1.05, 2, rh * .6);
+    ctx.fillStyle = '#1e1e22'; ctx.beginPath(); ctx.roundRect(rw * .16 - rh * .26, -rh * 1.3, rh * .52, rh * .3, 2); ctx.fill();
+    ctx.fillStyle = C.accent; ctx.fillRect(rw * .16 + Math.sin(t * 9) * rh * .2 - 1, -rh * 1.2, 2, rh * .1);
+    ctx.fillStyle = lights ? '#fff3d6' : '#6b665d'; ctx.fillRect(rw / 2 - 1.5, -rh * .4, 2.5, rh * .4);
+    ctx.fillStyle = '#222'; ctx.fillRect(rw / 2 - 5, -rh * .62, 4, rh * .18);
+    ctx.fillStyle = C.accent; ctx.fillRect(-rw / 2 - 1, -rh * .5, 4, 3);
+    ctx.restore();
+  }
+  const rot = (x, y, a) => [x * Math.cos(a) - y * Math.sin(a), x * Math.sin(a) + y * Math.cos(a)];
+  function station(L, dy, kb, tip, t, reelA, kPl) {
+    const { sx, g, S } = L, bw = S, bh = S * .55, by = g - S * .22 - bh + dy;
+    ctx.strokeStyle = '#8d877c'; ctx.lineWidth = 1.4; ctx.beginPath();
+    for (const sgn of [-1, 1]) { ctx.moveTo(sx + sgn * bw * .35, by + bh); ctx.lineTo(sx + sgn * bw * .62, g + dy); }
+    ctx.stroke();
+    ctx.fillStyle = '#8d877c'; for (const sgn of [-1, 1]) ctx.fillRect(sx + sgn * bw * .62 - 4, g + dy - 2, 8, 2);
+    if (kPl > 0) {
+      const pg = ctx.createRadialGradient(sx, by + bh + 4, 0, sx, by + bh + 4, S * .9);
+      pg.addColorStop(0, `rgba(255,214,160,${(.55 * kPl).toFixed(3)})`); pg.addColorStop(1, 'rgba(255,214,160,0)');
+      ctx.fillStyle = pg; ctx.beginPath(); ctx.moveTo(sx - 5, by + bh); ctx.lineTo(sx + 5, by + bh); ctx.lineTo(sx + S * .35, by + bh + S * .9); ctx.lineTo(sx - S * .35, by + bh + S * .9); ctx.fill();
+    }
+    // solar array
+    const mx = sx - bw * .28, my = by - S * .55;
+    ctx.fillStyle = '#5a564f'; ctx.fillRect(mx - 1, my, 2, S * .55);
+    ctx.save(); ctx.translate(mx, my); ctx.rotate(-.32);
+    ctx.fillStyle = '#18233f'; ctx.fillRect(-S * .5, -S * .17, S, S * .34);
+    ctx.strokeStyle = 'rgba(127,166,255,.4)'; ctx.lineWidth = .8; ctx.beginPath();
+    for (let k = 1; k < 6; k++) { ctx.moveTo(-S * .5 + S * k / 6, -S * .17); ctx.lineTo(-S * .5 + S * k / 6, S * .17); }
+    ctx.moveTo(-S * .5, 0); ctx.lineTo(S * .5, 0); ctx.stroke();
+    ctx.strokeStyle = '#9a9690'; ctx.lineWidth = 1; ctx.strokeRect(-S * .5, -S * .17, S, S * .34);
+    ctx.restore();
+    // body, gold MLI
+    const gg = ctx.createLinearGradient(sx - bw / 2, by, sx + bw / 2, by + bh);
+    gg.addColorStop(0, '#f0c66a'); gg.addColorStop(.45, '#b9822f'); gg.addColorStop(1, '#6e4614');
+    ctx.fillStyle = gg; ctx.fillRect(sx - bw / 2, by, bw, bh);
+    ctx.strokeStyle = 'rgba(255,240,200,.22)'; ctx.lineWidth = .8; ctx.beginPath();
+    for (let k = 0; k < 6; k++) { const xx = sx - bw / 2 + bw * (k + .3) / 6; ctx.moveTo(xx, by + 2); ctx.lineTo(xx + bw * .07, by + bh - 2); }
+    ctx.stroke();
+    ctx.fillStyle = '#dcd8cf'; ctx.fillRect(sx - bw / 2, by - 3, bw, 3);
+    // dish
+    const dx = sx + bw * .12, dyy = by - S * .28;
+    ctx.fillStyle = '#5a564f'; ctx.fillRect(dx - 1, dyy, 2, S * .28);
+    ctx.save(); ctx.translate(dx, dyy); ctx.rotate(-.55);
+    ctx.fillStyle = '#e4e0d6'; ctx.beginPath(); ctx.ellipse(0, 0, S * .17, S * .07, 0, Math.PI, TAU); ctx.fill();
+    ctx.strokeStyle = '#9a9690'; ctx.beginPath(); ctx.moveTo(0, -S * .02); ctx.lineTo(0, -S * .14); ctx.stroke();
+    ctx.restore();
+    // reel
+    const rr = S * .17, rcx = sx + bw / 2 + rr * .8, rcy = by + bh * .6;
+    ctx.fillStyle = '#2a2925'; ctx.beginPath(); ctx.arc(rcx, rcy, rr, 0, TAU); ctx.fill();
+    ctx.fillStyle = '#b89b6a'; ctx.beginPath(); ctx.arc(rcx, rcy, rr * .72, 0, TAU); ctx.fill();
+    ctx.strokeStyle = '#2a2925'; ctx.lineWidth = 1.2; ctx.beginPath();
+    for (let k = 0; k < 4; k++) { const a = reelA + k * Math.PI / 2; ctx.moveTo(rcx, rcy); ctx.lineTo(rcx + Math.cos(a) * rr * .72, rcy + Math.sin(a) * rr * .72); }
+    ctx.stroke();
+    // truss boom
+    const b0x = sx + bw * .42, b0y = by + 2;
+    ctx.strokeStyle = '#a8a39a'; ctx.lineWidth = 1.1; ctx.beginPath();
+    const n = Math.max(2, Math.round(Math.hypot(tip[0] - b0x, tip[1] - b0y) / 12));
+    for (let k = 0; k <= n; k++) {
+      const u = k / n, x = lerp(b0x, tip[0], u), yT = lerp(b0y, tip[1], u), yB = yT + lerp(6, 2, u);
+      if (k) { ctx.lineTo(x, yT); } else ctx.moveTo(x, yT);
+    }
+    for (let k = n; k >= 0; k--) { const u = k / n; ctx.lineTo(lerp(b0x, tip[0], u), lerp(b0y, tip[1], u) + lerp(6, 2, u) * (k % 2 ? 1 : 1)); }
+    ctx.stroke();
+    ctx.beginPath(); for (let k = 0; k < n; k++) { const u0 = k / n, u1 = (k + 1) / n; ctx.moveTo(lerp(b0x, tip[0], u0), lerp(b0y, tip[1], u0)); ctx.lineTo(lerp(b0x, tip[0], u1), lerp(b0y, tip[1], u1) + lerp(6, 2, u1)); } ctx.stroke();
+    ctx.fillStyle = '#d8d4cb'; ctx.beginPath(); ctx.arc(tip[0], tip[1], 3.2, 0, TAU); ctx.fill();
+    return { reel: [rcx, rcy - rr * .72], dish: [dx, dyy - S * .1], top: by - S * .6, panel: [mx, my], body: [sx, by + bh / 2] };
+  }
+  SCN.descent = {
+    moon: () => null,
+    draw(p, t, M) {
+      const L = descentLayout(), { R, w, h, g, f, sc, px0, px1, lx, rx, ceil, fl, S, rw } = L, s = p * 4, rh = rw * .42;
+      alpha(1);
+      // rock
+      const rg = ctx.createLinearGradient(0, g, 0, R.y1);
+      rg.addColorStop(0, '#4b453d'); rg.addColorStop(.1, '#302b25'); rg.addColorStop(1, '#16130f');
+      ctx.fillStyle = rg; ctx.fillRect(R.x0, g, w, R.y1 + h * .03 - g);
+      for (const [u, v, z] of L.rock) { ctx.fillStyle = `rgba(236,232,223,${(.025 + z * .06).toFixed(3)})`; ctx.fillRect(R.x0 + u * w, g + 3 + v * (R.y1 - g), 1 + z * 2, 1 + z * 1.4); }
+      ctx.strokeStyle = 'rgba(0,0,0,.3)'; ctx.lineWidth = 1;
+      for (let k = 1; k < 7; k++) { const yy = g + (R.y1 - g) * k / 7; ctx.beginPath(); ctx.moveTo(R.x0, yy); for (let q = 1; q <= 20; q++) ctx.lineTo(R.x0 + w * q / 20, yy + Math.sin(q * 1.7 + k * 3) * 2.4); ctx.stroke(); }
+      // void + sunlight
+      voidPath(L); const vg = ctx.createLinearGradient(0, g, 0, f);
+      vg.addColorStop(0, '#0a0a0c'); vg.addColorStop(1, '#030304'); ctx.fillStyle = vg; ctx.fill();
+      ctx.save(); voidPath(L); ctx.clip();
+      const off = (f - g) * .2, sg = ctx.createLinearGradient(0, g, 0, f);
+      sg.addColorStop(0, 'rgba(255,238,205,.09)'); sg.addColorStop(.6, 'rgba(255,238,205,.04)'); sg.addColorStop(1, 'rgba(255,238,205,.015)');
+      ctx.fillStyle = sg; ctx.beginPath(); ctx.moveTo(px0 + 3, g); ctx.lineTo(px1, g); ctx.lineTo(px1 - off, f); ctx.lineTo(px0 - off + 3, f); ctx.fill();
+      ctx.fillStyle = '#4e4840'; ctx.beginPath(); ctx.moveTo(lx, f + 4);
+      for (let x = lx; x <= rx; x += 5) ctx.lineTo(x, fl(x)); ctx.lineTo(rx, f + 6); ctx.fill();
+      const lit = ctx.createRadialGradient(sc - off * .6, fl(sc), 0, sc - off * .6, fl(sc), L.sw * 1.3);
+      lit.addColorStop(0, 'rgba(255,238,205,.38)'); lit.addColorStop(1, 'rgba(255,238,205,0)');
+      ctx.fillStyle = lit; ctx.fillRect(lx, g, rx - lx, f - g + 10);
+      ctx.restore();
+      ctx.fillStyle = '#6a655c'; ctx.fillRect(R.x0, g - 1, px0 - R.x0, 3); ctx.fillRect(px1, g - 1, R.x1 - px1, 3);
+
+      // timeline
+      const kSt = ease(clamp(s / .6, 0, 1)), kb = ease(clamp((s - .55) / .35, 0, 1));
+      const kd = ease(clamp((s - 1.05) / .8, 0, 1)), kv = ease(clamp((s - 1.85) / .25, 0, 1)), kx = ease(clamp((s - 2.1) / 1.7, 0, 1));
+      const dropY = -(1 - kSt) * h * .35, plume = kSt < 1 ? 1 - kSt * .6 : 0;
+      const tipY = g - S * 1.02 + dropY, tip = [lerp(L.sx + S * .45, sc, kb), tipY];
+      // rover state
+      const aHang = Math.PI / 2, [ax0, ay0] = rot(-rw / 2, -rh * .45, aHang);
+      const yTop = tip[1] + 8, yBot = fl(sc) - rw - 4, yA = lerp(yTop, yBot, kd);
+      const hang = [tip[0] - ax0, yA - ay0];
+      const x0d = sc + rw * .7, xE = rx - w * .12, cxD = lerp(x0d, xE, kx);
+      const slope = Math.atan2(fl(cxD + 6) - fl(cxD - 6), 12);
+      const rest = [cxD, fl(cxD) - rh * .8];
+      const ang = lerp(aHang, slope, kv), cx = lerp(hang[0], rest[0], kv), cy = lerp(hang[1], rest[1], kv);
+      const att = rot(-rw / 2, -rh * .45, ang), attach = [cx + att[0], cy + att[1]];
+      const ld = rot(rw * .16, -rh * 1.15, ang), lid = [cx + ld[0], cy + ld[1]];
+      const depth = kd * 100, run = kx * 160, payout = depth + run + kv * 4;
+      const tension = s < 1.05 ? 0 : kv < .5 ? 51 + Math.sin(t * 3) * 2 : 11 + Math.sin(t * 2) * 1.5;
+
+      // point cloud
+      const range = (f - g) * .5, scan = s > 1.1;
+      const hangLidX = tip[0], hangLidY0 = yTop, hangLidY1 = lerp(yTop, yBot, kd) + rw * .9;
+      const lid0 = (() => { const q = rot(rw * .16, -rh * 1.15, slope); return [x0d + q[0], fl(x0d) - rh * .8 + q[1]]; })();
+      let shown = 0;
+      if (scan) {
+        for (const P of L.pts) {
+          let d = segD(P.x, P.y, hangLidX, hangLidY0, hangLidX, hangLidY1);
+          if (kx > 0) d = Math.min(d, segD(P.x, P.y, lid0[0], lid0[1], lid[0], lid[1]));
+          if (d > range) continue;
+          shown++;
+          const fr = Math.hypot(P.x - lid[0], P.y - lid[1]) < range * .75;
+          ctx.fillStyle = `rgba(${P.c[0]},${P.c[1]},${P.c[2]},${fr ? .95 : .5})`;
+          ctx.fillRect(P.x - .9, P.y - .9, fr ? 2.2 : 1.8, fr ? 2.2 : 1.8);
+        }
+        // a few live beams
+        const bs = Math.floor(t * 14), rr = rng(bs + 3);
+        ctx.strokeStyle = rgba(C.accent, .22); ctx.lineWidth = .7; ctx.beginPath();
+        for (let k = 0; k < 16; k++) {
+          const P = L.pts[Math.floor(rr() * L.pts.length)];
+          if (Math.hypot(P.x - lid[0], P.y - lid[1]) < range * .75) { ctx.moveTo(lid[0], lid[1]); ctx.lineTo(P.x, P.y); }
+        }
+        ctx.stroke();
+      }
+      // pose trail
+      if (kx > 0) {
+        ctx.setLineDash([2, 4]); ctx.strokeStyle = rgba(C.ink, .45); ctx.lineWidth = 1; ctx.beginPath();
+        for (let x = x0d; x <= cxD; x += 4) { const y = fl(x) - rh * 2.1; x === x0d ? ctx.moveTo(x, y) : ctx.lineTo(x, y); }
+        ctx.stroke(); ctx.setLineDash([]);
+        ctx.fillStyle = rgba(C.ink, .7);
+        for (let x = x0d; x <= cxD - 10; x += 34) { ctx.beginPath(); ctx.arc(x, fl(x) - rh * 2.1, 1.6, 0, TAU); ctx.fill(); }
+      }
+      // tether
+      const st = station(L, dropY, kb, tip, t, -payout * .35, plume);
+      const path = [st.reel, [tip[0], tip[1] - 3.2]];
+      if (kv >= 1) { path.push([tip[0], fl(tip[0]) - 1.5]); for (let x = tip[0] + 8; x < attach[0]; x += 8) path.push([x, fl(x) - 1.5]); }
+      path.push(attach);
+      ctx.strokeStyle = '#d9c39a'; ctx.lineWidth = 1.3; ctx.beginPath(); path.forEach((q, i) => i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])); ctx.stroke();
+      // headlight
+      if (kv > .3) {
+        const hl = rot(rw / 2, -rh * .2, ang), hx = cx + hl[0], hy = cy + hl[1], hr = Math.min(range * .9, 180);
+        ctx.save(); voidPath(L); ctx.clip(); ctx.globalCompositeOperation = 'lighter'; alpha(clamp((kv - .3) / .5, 0, 1));
+        const hg = ctx.createRadialGradient(hx, hy, 0, hx, hy, hr);
+        hg.addColorStop(0, 'rgba(255,236,200,.32)'); hg.addColorStop(1, 'rgba(255,236,200,0)');
+        ctx.fillStyle = hg; ctx.beginPath(); ctx.moveTo(hx, hy); ctx.arc(hx, hy, hr, ang - .38, ang + .38); ctx.closePath(); ctx.fill();
+        ctx.restore(); alpha(1);
+      }
+      roverDraw(cx, cy, ang, rw, t, cxD / (rh * .42), kv > .3);
+      // packets climbing the tether
+      if (scan) {
+        const seg = []; let tot = 0;
+        for (let i = path.length - 1; i > 0; i--) { const l = Math.hypot(path[i][0] - path[i - 1][0], path[i][1] - path[i - 1][1]); seg.push([path[i], path[i - 1], l]); tot += l; }
+        const kP = .5 + .5 * sstep(2.85, 3.05, s), n = Math.max(3, Math.round(tot / 46));
+        for (let k = 0; k < n; k++) {
+          let d = ((t * 70 + k * tot / n) % tot);
+          for (const [a, b, l] of seg) { if (d <= l) { const u = l ? d / l : 0, x = lerp(a[0], b[0], u), y = lerp(a[1], b[1], u);
+            alpha(kP); ctx.fillStyle = '#fff3d6'; ctx.fillRect(x - 1.6, y - 1.6, 3.2, 3.2); ctx.fillStyle = rgba(C.accent, .35); ctx.fillRect(x - 3.5, y - 3.5, 7, 7); break; } d -= l; }
+        }
+        alpha(1);
+      }
+      // edge fades
+      const fr = ctx.createLinearGradient(R.x1 - w * .1, 0, R.x1 + 2, 0);
+      fr.addColorStop(0, rgba(C.void, 0)); fr.addColorStop(1, C.void);
+      ctx.fillStyle = fr; ctx.fillRect(R.x1 - w * .1, g - 2, w * .1 + 4, R.y1 - g + h * .05);
+      const fb = ctx.createLinearGradient(0, R.y1 - h * .02, 0, R.y1 + h * .03);
+      fb.addColorStop(0, rgba(C.void, 0)); fb.addColorStop(1, C.void);
+      ctx.fillStyle = fb; ctx.fillRect(R.x0 - 2, R.y1 - h * .02, w + 4, h * .06);
+
+      // labels
+      const k0 = sstep(.3, .55, s) * (1 - sstep(1.0, 1.2, s));
+      if (k0 > 0) {
+        alpha(k0);
+        tag(L.sx, st.top - S * .55, 'SURFACE STATION', C.accent, 'center');
+        tag(st.panel[0] - S * .6, st.panel[1] + S * .05, 'SOLAR', C.dim, 'right');
+        tag(st.dish[0] + S * .25, st.dish[1] - S * .25, 'LINK TO EARTH', C.dim);
+        tag(tip[0] + 10, tip[1] + 14, 'BOOM + PULLEY', C.dim);
+        tag(st.reel[0] + 4, g + dropY + 16, 'TETHER REEL', C.dim);
+      }
+      const k1 = sstep(1.0, 1.2, s);
+      if (k1 > 0) {
+        alpha(k1);
+        tag(R.x0 + 4, R.y0 + 6, `PAYOUT ${payout.toFixed(1).padStart(5, ' ')} M  ·  TENSION ${tension.toFixed(0)} N`, C.ink);
+        const zx = px0 - 10, z1 = fl(sc) - 2;
+        ctx.strokeStyle = rgba(C.ink, .5); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(zx, g); ctx.lineTo(zx, z1);
+        for (let m = 0; m <= 100; m += 25) { const y = lerp(g, z1, m / 100); ctx.moveTo(zx - 5, y); ctx.lineTo(zx, y); }
+        ctx.stroke();
+        for (let m = 25; m <= 100; m += 25) tag(zx - 8, lerp(g, z1, m / 100), `−${m} M`, C.faint, 'right');
+      }
+      const k2 = sstep(2.1, 2.35, s) * (1 - sstep(2.9, 3.1, s));
+      if (k2 > 0) {
+        alpha(k2);
+        tag(cx, ceil(cx) - 14 < g + 10 ? g + 14 : cy - rh * 3.2, 'LIDAR · CAMERAS · IMU · ODOMETRY', C.accent, 'center');
+        tag((px1 + rx) / 2 + w * .08, g + 16, 'NO GPS · NO LINE OF SIGHT TO EARTH', C.dim, 'center');
+      }
+      const k3 = sstep(2.9, 3.1, s);
+      if (k3 > 0) {
+        alpha(k3);
+        const bx = R.x0 + w * (L.mob ? .5 : .56), by = R.y0 + (L.mob ? 26 : 30), bw = R.x1 - bx, bh = Math.max(40, g - by - 26);
+        ctx.fillStyle = 'rgba(5,7,13,.8)'; ctx.fillRect(bx, by, bw, bh); brackets(bx, by, bw, bh, rgba(C.ink, .5), 10);
+        tag(bx + 4, by - 12, `SURFACE ARCHIVE · ${(shown * 3).toLocaleString('en-US')} SCANS SAFE`, C.accent);
+        const mxs = (bw - 12) / (rx - lx), mys = (bh - 12) / (f - g), sc2 = Math.min(mxs, mys * 1.6);
+        const ox = bx + 6, oy = by + 6;
+        for (const P of L.pts) {
+          let d = segD(P.x, P.y, hangLidX, hangLidY0, hangLidX, hangLidY1);
+          if (kx > 0) d = Math.min(d, segD(P.x, P.y, lid0[0], lid0[1], lid[0], lid[1]));
+          if (d > range) continue;
+          ctx.fillStyle = `rgba(${P.c[0]},${P.c[1]},${P.c[2]},.85)`; ctx.fillRect(ox + (P.x - lx) * mxs, oy + (P.y - g) * mys, 1.2, 1.2);
+        }
+        tag(Math.min(px1 + 12, R.x1 - 150), lerp(g, fl(sc), .55), '↑ SCANS STREAM UP THE TETHER', C.ink);
+      }
+    }
+  };
+
+  /* ---------------- the device: exploded rover, sensors, tether cross-section ---------------- */
+  function callout(ax, ay, lx, ly, text, color = C.ink, align = 'left') {
+    ctx.strokeStyle = rgba(color, .6); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(lx, ly); ctx.stroke();
+    ctx.fillStyle = color; ctx.beginPath(); ctx.arc(ax, ay, 2.2, 0, TAU); ctx.fill();
+    tag(lx + (align === 'left' ? 6 : align === 'right' ? -6 : 0), ly, text, color, align);
+  }
+  function bez(p0, p1, p2, p3, u) {
+    const v = 1 - u;
+    return [v * v * v * p0[0] + 3 * v * v * u * p1[0] + 3 * v * u * u * p2[0] + u * u * u * p3[0],
+            v * v * v * p0[1] + 3 * v * v * u * p1[1] + 3 * v * u * u * p2[1] + u * u * u * p3[1]];
+  }
+  function bigWheel(x, y, r, shade) {
+    ctx.fillStyle = shade ? '#101012' : '#18181b'; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill();
+    ctx.strokeStyle = shade ? '#2a2927' : '#3d3b37'; ctx.lineWidth = Math.max(1, r * .08);
+    ctx.beginPath(); for (let k = 0; k < 14; k++) { const a = k * TAU / 14; ctx.moveTo(x + Math.cos(a) * r * .86, y + Math.sin(a) * r * .86); ctx.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r); } ctx.stroke();
+    if (shade) return;
+    ctx.fillStyle = '#8d877c'; ctx.beginPath(); ctx.arc(x, y, r * .5, 0, TAU); ctx.fill();
+    ctx.strokeStyle = '#4a4740'; ctx.lineWidth = Math.max(1, r * .06); ctx.beginPath();
+    for (let k = 0; k < 5; k++) { const a = k * TAU / 5 + .3; ctx.moveTo(x + Math.cos(a) * r * .16, y + Math.sin(a) * r * .16); ctx.lineTo(x + Math.cos(a) * r * .46, y + Math.sin(a) * r * .46); } ctx.stroke();
+    ctx.fillStyle = '#d8d4cb'; ctx.beginPath(); ctx.arc(x, y, r * .14, 0, TAU); ctx.fill();
+  }
+  SCN.device = {
+    moon: () => null,
+    draw(p, t) {
+      const s = p * 3, R = region(), w = R.x1 - R.x0, h = R.y1 - R.y0, mob = W < 900;
+      const k3s = ease(sstep(2.0, 2.3, s));
+      const L = Math.min(w * (mob ? .5 : .46), h * .62) * lerp(1, .9, k3s);
+      const cx = R.x0 + w * lerp(.5, .64, k3s), cy = R.y0 + h * lerp(.56, .62, k3s);
+      const X = x => cx + x * L, Y = y => cy + y * L, dx = .07, dy = -.05;
+      const kA = ease(clamp((s - .02) / .45, 0, 1)), e = 1 - kA;
+      const off = (o, f) => { ctx.save(); ctx.translate(o[0] * L * e, o[1] * L * e); f(); ctx.restore(); };
+      const k2 = sstep(1.0, 1.25, s) * (1 - sstep(2.0, 2.2, s)), lights = sstep(.9, 1.2, s);
+      alpha(1);
+      // floor
+      const fy = Y(.3);
+      const fg = ctx.createLinearGradient(0, fy, 0, fy + L * .25);
+      fg.addColorStop(0, 'rgba(110,104,94,.35)'); fg.addColorStop(1, 'rgba(110,104,94,0)');
+      const fx0 = Math.max(R.x0, X(-1.1)), fx1 = Math.min(R.x1, X(1.1));
+      ctx.fillStyle = fg; ctx.fillRect(fx0, fy, fx1 - fx0, L * .25);
+      ctx.strokeStyle = 'rgba(160,152,140,.45)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(fx0, fy); ctx.lineTo(fx1, fy); ctx.stroke();
+      ctx.fillStyle = '#3c3832';
+      for (const [u, r] of [[-.86, .03], [-.74, .018], [.72, .025], [.9, .04], [1.02, .02]]) { ctx.beginPath(); ctx.ellipse(X(u), fy, r * L, r * L * .6, 0, Math.PI, TAU); ctx.fill(); }
+      // light bar + camera cones (behind the rover)
+      if (lights > 0) {
+        ctx.save(); ctx.globalCompositeOperation = 'lighter'; alpha(lights * .9);
+        const lx0 = X(.5 + dx * .5), ly0 = Y(-.04 + dy * .5);
+        const lg = ctx.createRadialGradient(lx0, ly0, 0, lx0, ly0, L * .75);
+        lg.addColorStop(0, 'rgba(255,236,200,.38)'); lg.addColorStop(1, 'rgba(255,236,200,0)');
+        ctx.fillStyle = lg; ctx.beginPath(); ctx.moveTo(lx0, ly0); ctx.arc(lx0, ly0, L * .75, -.42, .5); ctx.closePath(); ctx.fill();
+        ctx.restore(); alpha(1);
+      }
+      // back wheels
+      off([0, .35], () => { for (const u of [-.33, .33]) bigWheel(X(u + dx), Y(.17 + dy), L * .13, true); });
+      // tether cable (drawn early so the boot sits over it)
+      const c0 = [X(-.58), Y(-.02)], c1 = [X(-.78), Y(-.02)], c2 = [X(-.82), Y(-.45)], c3 = [X(-1.0), Y(-.78)];
+      off([-.35, 0], () => {
+        ctx.strokeStyle = '#2b2a27'; ctx.lineWidth = Math.max(3, L * .022); ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(...c0); ctx.bezierCurveTo(...c1, ...c2, ...c3); ctx.stroke();
+        ctx.strokeStyle = 'rgba(217,195,154,.55)'; ctx.lineWidth = 1; ctx.stroke(); ctx.lineCap = 'butt';
+      });
+      // compute module, sliding into the body
+      const kc = 1 - sstep(.72, .95, kA);
+      if (kc > 0) off([0, -.65], () => {
+        alpha(kc);
+        ctx.fillStyle = '#0f1914'; ctx.fillRect(X(-.22), Y(-.08), L * .32, L * .13);
+        ctx.strokeStyle = rgba(C.accent, .5); ctx.lineWidth = 1; ctx.strokeRect(X(-.22), Y(-.08), L * .32, L * .13);
+        ctx.fillStyle = '#2b302c'; ctx.fillRect(X(-.17), Y(-.055), L * .09, L * .08); ctx.fillRect(X(-.05), Y(-.05), L * .05, L * .05); ctx.fillRect(X(.03), Y(-.05), L * .04, L * .07);
+        ctx.strokeStyle = rgba(C.accent, .3); ctx.beginPath(); for (let k = 0; k < 4; k++) { ctx.moveTo(X(-.08), Y(-.045 + k * .022)); ctx.lineTo(X(-.05), Y(-.045 + k * .022)); } ctx.stroke();
+        alpha(1);
+      });
+      // body
+      const top = [[-.5, -.12], [.5, -.12], [.5 + dx, -.12 + dy], [-.5 + dx, -.12 + dy]], end = [[.5, -.12], [.5 + dx, -.12 + dy], [.5 + dx, .12 + dy], [.5, .12]];
+      const poly = pts => { ctx.beginPath(); pts.forEach(([x, y], i) => i ? ctx.lineTo(X(x), Y(y)) : ctx.moveTo(X(x), Y(y))); ctx.closePath(); };
+      ctx.fillStyle = '#d6d1c6'; poly(top); ctx.fill();
+      ctx.fillStyle = '#8a857b'; poly(end); ctx.fill();
+      const bg = ctx.createLinearGradient(0, Y(-.12), 0, Y(.12));
+      bg.addColorStop(0, '#efeae0'); bg.addColorStop(.6, '#bdb7ac'); bg.addColorStop(1, '#8a857b');
+      ctx.fillStyle = bg; ctx.beginPath(); ctx.roundRect(X(-.5), Y(-.12), L, L * .24, L * .02); ctx.fill();
+      ctx.strokeStyle = 'rgba(5,7,13,.28)'; ctx.lineWidth = 1; ctx.beginPath();
+      ctx.moveTo(X(-.2), Y(-.12)); ctx.lineTo(X(-.2), Y(.12)); ctx.moveTo(X(.22), Y(-.12)); ctx.lineTo(X(.22), Y(.12)); ctx.stroke();
+      for (let k = 0; k < 6; k++) { ctx.fillStyle = 'rgba(5,7,13,.3)'; ctx.fillRect(X(-.45 + k * .035), Y(-.06), Math.max(1.5, L * .012), L * .1); }
+      ctx.font = `600 ${Math.max(9, Math.round(L * .04))}px "IBM Plex Mono", monospace`; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = C.accent; ctx.fillText('SLAM-01', X(-.16), Y(.06));
+      // light bar on the front face
+      ctx.strokeStyle = lights > .1 ? '#fff3d6' : '#6b665d'; ctx.lineWidth = Math.max(2, L * .016);
+      ctx.beginPath(); ctx.moveTo(X(.5 + dx * .15), Y(-.04 + dy * .15)); ctx.lineTo(X(.5 + dx * .85), Y(-.04 + dy * .85)); ctx.stroke();
+      // suspension + front wheels
+      off([0, .35], () => {
+        ctx.strokeStyle = '#5a564f'; ctx.lineWidth = Math.max(2, L * .018); ctx.beginPath();
+        ctx.moveTo(X(-.33), Y(.17)); ctx.lineTo(X(-.05), Y(.09)); ctx.lineTo(X(.33), Y(.17)); ctx.stroke();
+        for (const u of [-.33, .33]) bigWheel(X(u), Y(.17), L * .13, false);
+      });
+      // LiDAR mast
+      const pu = [X(.21), Y(-.435)];
+      off([0, -.42], () => {
+        ctx.fillStyle = '#4a4740'; ctx.fillRect(X(.2), Y(-.4), Math.max(2, L * .02), L * .23);
+        ctx.fillStyle = '#1e1e22'; ctx.fillRect(X(.15), Y(-.47), L * .12, L * .07);
+        ctx.beginPath(); ctx.ellipse(X(.21), Y(-.47), L * .06, L * .016, 0, 0, TAU); ctx.fillStyle = '#34343a'; ctx.fill();
+        ctx.fillStyle = '#26324e'; ctx.fillRect(X(.15), Y(-.448), L * .12, L * .022);
+        ctx.fillStyle = C.accent; ctx.fillRect(X(.21) + Math.sin(t * 6) * L * .05 - 1.5, Y(-.448), 3, L * .022);
+      });
+      // stereo camera head
+      off([.38, -.12], () => {
+        ctx.fillStyle = '#4a4740'; ctx.fillRect(X(.42), Y(-.2), Math.max(2, L * .014), L * .08);
+        ctx.fillStyle = '#26262a'; ctx.fillRect(X(.36), Y(-.25), L * .14, L * .055);
+        ctx.fillStyle = '#3c3c42'; poly([[.5, -.25], [.5 + dx * .9, -.25 + dy * .9], [.5 + dx * .9, -.195 + dy * .9], [.5, -.195]]); ctx.fill();
+        for (const q of [.25, .7]) { ctx.fillStyle = '#9fc4ff'; ctx.beginPath(); ctx.arc(X(.5 + dx * q), Y(-.222 + dy * q), Math.max(1.5, L * .011), 0, TAU); ctx.fill(); }
+      });
+      // tether termination boot
+      off([-.35, 0], () => {
+        ctx.fillStyle = '#26262a'; poly([[-.5, -.055], [-.5, .015], [-.585, -.005], [-.585, -.035]]); ctx.fill();
+        ctx.fillStyle = C.accent; ctx.fillRect(X(-.53), Y(-.047), Math.max(2, L * .01), L * .055);
+      });
+
+      // step 1 callouts
+      const k1 = sstep(.38, .55, s) * (1 - sstep(1.0, 1.15, s));
+      if (k1 > 0) {
+        alpha(k1);
+        callout(pu[0], pu[1] - L * .04, X(.42), Y(-.62), '3D LIDAR MAST', C.ink);
+        callout(X(.45), Y(-.23), X(.78), Y(-.38), 'STEREO CAMERAS', C.ink);
+        callout(X(.53), Y(-.06), X(.8), Y(.0), 'LIGHT BAR', C.ink);
+        callout(X(-.05), Y(-.05), X(-.18), Y(-.42), 'COMPUTE · SLAM + AUTONOMY', C.accent, 'right');
+        callout(X(-.55), Y(-.02), X(-.72), Y(.2), 'TETHER TERMINATION', C.ink, 'right');
+        callout(X(.33), Y(.28), X(.55), Y(.48), 'LOW, WIDE STANCE FOR RUBBLE', C.ink);
+      }
+      // step 2: the sensors working
+      if (k2 > 0) {
+        alpha(k2);
+        const ph = RM ? 0 : (t * .5) % 1;
+        for (let k = 0; k < 4; k++) {
+          const rk = (.3 + (k + ph) * .2); ctx.strokeStyle = rgba(C.accent, .55 * (1 - (k + ph) / 4.2));
+          ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(pu[0], fy, rk * L, rk * L * .14, 0, 0, TAU); ctx.stroke();
+        }
+        const sweep = RM ? 0 : t * 1.6;
+        for (let k = 0; k < 26; k++) {
+          const a = -.35 + k / 25 * 1.4 * Math.PI * .5 + .08, hx = pu[0] + Math.cos(a + .1) * L * .9, hy = Math.min(fy, pu[1] + Math.sin(a) * L * .9);
+          const hit = hy >= fy - .5, ex = hit ? pu[0] + (fy - pu[1]) / Math.tan(a) : hx;
+          const b = .12 + .5 * Math.max(0, Math.cos(a * 3 - sweep));
+          ctx.strokeStyle = rgba(C.accent, b * .6); ctx.beginPath(); ctx.moveTo(pu[0], pu[1]); ctx.lineTo(ex, hit ? fy : hy); ctx.stroke();
+          if (hit && ex < Math.min(R.x1, X(1.1))) { ctx.fillStyle = rgba('#ffd59a', .9); ctx.fillRect(ex - 1.2, fy - 1.2, 2.4, 2.4); }
+          const am = Math.PI - a, mx = pu[0] + (fy - pu[1]) / Math.tan(am);
+          if (Math.tan(am) < 0 && mx > Math.max(R.x0, X(-1.1))) { ctx.strokeStyle = rgba(C.accent, b * .35); ctx.beginPath(); ctx.moveTo(pu[0], pu[1]); ctx.lineTo(mx, fy); ctx.stroke(); ctx.fillStyle = rgba('#ffd59a', .7); ctx.fillRect(mx - 1.2, fy - 1.2, 2.4, 2.4); }
+        }
+        // camera frustum
+        const cxF = X(.5 + dx * .5), cyF = Y(-.222 + dy * .5);
+        ctx.fillStyle = 'rgba(159,196,255,.07)'; ctx.strokeStyle = 'rgba(159,196,255,.45)';
+        ctx.beginPath(); ctx.moveTo(cxF, cyF); ctx.lineTo(X(1.05), Y(-.5)); ctx.lineTo(X(1.05), Y(.05)); ctx.closePath(); ctx.fill(); ctx.stroke();
+        // IMU triad
+        const ix = X(-.05), iy = Y(-.02), al = L * .09;
+        const arrow = (x2, y2, c) => { ctx.strokeStyle = c; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(ix, iy); ctx.lineTo(x2, y2); ctx.stroke(); const a = Math.atan2(y2 - iy, x2 - ix); ctx.fillStyle = c; ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x2 - Math.cos(a - .4) * 6, y2 - Math.sin(a - .4) * 6); ctx.lineTo(x2 - Math.cos(a + .4) * 6, y2 - Math.sin(a + .4) * 6); ctx.fill(); };
+        ctx.fillStyle = 'rgba(5,7,13,.6)'; ctx.fillRect(ix - al * .5, iy - al * 1.2, al * 1.8, al * 1.7);
+        arrow(ix + al, iy, C.accent); arrow(ix, iy - al, C.ink); arrow(ix + al * .55, iy - al * .5, C.us);
+        // odometry arc
+        const wx = X(-.33), wy = Y(.17), wr = L * .18;
+        ctx.strokeStyle = C.ink; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.arc(wx, wy, wr, -2.5, -1.0); ctx.stroke();
+        const ea = -1.0; ctx.fillStyle = C.ink; ctx.beginPath(); const ax = wx + Math.cos(ea) * wr, ay = wy + Math.sin(ea) * wr;
+        ctx.moveTo(ax + 4, ay + 5); ctx.lineTo(ax - 5, ay + 1); ctx.lineTo(ax + 1, ay - 6); ctx.fill();
+        callout(pu[0] + L * .06, pu[1], X(.55), Y(-.62), '3D LIDAR · OWN LASER, NO DAYLIGHT', C.accent);
+        callout(X(.75), Y(-.36), X(.86), Y(-.5), 'STEREO CAMERAS', '#9fc4ff');
+        callout(X(.62), Y(.0), X(.8), Y(.1), 'ONBOARD LIGHTING', '#ffd59a');
+        callout(ix - al * .5, iy - al * .6, X(-.3), Y(-.4), 'IMU', C.ink, 'right');
+        callout(wx - wr * .8, wy - wr * .6, X(-.7), Y(-.12), 'WHEEL ODOMETRY', C.ink, 'right');
+        alpha(1);
+      }
+      // step 3: tether cross-section and flows
+      const k3 = sstep(2.0, 2.3, s);
+      if (k3 > 0) {
+        alpha(k3);
+        const n = 7, T = RM ? 0 : t;
+        for (let k = 0; k < n; k++) {
+          const ud = ((T * .25 + k / n) % 1), [x1, y1] = bez(c0, c1, c2, c3, ud);
+          ctx.fillStyle = '#fff3d6'; ctx.fillRect(x1 - 2, y1 - 2, 4, 4); ctx.fillStyle = rgba(C.accent, .3); ctx.fillRect(x1 - 4, y1 - 4, 8, 8);
+          const uc = 1 - ((T * .18 + (k + .5) / n) % 1), [x2, y2] = bez(c0, c1, c2, c3, uc);
+          ctx.fillStyle = '#e8a15a'; ctx.beginPath(); ctx.arc(x2 + 5, y2, 2.2, 0, TAU); ctx.fill();
+        }
+        const ir = clamp(Math.min(w, h) * (mob ? .15 : .17), 46, 118), icx = R.x0 + w * (mob ? .2 : .2), icy = R.y0 + h * (mob ? .24 : .22);
+        const [ax, ay] = bez(c0, c1, c2, c3, .6);
+        ctx.setLineDash([3, 4]); ctx.strokeStyle = rgba(C.ink, .5); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(ax, ay);
+        const ang = Math.atan2(ay - icy, ax - icx); ctx.lineTo(icx + Math.cos(ang) * ir, icy + Math.sin(ang) * ir); ctx.stroke(); ctx.setLineDash([]);
+        ctx.strokeStyle = C.ink; ctx.beginPath(); ctx.arc(ax, ay, 6, 0, TAU); ctx.stroke();
+        // jacket
+        ctx.fillStyle = '#26251f'; ctx.beginPath(); ctx.arc(icx, icy, ir, 0, TAU); ctx.fill(); ctx.strokeStyle = '#6b665d'; ctx.lineWidth = 1.2; ctx.stroke();
+        // braid
+        ctx.save(); ctx.beginPath(); ctx.arc(icx, icy, ir * .92, 0, TAU); ctx.arc(icx, icy, ir * .74, 0, TAU, true); ctx.clip();
+        ctx.fillStyle = '#7d6a45'; ctx.fillRect(icx - ir, icy - ir, ir * 2, ir * 2);
+        ctx.strokeStyle = '#c4a970'; ctx.lineWidth = 1.2; ctx.beginPath();
+        for (let k = 0; k < 60; k++) { const a = k * TAU / 60, r1 = ir * .74, r2 = ir * .92, sgn = k % 2 ? 1 : -1;
+          ctx.moveTo(icx + Math.cos(a) * r1, icy + Math.sin(a) * r1); ctx.lineTo(icx + Math.cos(a + sgn * .12) * r2, icy + Math.sin(a + sgn * .12) * r2); }
+        ctx.stroke(); ctx.restore();
+        ctx.fillStyle = '#141414'; ctx.beginPath(); ctx.arc(icx, icy, ir * .74, 0, TAU); ctx.fill();
+        const cu = [];
+        for (let k = 0; k < 3; k++) {
+          const a = -Math.PI / 2 + k * TAU / 3 + .5, x = icx + Math.cos(a) * ir * .42, y = icy + Math.sin(a) * ir * .42; cu.push([x, y]);
+          ctx.fillStyle = '#3d3630'; ctx.beginPath(); ctx.arc(x, y, ir * .2, 0, TAU); ctx.fill();
+          const cg = ctx.createRadialGradient(x - ir * .04, y - ir * .04, 0, x, y, ir * .13);
+          cg.addColorStop(0, '#f4b878'); cg.addColorStop(1, '#9c5a23'); ctx.fillStyle = cg; ctx.beginPath(); ctx.arc(x, y, ir * .13, 0, TAU); ctx.fill();
+        }
+        ctx.fillStyle = '#e9e4d8'; ctx.beginPath(); ctx.arc(icx, icy, ir * .12, 0, TAU); ctx.fill();
+        const pulse = RM ? 1 : .6 + .4 * Math.sin(t * 5);
+        const fg2 = ctx.createRadialGradient(icx, icy, 0, icx, icy, ir * .12);
+        fg2.addColorStop(0, `rgba(190,232,255,${pulse.toFixed(3)})`); fg2.addColorStop(1, 'rgba(190,232,255,0)');
+        ctx.fillStyle = fg2; ctx.beginPath(); ctx.arc(icx, icy, ir * .12, 0, TAU); ctx.fill();
+        ctx.fillStyle = '#bfe8ff'; ctx.beginPath(); ctx.arc(icx, icy, ir * .04, 0, TAU); ctx.fill();
+        const lx = icx + ir + 18;
+        callout(icx + ir * .83 * Math.cos(-.9), icy + ir * .83 * Math.sin(-.9), lx, icy - ir * .7, 'TENSILE BRAID · CARRIES THE LOAD', '#c4a970');
+        callout(cu[0][0], cu[0][1], lx, icy - ir * .1, 'COPPER · POWER DOWN', '#e8a15a');
+        callout(icx, icy, lx, icy + ir * .5, 'OPTICAL FIBER · SCANS UP', '#bfe8ff');
+        tag(icx, icy + ir + 16, 'TETHER CROSS-SECTION · ILLUSTRATIVE', C.faint, 'center');
+        alpha(1);
+      }
+    }
+  };
+
+  /* ---------------- the map: a rotating 3D point cloud and what people do with it ---------------- */
+  const GOOD = '#9ad7a0', hex = c => [parseInt(c.slice(1, 3), 16), parseInt(c.slice(3, 5), 16), parseInt(c.slice(5, 7), 16)];
+  const TUBE = (() => {
+    const r = rng(11), pts = [], N = 96;
+    const cl = u => [lerp(-1.35, 1.35, u), -.12 * u + (vnoise(u * 6, 1, 7) - .5) * .03, Math.sin(u * 2.6 - .4) * .32];
+    const A = u => .22 + .05 * Math.sin(u * 7 + 1) + (vnoise(u * 9, 3, 3) - .5) * .05 - .075 * Math.exp(-(((u - .7) / .05) ** 2));
+    const B = u => .25 + .05 * Math.cos(u * 5) + .06 * Math.exp(-(((u - .45) / .1) ** 2)) + (vnoise(u * 8, 5, 5) - .5) * .04;
+    const frame = u => {
+      const c = cl(u), c2 = cl(Math.min(1, u + .01)), c1 = cl(Math.max(0, u - .01));
+      const tx = c2[0] - c1[0], tz = c2[2] - c1[2], tl = Math.hypot(tx, tz);
+      return { c, t: [tx / tl, 0, tz / tl], n: [-tz / tl, 0, tx / tl] };
+    };
+    const mound = u => .06 * Math.exp(-(((u - .1) / .05) ** 2));
+    const at = (u, lat, hgt) => { const F = frame(u); return [F.c[0] + F.n[0] * lat, F.c[1] + hgt, F.c[2] + F.n[2] * lat]; };
+    const floorH = (u, lat) => mound(u) * (1 - (lat / A(u)) ** 2) + (vnoise(u * 40, lat * 30, 2) - .5) * .015;
+    const trav = (u, lat) => { const n = vnoise(u * 14, lat * 8 + 3, 9) + mound(u) * 6 + .5 * Math.exp(-(((u - .82) / .05) ** 2)); return n > .78 ? 2 : n > .62 ? 1 : 0; };
+    for (let i = 0; i <= N; i++) {
+      const u = i / N + (r() - .5) * .004, a = A(u), b = B(u);
+      for (let k = 0; k <= 22; k++) {
+        const th = k / 22 * Math.PI + (r() - .5) * .05;
+        if (Math.abs(u - .1) < .035 && th > .95 && th < 2.2) continue;
+        const rr = 1 + (r() - .5) * .07, lat = Math.cos(th) * a * rr, hgt = Math.sin(th) * b * rr;
+        pts.push({ p: at(u, lat, hgt), u, k: 1, th, hgt, conf: clamp(1 - u * .55 - (r() * .25) - (th > 1.2 && th < 1.9 ? .15 : 0), 0, 1), tr: 0 });
+      }
+      for (let k = 0; k < 9; k++) {
+        const lat = lerp(-a * .92, a * .92, (k + r() * .6) / 9);
+        pts.push({ p: at(u, lat, floorH(u, lat)), u, k: 0, lat, hgt: 0, conf: clamp(1 - u * .4 - r() * .15, 0, 1), tr: trav(u, lat) });
+      }
+    }
+    const top = B(.1) + .5, sk = frame(.1);
+    for (let y = B(.1) - .02; y < top; y += .025) for (let k = 0; k < 14; k++) {
+      const a = k / 14 * TAU + r() * .2, rr = .075 + (r() - .5) * .01;
+      pts.push({ p: [sk.c[0] + Math.cos(a) * rr, sk.c[1] + y, sk.c[2] + Math.sin(a) * rr], u: .1, k: 2, hgt: y, conf: .95, tr: 0 });
+    }
+    for (let k = 0; k < 260; k++) {
+      const a = r() * TAU, rr = .1 + Math.sqrt(r()) * .38;
+      pts.push({ p: [sk.c[0] + Math.cos(a) * rr, sk.c[1] + top + (r() - .5) * .01, sk.c[2] + Math.sin(a) * rr], u: .1, k: 3, hgt: top, conf: .9, tr: 0 });
+    }
+    return { pts, cl, A, B, frame, at, floorH, top, sk };
+  })();
+  const CC = { warm: hex('#ffd59a'), acc: hex('#ff7a2f'), ink: hex('#ece8df'), us: hex('#7fa6ff'), good: hex(GOOD), amber: hex('#ffc861'), cn: hex('#ff5468'), white: [255, 255, 255] };
+  SCN.map = {
+    moon: () => null,
+    draw(p, t) {
+      const s = p * 4, R = region(), w = R.x1 - R.x0, h = R.y1 - R.y0, mob = W < 900;
+      const w0 = 1 - sstep(.8, 1.1, s), w1 = sstep(.8, 1.1, s) * (1 - sstep(1.8, 2.1, s)), w2 = sstep(1.8, 2.1, s) * (1 - sstep(2.8, 3.1, s)), w3 = sstep(2.8, 3.1, s);
+      const yaw = -.32 + p * .75 + (RM ? 0 : Math.sin(t * .15) * .06), pit = .5 - .1 * w2;
+      const S = Math.min(w * (mob ? .3 : .36), h * .58), ocx = R.x0 + w * .5, ocy = R.y0 + h * (mob ? .52 : .55);
+      const cy_ = Math.cos(yaw), sy_ = Math.sin(yaw), cp = Math.cos(pit), sp = Math.sin(pit);
+      const P = (x, y, z) => {
+        const x1 = x * cy_ - z * sy_, z1 = x * sy_ + z * cy_, y2 = y * cp - z1 * sp, z2 = y * sp + z1 * cp, f = 3.4 / (3.4 + z2);
+        return [ocx + x1 * S * f, ocy - (y2 + .05) * S * f, f];
+      };
+      const PP = q => P(q[0], q[1], q[2]);
+      const kR = .03 + ease(clamp(s / .8, 0, 1)) * .97;
+      const T = TUBE, pulse = RM ? 1 : .5 + .5 * Math.sin(t * 4);
+      alpha(1);
+      for (const q of T.pts) {
+        if (q.u > kR + .002) continue;
+        const [x, y, f] = PP(q.p);
+        const base = q.k === 3 ? CC.ink : q.k === 0 ? CC.acc : mixC(CC.acc, CC.warm, clamp(q.hgt / .3, 0, 1));
+        const cf = mixC(CC.us, CC.acc, 1 - q.conf);
+        const tv = q.k === 0 ? (q.tr === 0 ? CC.good : q.tr === 1 ? CC.amber : CC.cn) : CC.ink;
+        const haz = q.k === 1 && Math.abs(q.u - .82) < .035 && q.th > 1.1 && q.th < 2.1;
+        let c = base;
+        if (w1 > 0) c = mixC(c, haz ? CC.cn : cf, w1);
+        if (w3 > 0) c = mixC(c, haz ? CC.cn : tv, w3);
+        if (kR < 1 && q.u > kR - .03) c = mixC(c, CC.white, .7);
+        let a = (q.k === 3 ? .3 : .78) * (.55 + .45 * f);
+        if (q.k === 1) a *= 1 - .55 * w3 - .35 * w2;
+        if (q.k === 0 && w3 > 0) a = lerp(a, .95, w3);
+        if (haz && (w1 > 0 || w3 > 0)) a = lerp(a, .5 + .5 * pulse, Math.max(w1, w3));
+        const sz = (q.k === 0 && w3 > .5 ? 2.1 : 1.5) * f;
+        ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${a.toFixed(3)})`; ctx.fillRect(x - sz / 2, y - sz / 2, sz, sz);
+      }
+      const path = []; for (let u = .1; u <= Math.min(.95, kR); u += .01) path.push(PP(T.at(u, .02 * Math.sin(u * 20), T.floorH(u, 0) + .02)));
+      const line = (pts, c, wd = 1.4, dash = null) => { if (pts.length < 2) return; ctx.strokeStyle = c; ctx.lineWidth = wd; if (dash) ctx.setLineDash(dash); ctx.beginPath(); pts.forEach((q, i) => i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])); ctx.stroke(); ctx.setLineDash([]); };
+      const skB = PP(T.at(.1, 0, T.floorH(.1, 0))), skT = PP([T.sk.c[0], T.sk.c[1] + T.top, T.sk.c[2]]);
+      // step 0: survey products
+      if (w0 > 0) {
+        alpha(w0);
+        line(path, rgba(C.ink, .85), 1.4);
+        for (let u = .18; u <= Math.min(.92, kR); u += .09) {
+          const F = T.frame(u), b = T.at(u, 0, .07), tip = PP([b[0] + F.t[0] * .05, b[1], b[2] + F.t[2] * .05]), o = PP(b);
+          const nx = -(tip[1] - o[1]), ny = tip[0] - o[0], nl = Math.hypot(nx, ny) || 1;
+          ctx.fillStyle = rgba('#9fc4ff', .8); ctx.beginPath(); ctx.moveTo(o[0], o[1]); ctx.lineTo(tip[0] + nx / nl * 4, tip[1] + ny / nl * 4); ctx.lineTo(tip[0] - nx / nl * 4, tip[1] - ny / nl * 4); ctx.fill();
+        }
+        const ax = (d, c) => { const e = PP([T.sk.c[0] + d[0] * .14, T.sk.c[1] + T.floorH(.1, 0) + d[1] * .14, T.sk.c[2] + d[2] * .14]); line([skB, e], c, 1.6); };
+        ax([1, 0, 0], C.accent); ax([0, 1, 0], C.ink); ax([0, 0, 1], C.us);
+        const k0 = sstep(.5, .8, s);
+        if (k0 > 0) {
+          alpha(w0 * k0);
+          const mid = PP(T.at(.55, 0, T.B(.55) + .02)), cam = PP(T.at(.36, 0, .1)), rp = PP(T.at(.72, 0, .03));
+          tag(mid[0], mid[1] - 22, 'REGISTERED 3D POINT CLOUD', C.accent, 'center');
+          callout(skT[0], skT[1], skT[0] - 30, skT[1] - 26, 'SKYLIGHT', C.ink, 'right');
+          callout(skB[0], skB[1], skB[0] - 40, skB[1] + 30, 'FIXED REFERENCE FRAME', C.ink, 'right');
+          callout(cam[0], cam[1], cam[0] + 10, cam[1] + 54, 'CAMERA POSES · IMAGERY', '#9fc4ff');
+          callout(rp[0], rp[1], rp[0] + 20, rp[1] + 40, 'ROVER PATH', C.ink);
+        }
+      }
+      // step 1: select
+      if (w1 > 0) {
+        alpha(w1);
+        const dim = (a, b, txt, side = 1) => {
+          const A_ = PP(a), B_ = PP(b); ctx.strokeStyle = C.ink; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(A_[0], A_[1]); ctx.lineTo(B_[0], B_[1]);
+          const dx = B_[0] - A_[0], dy = B_[1] - A_[1], l = Math.hypot(dx, dy) || 1, nx = -dy / l * 5, ny = dx / l * 5;
+          ctx.moveTo(A_[0] - nx, A_[1] - ny); ctx.lineTo(A_[0] + nx, A_[1] + ny); ctx.moveTo(B_[0] - nx, B_[1] - ny); ctx.lineTo(B_[0] + nx, B_[1] + ny); ctx.stroke();
+          tag((A_[0] + B_[0]) / 2 + side * 10, (A_[1] + B_[1]) / 2, txt, C.ink, side > 0 ? 'left' : 'right');
+        };
+        dim(T.at(.45, 0, T.floorH(.45, 0)), T.at(.45, 0, T.B(.45)), 'CEILING 21.4 M ± 0.3');
+        const ca = T.A(.7), hh = T.B(.7) * .35, th0 = Math.asin(.35);
+        dim(T.at(.7, -ca * Math.cos(th0), hh), T.at(.7, ca * Math.cos(th0), hh), 'NARROWEST 11.8 M ± 0.2', 1);
+        const s0 = PP(T.at(.22, 0, T.floorH(.22, 0) + .01)), s1 = PP(T.at(.32, 0, T.floorH(.32, 0) + .01));
+        line([s0, s1], C.ink, 1.6); tag(s0[0] - 8, s0[1] + 22, 'FLOOR SLOPE 4.1° ± 0.2', C.ink, 'right');
+        const hz = PP(T.at(.82, 0, T.B(.82)));
+        ring(hz[0], hz[1], 16, C.cn, t, .9); tag(hz[0] + 22, hz[1] - 18, 'ROCKFALL HAZARD', C.cn);
+        const lx = R.x0 + 8, ly = R.y1 - 14, lw = Math.min(160, w * .3);
+        const lg = ctx.createLinearGradient(lx, 0, lx + lw, 0); lg.addColorStop(0, C.us); lg.addColorStop(1, C.accent);
+        ctx.fillStyle = lg; ctx.fillRect(lx, ly, lw, 4);
+        tag(lx, ly - 12, 'CONFIDENCE  HIGH → LOW', C.dim);
+        tag(R.x1, R.y1 - 10, 'ILLUSTRATIVE VALUES', C.faint, 'right');
+      }
+      // step 2: design
+      if (w2 > 0) {
+        alpha(w2);
+        const box = (u, lat, L_, W_, H_) => {
+          const F = T.frame(u), b = T.at(u, lat, T.floorH(u, lat) + .005), cs = [];
+          for (const [i, j, k] of [[-1, -1, 0], [1, -1, 0], [1, 1, 0], [-1, 1, 0], [-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1]])
+            cs.push(PP([b[0] + F.t[0] * L_ * i + F.n[0] * W_ * j, b[1] + H_ * k, b[2] + F.t[2] * L_ * i + F.n[2] * W_ * j]));
+          ctx.fillStyle = rgba(C.ink, .08); ctx.beginPath(); [4, 5, 6, 7].forEach((q, i) => i ? ctx.lineTo(cs[q][0], cs[q][1]) : ctx.moveTo(cs[q][0], cs[q][1])); ctx.fill();
+          ctx.strokeStyle = rgba(C.ink, .9); ctx.lineWidth = 1.1; ctx.beginPath();
+          for (const [a, c] of [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]]) { ctx.moveTo(cs[a][0], cs[a][1]); ctx.lineTo(cs[c][0], cs[c][1]); }
+          ctx.stroke(); return cs[6];
+        };
+        const m1 = box(.37, -.06, .06, .05, .09), m2 = box(.47, .05, .065, .055, .1), m3 = box(.57, -.04, .06, .05, .09);
+        ctx.fillStyle = '#ffd59a';
+        for (const u of [.36, .46, .56]) { const L_ = PP(T.at(u, 0, T.B(u) - .01)); ctx.beginPath(); ctx.arc(L_[0], L_[1], 2.4, 0, TAU); ctx.fill(); }
+        const pw = [skT, PP([T.sk.c[0] + .07, T.sk.c[1] + T.B(.1), T.sk.c[2]])];
+        for (let u = .12; u <= .47; u += .02) pw.push(PP(T.at(u, T.A(u) * .75, T.B(u) * .7)));
+        line(pw, C.accent, 1.4, [5, 4]);
+        if (!RM) for (let k = 0; k < 4; k++) { const i = Math.floor(((t * .4 + k / 4) % 1) * (pw.length - 1)); ctx.fillStyle = C.accent; ctx.fillRect(pw[i][0] - 2, pw[i][1] - 2, 4, 4); }
+        const eg = []; for (let u = .37; u >= .1; u -= .02) eg.push(PP(T.at(u, -.02, T.floorH(u, 0) + .015))); eg.push(skT);
+        line(eg, GOOD, 1.6, [3, 4]);
+        const k2 = sstep(2.05, 2.3, s);
+        if (k2 > 0) {
+          alpha(w2 * k2);
+          tag(m2[0] + 12, m2[1] - 20, 'MODULES FIT TO MEASURED WALLS', C.ink);
+          const pm = pw[Math.floor(pw.length * .6)]; tag(pm[0] + 10, pm[1] - 16, 'POWER + COMMS FROM SKYLIGHT', C.accent);
+          const em = eg[Math.floor(eg.length * .5)]; tag(em[0], em[1] + 24, 'EMERGENCY EGRESS', GOOD, 'center');
+          const lt = PP(T.at(.56, 0, T.B(.56) - .01)); tag(lt[0] + 10, lt[1] - 14, 'LIGHTING', '#ffd59a');
+        }
+      }
+      // step 3: operate
+      if (w3 > 0) {
+        alpha(w3);
+        const rt = []; for (let u = .12; u <= .95; u += .01) { const lat = .07 * Math.sin(u * 9) - .06 * Math.exp(-(((u - .82) / .06) ** 2)); rt.push([u, PP(T.at(u, lat, T.floorH(u, lat) + .02))]); }
+        line(rt.map(q => q[1]), C.ink, 1.6);
+        const mu = RM ? .5 : .12 + ((t * .045) % 1) * .83, mi = rt.reduce((b, q, i) => Math.abs(q[0] - mu) < Math.abs(rt[b][0] - mu) ? i : b, 0), mk = rt[mi][1];
+        ctx.fillStyle = C.ink; ctx.beginPath(); ctx.arc(mk[0], mk[1], 4.5, 0, TAU); ctx.fill(); ring(mk[0], mk[1], 6, C.ink, t, .7);
+        const hz = PP(T.at(.82, 0, T.B(.82)));
+        ring(hz[0], hz[1], 16, C.cn, t, .9);
+        const k3 = sstep(3.05, 3.3, s);
+        if (k3 > 0) {
+          alpha(w3 * k3);
+          tag(hz[0] + 22, hz[1] - 18, 'REPEAT SCAN · ROCKFALL DETECTED', C.cn);
+          const pin = (u, lat, txt, c) => { const b = PP(T.at(u, lat, T.floorH(u, lat))), tp = [b[0], b[1] - 34]; line([b, tp], c, 1.2); ctx.fillStyle = c; ctx.beginPath(); ctx.arc(tp[0], tp[1], 3, 0, TAU); ctx.fill(); tag(tp[0], tp[1] - 12, txt, c, 'center'); };
+          pin(.3, .1, 'GPR TARGET', '#c9aaff'); pin(.6, -.12, 'SPECTROMETER', '#ffd59a'); pin(.9, .1, 'RADIATION', '#9fc4ff');
+          const lx = R.x0 + 8, ly = R.y1 - 10;
+          [[GOOD, 'DRIVABLE'], ['#ffc861', 'CAUTION'], [C.cn, 'NO-GO']].forEach(([c, txt], i) => { ctx.fillStyle = c; ctx.fillRect(lx + i * 96, ly - 4, 8, 8); tag(lx + i * 96 + 14, ly, txt, C.dim); });
+        }
+      }
+    }
+  };
+
+/*@SCENES*/
+
+  /* ---------------- scroll engine ---------------- */
+  const sections = [...document.querySelectorAll('[data-scene]')];
+  const panels = [...document.querySelectorAll('.panel')];
+  const hudN = document.getElementById('hud-n'), hudT = document.getElementById('hud-t'), hudBar = document.getElementById('hud-bar');
+  function sizeCanvas() {
+    W = innerWidth; H = innerHeight; DPR = Math.min(2, devicePixelRatio || 1);
+    cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+  let rt = 0, lastW = 0, lastH = 0;
+  addEventListener('resize', () => {
+    sizeCanvas();
+    if (Math.abs(W - lastW) > 1 || Math.abs(H - lastH) > 120) {
+      clearTimeout(rt); rt = setTimeout(() => { lastW = W; lastH = H; resizers.forEach(f => f()); }, 180);
+    }
+  });
+  function blendM(a, b, f) {
+    if (a && b) return { x: lerp(a.x, b.x, f), y: lerp(a.y, b.y, f), r: lerp(a.r, b.r, f), a: lerp(a.a, b.a, f), w: lerp(a.w, b.w, f) };
+    if (a) return { ...a, a: a.a * (1 - f) };
+    if (b) return { ...b, a: b.a * f };
+    return null;
+  }
+  let ss = scrollY, last = performance.now(), hudIdx = -1;
+  function frame(now) {
+    NOW = now;
+    const dt = Math.min(.05, (now - last) / 1000); last = now;
+    const t = RM ? 0 : now / 1000;
+    ss = RM ? scrollY : ss + (scrollY - ss) * (1 - Math.exp(-dt * 9));
+    if (Math.abs(scrollY - ss) < .4) ss = scrollY;
+    const mid = ss + H * .5;
+    const tops = sections.map(s => { const r = s.getBoundingClientRect(); return [r.top + scrollY, r.height]; });
+    let idx = 0; for (let i = 0; i < tops.length; i++) if (tops[i][0] <= mid) idx = i;
+    const P = i => clamp((mid - tops[i][0]) / tops[i][1], 0, 1);
+    const B = H * .22; let a = idx, b = -1, f = 0;
+    if (idx + 1 < tops.length && tops[idx + 1][0] - mid < B) { b = idx + 1; f = ease((mid - (tops[idx + 1][0] - B)) / (2 * B)); }
+    else if (idx > 0 && mid - tops[idx][0] < B) { a = idx - 1; b = idx; f = ease((mid - tops[idx][0] + B) / (2 * B)); }
+    const SAo = SCN[sections[a].dataset.scene], SBo = b >= 0 ? SCN[sections[b].dataset.scene] : null;
+    const pa = P(a), pb = b >= 0 ? P(b) : 0;
+
+    ctx.globalAlpha = 1; ctx.fillStyle = C.void; ctx.fillRect(0, 0, W, H);
+    for (const s of stars) {
+      const y = ((s.y * H - ss * (.02 + .05 * s.z)) % H + H) % H;
+      ctx.fillStyle = rgba('#ece8df', s.a * (RM ? 1 : .75 + .25 * Math.sin(t * 1.3 + s.ph)));
+      ctx.fillRect(s.x * W, y, s.r, s.r);
+    }
+    const ma = SAo && SAo.moon ? SAo.moon(pa) : null, mb = SBo && SBo.moon ? SBo.moon(pb) : null;
+    const M = b >= 0 ? blendM(ma, mb, f) : ma;
+    drawMoon(M);
+    const Mu = M || moonPlace(1);
+    if (SAo) { SA = b >= 0 ? 1 - f : 1; if (SA > .003) { ctx.save(); alpha(1); SAo.draw(pa, t, Mu); ctx.restore(); } }
+    if (SBo) { SA = f; if (SA > .003) { ctx.save(); alpha(1); SBo.draw(pb, t, Mu); ctx.restore(); } }
+    ctx.globalAlpha = 1; SA = 1;
+
+    if (idx !== hudIdx) { hudIdx = idx; hudN.textContent = String(idx + 1).padStart(2, '0'); hudT.textContent = sections[idx].dataset.chapter; }
+    hudBar.style.transform = `scaleX(${clamp(scrollY / Math.max(1, document.documentElement.scrollHeight - H), 0, 1)})`;
+    if (!RM) for (const el of panels) {
+      const r = el.getBoundingClientRect(); const c = (r.top + r.height / 2) / H - .5;
+      el.style.opacity = (1 - clamp((Math.abs(c) - .32) / .3, 0, 1) * .72).toFixed(3);
+      el.style.transform = `translate3d(0,${(c * -18).toFixed(1)}px,0)`;
+    }
+    requestAnimationFrame(frame);
+  }
+  sizeCanvas(); lastW = W; lastH = H;
+  resizers.forEach(f => f());
+  requestAnimationFrame(frame);
+})();
+</script>
+
+</body>
+</html>
