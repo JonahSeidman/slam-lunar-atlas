@@ -1202,6 +1202,219 @@ p strong{color:var(--ink);font-weight:600}
     }
   };
 
+  /* ---------------- the device: exploded rover, sensors, tether cross-section ---------------- */
+  function callout(ax, ay, lx, ly, text, color = C.ink, align = 'left') {
+    ctx.strokeStyle = rgba(color, .6); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(lx, ly); ctx.stroke();
+    ctx.fillStyle = color; ctx.beginPath(); ctx.arc(ax, ay, 2.2, 0, TAU); ctx.fill();
+    tag(lx + (align === 'left' ? 6 : align === 'right' ? -6 : 0), ly, text, color, align);
+  }
+  function bez(p0, p1, p2, p3, u) {
+    const v = 1 - u;
+    return [v * v * v * p0[0] + 3 * v * v * u * p1[0] + 3 * v * u * u * p2[0] + u * u * u * p3[0],
+            v * v * v * p0[1] + 3 * v * v * u * p1[1] + 3 * v * u * u * p2[1] + u * u * u * p3[1]];
+  }
+  function bigWheel(x, y, r, shade) {
+    ctx.fillStyle = shade ? '#101012' : '#18181b'; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill();
+    ctx.strokeStyle = shade ? '#2a2927' : '#3d3b37'; ctx.lineWidth = Math.max(1, r * .08);
+    ctx.beginPath(); for (let k = 0; k < 14; k++) { const a = k * TAU / 14; ctx.moveTo(x + Math.cos(a) * r * .86, y + Math.sin(a) * r * .86); ctx.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r); } ctx.stroke();
+    if (shade) return;
+    ctx.fillStyle = '#8d877c'; ctx.beginPath(); ctx.arc(x, y, r * .5, 0, TAU); ctx.fill();
+    ctx.strokeStyle = '#4a4740'; ctx.lineWidth = Math.max(1, r * .06); ctx.beginPath();
+    for (let k = 0; k < 5; k++) { const a = k * TAU / 5 + .3; ctx.moveTo(x + Math.cos(a) * r * .16, y + Math.sin(a) * r * .16); ctx.lineTo(x + Math.cos(a) * r * .46, y + Math.sin(a) * r * .46); } ctx.stroke();
+    ctx.fillStyle = '#d8d4cb'; ctx.beginPath(); ctx.arc(x, y, r * .14, 0, TAU); ctx.fill();
+  }
+  SCN.device = {
+    moon: () => null,
+    draw(p, t) {
+      const s = p * 3, R = region(), w = R.x1 - R.x0, h = R.y1 - R.y0, mob = W < 900;
+      const k3s = ease(sstep(2.0, 2.3, s));
+      const L = Math.min(w * (mob ? .5 : .46), h * .62) * lerp(1, .9, k3s);
+      const cx = R.x0 + w * lerp(.5, .64, k3s), cy = R.y0 + h * lerp(.56, .62, k3s);
+      const X = x => cx + x * L, Y = y => cy + y * L, dx = .07, dy = -.05;
+      const kA = ease(clamp((s - .02) / .45, 0, 1)), e = 1 - kA;
+      const off = (o, f) => { ctx.save(); ctx.translate(o[0] * L * e, o[1] * L * e); f(); ctx.restore(); };
+      const k2 = sstep(1.0, 1.25, s) * (1 - sstep(2.0, 2.2, s)), lights = sstep(.9, 1.2, s);
+      alpha(1);
+      // floor
+      const fy = Y(.3);
+      const fg = ctx.createLinearGradient(0, fy, 0, fy + L * .25);
+      fg.addColorStop(0, 'rgba(110,104,94,.35)'); fg.addColorStop(1, 'rgba(110,104,94,0)');
+      const fx0 = Math.max(R.x0, X(-1.1)), fx1 = Math.min(R.x1, X(1.1));
+      ctx.fillStyle = fg; ctx.fillRect(fx0, fy, fx1 - fx0, L * .25);
+      ctx.strokeStyle = 'rgba(160,152,140,.45)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(fx0, fy); ctx.lineTo(fx1, fy); ctx.stroke();
+      ctx.fillStyle = '#3c3832';
+      for (const [u, r] of [[-.86, .03], [-.74, .018], [.72, .025], [.9, .04], [1.02, .02]]) { ctx.beginPath(); ctx.ellipse(X(u), fy, r * L, r * L * .6, 0, Math.PI, TAU); ctx.fill(); }
+      // light bar + camera cones (behind the rover)
+      if (lights > 0) {
+        ctx.save(); ctx.globalCompositeOperation = 'lighter'; alpha(lights * .9);
+        const lx0 = X(.5 + dx * .5), ly0 = Y(-.04 + dy * .5);
+        const lg = ctx.createRadialGradient(lx0, ly0, 0, lx0, ly0, L * .75);
+        lg.addColorStop(0, 'rgba(255,236,200,.38)'); lg.addColorStop(1, 'rgba(255,236,200,0)');
+        ctx.fillStyle = lg; ctx.beginPath(); ctx.moveTo(lx0, ly0); ctx.arc(lx0, ly0, L * .75, -.42, .5); ctx.closePath(); ctx.fill();
+        ctx.restore(); alpha(1);
+      }
+      // back wheels
+      off([0, .35], () => { for (const u of [-.33, .33]) bigWheel(X(u + dx), Y(.17 + dy), L * .13, true); });
+      // tether cable (drawn early so the boot sits over it)
+      const c0 = [X(-.58), Y(-.02)], c1 = [X(-.78), Y(-.02)], c2 = [X(-.82), Y(-.45)], c3 = [X(-1.0), Y(-.78)];
+      off([-.35, 0], () => {
+        ctx.strokeStyle = '#2b2a27'; ctx.lineWidth = Math.max(3, L * .022); ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(...c0); ctx.bezierCurveTo(...c1, ...c2, ...c3); ctx.stroke();
+        ctx.strokeStyle = 'rgba(217,195,154,.55)'; ctx.lineWidth = 1; ctx.stroke(); ctx.lineCap = 'butt';
+      });
+      // compute module, sliding into the body
+      const kc = 1 - sstep(.72, .95, kA);
+      if (kc > 0) off([0, -.65], () => {
+        alpha(kc);
+        ctx.fillStyle = '#0f1914'; ctx.fillRect(X(-.22), Y(-.08), L * .32, L * .13);
+        ctx.strokeStyle = rgba(C.accent, .5); ctx.lineWidth = 1; ctx.strokeRect(X(-.22), Y(-.08), L * .32, L * .13);
+        ctx.fillStyle = '#2b302c'; ctx.fillRect(X(-.17), Y(-.055), L * .09, L * .08); ctx.fillRect(X(-.05), Y(-.05), L * .05, L * .05); ctx.fillRect(X(.03), Y(-.05), L * .04, L * .07);
+        ctx.strokeStyle = rgba(C.accent, .3); ctx.beginPath(); for (let k = 0; k < 4; k++) { ctx.moveTo(X(-.08), Y(-.045 + k * .022)); ctx.lineTo(X(-.05), Y(-.045 + k * .022)); } ctx.stroke();
+        alpha(1);
+      });
+      // body
+      const top = [[-.5, -.12], [.5, -.12], [.5 + dx, -.12 + dy], [-.5 + dx, -.12 + dy]], end = [[.5, -.12], [.5 + dx, -.12 + dy], [.5 + dx, .12 + dy], [.5, .12]];
+      const poly = pts => { ctx.beginPath(); pts.forEach(([x, y], i) => i ? ctx.lineTo(X(x), Y(y)) : ctx.moveTo(X(x), Y(y))); ctx.closePath(); };
+      ctx.fillStyle = '#d6d1c6'; poly(top); ctx.fill();
+      ctx.fillStyle = '#8a857b'; poly(end); ctx.fill();
+      const bg = ctx.createLinearGradient(0, Y(-.12), 0, Y(.12));
+      bg.addColorStop(0, '#efeae0'); bg.addColorStop(.6, '#bdb7ac'); bg.addColorStop(1, '#8a857b');
+      ctx.fillStyle = bg; ctx.beginPath(); ctx.roundRect(X(-.5), Y(-.12), L, L * .24, L * .02); ctx.fill();
+      ctx.strokeStyle = 'rgba(5,7,13,.28)'; ctx.lineWidth = 1; ctx.beginPath();
+      ctx.moveTo(X(-.2), Y(-.12)); ctx.lineTo(X(-.2), Y(.12)); ctx.moveTo(X(.22), Y(-.12)); ctx.lineTo(X(.22), Y(.12)); ctx.stroke();
+      for (let k = 0; k < 6; k++) { ctx.fillStyle = 'rgba(5,7,13,.3)'; ctx.fillRect(X(-.45 + k * .035), Y(-.06), Math.max(1.5, L * .012), L * .1); }
+      ctx.font = `600 ${Math.max(9, Math.round(L * .04))}px "IBM Plex Mono", monospace`; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = C.accent; ctx.fillText('SLAM-01', X(-.16), Y(.06));
+      // light bar on the front face
+      ctx.strokeStyle = lights > .1 ? '#fff3d6' : '#6b665d'; ctx.lineWidth = Math.max(2, L * .016);
+      ctx.beginPath(); ctx.moveTo(X(.5 + dx * .15), Y(-.04 + dy * .15)); ctx.lineTo(X(.5 + dx * .85), Y(-.04 + dy * .85)); ctx.stroke();
+      // suspension + front wheels
+      off([0, .35], () => {
+        ctx.strokeStyle = '#5a564f'; ctx.lineWidth = Math.max(2, L * .018); ctx.beginPath();
+        ctx.moveTo(X(-.33), Y(.17)); ctx.lineTo(X(-.05), Y(.09)); ctx.lineTo(X(.33), Y(.17)); ctx.stroke();
+        for (const u of [-.33, .33]) bigWheel(X(u), Y(.17), L * .13, false);
+      });
+      // LiDAR mast
+      const pu = [X(.21), Y(-.435)];
+      off([0, -.42], () => {
+        ctx.fillStyle = '#4a4740'; ctx.fillRect(X(.2), Y(-.4), Math.max(2, L * .02), L * .23);
+        ctx.fillStyle = '#1e1e22'; ctx.fillRect(X(.15), Y(-.47), L * .12, L * .07);
+        ctx.beginPath(); ctx.ellipse(X(.21), Y(-.47), L * .06, L * .016, 0, 0, TAU); ctx.fillStyle = '#34343a'; ctx.fill();
+        ctx.fillStyle = '#26324e'; ctx.fillRect(X(.15), Y(-.448), L * .12, L * .022);
+        ctx.fillStyle = C.accent; ctx.fillRect(X(.21) + Math.sin(t * 6) * L * .05 - 1.5, Y(-.448), 3, L * .022);
+      });
+      // stereo camera head
+      off([.38, -.12], () => {
+        ctx.fillStyle = '#4a4740'; ctx.fillRect(X(.42), Y(-.2), Math.max(2, L * .014), L * .08);
+        ctx.fillStyle = '#26262a'; ctx.fillRect(X(.36), Y(-.25), L * .14, L * .055);
+        ctx.fillStyle = '#3c3c42'; poly([[.5, -.25], [.5 + dx * .9, -.25 + dy * .9], [.5 + dx * .9, -.195 + dy * .9], [.5, -.195]]); ctx.fill();
+        for (const q of [.25, .7]) { ctx.fillStyle = '#9fc4ff'; ctx.beginPath(); ctx.arc(X(.5 + dx * q), Y(-.222 + dy * q), Math.max(1.5, L * .011), 0, TAU); ctx.fill(); }
+      });
+      // tether termination boot
+      off([-.35, 0], () => {
+        ctx.fillStyle = '#26262a'; poly([[-.5, -.055], [-.5, .015], [-.585, -.005], [-.585, -.035]]); ctx.fill();
+        ctx.fillStyle = C.accent; ctx.fillRect(X(-.53), Y(-.047), Math.max(2, L * .01), L * .055);
+      });
+
+      // step 1 callouts
+      const k1 = sstep(.38, .55, s) * (1 - sstep(1.0, 1.15, s));
+      if (k1 > 0) {
+        alpha(k1);
+        callout(pu[0], pu[1] - L * .04, X(.42), Y(-.62), '3D LIDAR MAST', C.ink);
+        callout(X(.45), Y(-.23), X(.78), Y(-.38), 'STEREO CAMERAS', C.ink);
+        callout(X(.53), Y(-.06), X(.8), Y(.0), 'LIGHT BAR', C.ink);
+        callout(X(-.05), Y(-.05), X(-.18), Y(-.42), 'COMPUTE · SLAM + AUTONOMY', C.accent, 'right');
+        callout(X(-.55), Y(-.02), X(-.72), Y(.2), 'TETHER TERMINATION', C.ink, 'right');
+        callout(X(.33), Y(.28), X(.55), Y(.48), 'LOW, WIDE STANCE FOR RUBBLE', C.ink);
+      }
+      // step 2: the sensors working
+      if (k2 > 0) {
+        alpha(k2);
+        const ph = RM ? 0 : (t * .5) % 1;
+        for (let k = 0; k < 4; k++) {
+          const rk = (.3 + (k + ph) * .2); ctx.strokeStyle = rgba(C.accent, .55 * (1 - (k + ph) / 4.2));
+          ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(pu[0], fy, rk * L, rk * L * .14, 0, 0, TAU); ctx.stroke();
+        }
+        const sweep = RM ? 0 : t * 1.6;
+        for (let k = 0; k < 26; k++) {
+          const a = -.35 + k / 25 * 1.4 * Math.PI * .5 + .08, hx = pu[0] + Math.cos(a + .1) * L * .9, hy = Math.min(fy, pu[1] + Math.sin(a) * L * .9);
+          const hit = hy >= fy - .5, ex = hit ? pu[0] + (fy - pu[1]) / Math.tan(a) : hx;
+          const b = .12 + .5 * Math.max(0, Math.cos(a * 3 - sweep));
+          ctx.strokeStyle = rgba(C.accent, b * .6); ctx.beginPath(); ctx.moveTo(pu[0], pu[1]); ctx.lineTo(ex, hit ? fy : hy); ctx.stroke();
+          if (hit && ex < Math.min(R.x1, X(1.1))) { ctx.fillStyle = rgba('#ffd59a', .9); ctx.fillRect(ex - 1.2, fy - 1.2, 2.4, 2.4); }
+          const am = Math.PI - a, mx = pu[0] + (fy - pu[1]) / Math.tan(am);
+          if (Math.tan(am) < 0 && mx > Math.max(R.x0, X(-1.1))) { ctx.strokeStyle = rgba(C.accent, b * .35); ctx.beginPath(); ctx.moveTo(pu[0], pu[1]); ctx.lineTo(mx, fy); ctx.stroke(); ctx.fillStyle = rgba('#ffd59a', .7); ctx.fillRect(mx - 1.2, fy - 1.2, 2.4, 2.4); }
+        }
+        // camera frustum
+        const cxF = X(.5 + dx * .5), cyF = Y(-.222 + dy * .5);
+        ctx.fillStyle = 'rgba(159,196,255,.07)'; ctx.strokeStyle = 'rgba(159,196,255,.45)';
+        ctx.beginPath(); ctx.moveTo(cxF, cyF); ctx.lineTo(X(1.05), Y(-.5)); ctx.lineTo(X(1.05), Y(.05)); ctx.closePath(); ctx.fill(); ctx.stroke();
+        // IMU triad
+        const ix = X(-.05), iy = Y(-.02), al = L * .09;
+        const arrow = (x2, y2, c) => { ctx.strokeStyle = c; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(ix, iy); ctx.lineTo(x2, y2); ctx.stroke(); const a = Math.atan2(y2 - iy, x2 - ix); ctx.fillStyle = c; ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x2 - Math.cos(a - .4) * 6, y2 - Math.sin(a - .4) * 6); ctx.lineTo(x2 - Math.cos(a + .4) * 6, y2 - Math.sin(a + .4) * 6); ctx.fill(); };
+        ctx.fillStyle = 'rgba(5,7,13,.6)'; ctx.fillRect(ix - al * .5, iy - al * 1.2, al * 1.8, al * 1.7);
+        arrow(ix + al, iy, C.accent); arrow(ix, iy - al, C.ink); arrow(ix + al * .55, iy - al * .5, C.us);
+        // odometry arc
+        const wx = X(-.33), wy = Y(.17), wr = L * .18;
+        ctx.strokeStyle = C.ink; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.arc(wx, wy, wr, -2.5, -1.0); ctx.stroke();
+        const ea = -1.0; ctx.fillStyle = C.ink; ctx.beginPath(); const ax = wx + Math.cos(ea) * wr, ay = wy + Math.sin(ea) * wr;
+        ctx.moveTo(ax + 4, ay + 5); ctx.lineTo(ax - 5, ay + 1); ctx.lineTo(ax + 1, ay - 6); ctx.fill();
+        callout(pu[0] + L * .06, pu[1], X(.55), Y(-.62), '3D LIDAR · OWN LASER, NO DAYLIGHT', C.accent);
+        callout(X(.75), Y(-.36), X(.86), Y(-.5), 'STEREO CAMERAS', '#9fc4ff');
+        callout(X(.62), Y(.0), X(.8), Y(.1), 'ONBOARD LIGHTING', '#ffd59a');
+        callout(ix - al * .5, iy - al * .6, X(-.3), Y(-.4), 'IMU', C.ink, 'right');
+        callout(wx - wr * .8, wy - wr * .6, X(-.7), Y(-.12), 'WHEEL ODOMETRY', C.ink, 'right');
+        alpha(1);
+      }
+      // step 3: tether cross-section and flows
+      const k3 = sstep(2.0, 2.3, s);
+      if (k3 > 0) {
+        alpha(k3);
+        const n = 7, T = RM ? 0 : t;
+        for (let k = 0; k < n; k++) {
+          const ud = ((T * .25 + k / n) % 1), [x1, y1] = bez(c0, c1, c2, c3, ud);
+          ctx.fillStyle = '#fff3d6'; ctx.fillRect(x1 - 2, y1 - 2, 4, 4); ctx.fillStyle = rgba(C.accent, .3); ctx.fillRect(x1 - 4, y1 - 4, 8, 8);
+          const uc = 1 - ((T * .18 + (k + .5) / n) % 1), [x2, y2] = bez(c0, c1, c2, c3, uc);
+          ctx.fillStyle = '#e8a15a'; ctx.beginPath(); ctx.arc(x2 + 5, y2, 2.2, 0, TAU); ctx.fill();
+        }
+        const ir = clamp(Math.min(w, h) * (mob ? .15 : .17), 46, 118), icx = R.x0 + w * (mob ? .2 : .2), icy = R.y0 + h * (mob ? .24 : .22);
+        const [ax, ay] = bez(c0, c1, c2, c3, .6);
+        ctx.setLineDash([3, 4]); ctx.strokeStyle = rgba(C.ink, .5); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(ax, ay);
+        const ang = Math.atan2(ay - icy, ax - icx); ctx.lineTo(icx + Math.cos(ang) * ir, icy + Math.sin(ang) * ir); ctx.stroke(); ctx.setLineDash([]);
+        ctx.strokeStyle = C.ink; ctx.beginPath(); ctx.arc(ax, ay, 6, 0, TAU); ctx.stroke();
+        // jacket
+        ctx.fillStyle = '#26251f'; ctx.beginPath(); ctx.arc(icx, icy, ir, 0, TAU); ctx.fill(); ctx.strokeStyle = '#6b665d'; ctx.lineWidth = 1.2; ctx.stroke();
+        // braid
+        ctx.save(); ctx.beginPath(); ctx.arc(icx, icy, ir * .92, 0, TAU); ctx.arc(icx, icy, ir * .74, 0, TAU, true); ctx.clip();
+        ctx.fillStyle = '#7d6a45'; ctx.fillRect(icx - ir, icy - ir, ir * 2, ir * 2);
+        ctx.strokeStyle = '#c4a970'; ctx.lineWidth = 1.2; ctx.beginPath();
+        for (let k = 0; k < 60; k++) { const a = k * TAU / 60, r1 = ir * .74, r2 = ir * .92, sgn = k % 2 ? 1 : -1;
+          ctx.moveTo(icx + Math.cos(a) * r1, icy + Math.sin(a) * r1); ctx.lineTo(icx + Math.cos(a + sgn * .12) * r2, icy + Math.sin(a + sgn * .12) * r2); }
+        ctx.stroke(); ctx.restore();
+        ctx.fillStyle = '#141414'; ctx.beginPath(); ctx.arc(icx, icy, ir * .74, 0, TAU); ctx.fill();
+        const cu = [];
+        for (let k = 0; k < 3; k++) {
+          const a = -Math.PI / 2 + k * TAU / 3 + .5, x = icx + Math.cos(a) * ir * .42, y = icy + Math.sin(a) * ir * .42; cu.push([x, y]);
+          ctx.fillStyle = '#3d3630'; ctx.beginPath(); ctx.arc(x, y, ir * .2, 0, TAU); ctx.fill();
+          const cg = ctx.createRadialGradient(x - ir * .04, y - ir * .04, 0, x, y, ir * .13);
+          cg.addColorStop(0, '#f4b878'); cg.addColorStop(1, '#9c5a23'); ctx.fillStyle = cg; ctx.beginPath(); ctx.arc(x, y, ir * .13, 0, TAU); ctx.fill();
+        }
+        ctx.fillStyle = '#e9e4d8'; ctx.beginPath(); ctx.arc(icx, icy, ir * .12, 0, TAU); ctx.fill();
+        const pulse = RM ? 1 : .6 + .4 * Math.sin(t * 5);
+        const fg2 = ctx.createRadialGradient(icx, icy, 0, icx, icy, ir * .12);
+        fg2.addColorStop(0, `rgba(190,232,255,${pulse.toFixed(3)})`); fg2.addColorStop(1, 'rgba(190,232,255,0)');
+        ctx.fillStyle = fg2; ctx.beginPath(); ctx.arc(icx, icy, ir * .12, 0, TAU); ctx.fill();
+        ctx.fillStyle = '#bfe8ff'; ctx.beginPath(); ctx.arc(icx, icy, ir * .04, 0, TAU); ctx.fill();
+        const lx = icx + ir + 18;
+        callout(icx + ir * .83 * Math.cos(-.9), icy + ir * .83 * Math.sin(-.9), lx, icy - ir * .7, 'TENSILE BRAID · CARRIES THE LOAD', '#c4a970');
+        callout(cu[0][0], cu[0][1], lx, icy - ir * .1, 'COPPER · POWER DOWN', '#e8a15a');
+        callout(icx, icy, lx, icy + ir * .5, 'OPTICAL FIBER · SCANS UP', '#bfe8ff');
+        tag(icx, icy + ir + 16, 'TETHER CROSS-SECTION · ILLUSTRATIVE', C.faint, 'center');
+        alpha(1);
+      }
+    }
+  };
+
 /*@SCENES*/
 
   /* ---------------- scroll engine ---------------- */
