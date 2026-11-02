@@ -5,16 +5,15 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: fixed full-bleed canvas "instrument view" behind a left reading column of story panels; scroll position drives the scene. */
+/* Layout: one fixed full-bleed canvas behind a left reading column. Every scene is scrubbed by scroll position and scenes blend into each other across section boundaries. */
 :root{
-  --void:#05070d;        /* space, cave interior */
-  --rock:#14141b;        /* regolith cross-section */
-  --ink:#ece8df;         /* sunlit regolith white */
-  --dim:#9a9ca6;         /* secondary text */
-  --faint:#5d606c;       /* rules, ticks */
-  --accent:#ff7a2f;      /* SLAM LiDAR orange */
-  --us:#7fa6ff;          /* NASA track */
-  --cn:#ff5468;          /* CNSA track */
+  --void:#05070d;
+  --ink:#ece8df;
+  --dim:#9a9ca6;
+  --faint:#5d606c;
+  --accent:#ff7a2f;
+  --us:#7fa6ff;
+  --cn:#ff5468;
   --panel:rgba(5,7,13,.84);
   --f-display:"Big Shoulders Display","Arial Narrow","Helvetica Neue",sans-serif;
   --f-body:"Instrument Sans","Helvetica Neue",Arial,sans-serif;
@@ -22,23 +21,23 @@
   color-scheme:dark;
 }
 *{box-sizing:border-box}
-html{scroll-behavior:smooth}
-@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
-body{background:var(--void);color:var(--ink);font-family:var(--f-body);font-size:1.0625rem;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
-body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--void)}
+body{margin:0;background:var(--void);color:var(--ink);font-family:var(--f-body);font-size:1.0625rem;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 #sky{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block}
-.veil{position:fixed;inset:0;z-index:0;pointer-events:none;background:linear-gradient(90deg,rgba(5,7,13,.94) 0%,rgba(5,7,13,.78) 30%,rgba(5,7,13,0) 48%)}
+.veil{position:fixed;inset:0;z-index:0;pointer-events:none;background:linear-gradient(90deg,rgba(5,7,13,.94) 0%,rgba(5,7,13,.8) 30%,rgba(5,7,13,0) 47%)}
 @media (max-width:899px){.veil{display:none}}
 
 .story{position:relative;z-index:1;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 @media (min-width:900px){.story{padding-left:max(5vw,env(safe-area-inset-left,0px))}}
 
 .scene{min-height:115vh;display:flex;align-items:center;padding-block:14vh}
-.step{min-height:95vh;display:flex;align-items:center;padding-block:8vh}
-.panel{max-width:33rem;min-width:0;display:grid;gap:1.1rem}
+.hero{min-height:160vh;align-items:flex-start;padding-top:14vh}
+.chapter{display:block}
+.step{min-height:100vh;display:flex;align-items:center;padding-block:10vh}
+.panel{max-width:33rem;min-width:0;display:grid;gap:1.1rem;will-change:opacity,transform}
 .panel.wide{max-width:40rem}
 @media (max-width:899px){
   .scene,.step{align-items:flex-end}
+  .hero{align-items:flex-end;padding-bottom:8vh}
   .panel{background:var(--panel);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);padding:1.4rem 1.25rem;border:1px solid rgba(236,232,223,.08);border-radius:4px;width:100%}
 }
 
@@ -59,9 +58,7 @@ p strong{color:var(--ink);font-weight:600}
 .cue i{display:block;width:1px;height:2.4rem;background:linear-gradient(var(--accent),transparent);animation:drip 2.2s ease-in-out infinite}
 @keyframes drip{0%{transform:scaleY(.2);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}100%{transform:scaleY(.2);transform-origin:bottom}}
 @media (prefers-reduced-motion:reduce){.cue i{animation:none}}
-.hero{min-height:94vh;align-items:flex-start;padding-top:12vh}
 
-/* race timeline */
 .tracks{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1.6rem 2rem}
 .track{min-width:0}
 .track h3{font-family:var(--f-mono);font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;margin:0 0 .7rem;display:flex;align-items:center;gap:.5rem}
@@ -73,27 +70,10 @@ p strong{color:var(--ink);font-weight:600}
 .track li.target time{color:var(--faint)}
 .track li b{color:var(--ink);font-weight:600}
 
-/* specs */
-.specs{display:grid;gap:0;margin:0;border-top:1px solid rgba(236,232,223,.1)}
-.specs div{display:grid;grid-template-columns:minmax(8rem,11rem) 1fr;gap:1rem;padding:.6rem 0;border-bottom:1px solid rgba(236,232,223,.1)}
-.specs dt{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);padding-top:.15rem}
-.specs dd{margin:0;color:var(--ink);font-variant-numeric:tabular-nums;min-width:0}
-
-.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}
-.stat b{display:block;font-family:var(--f-display);font-weight:800;font-size:clamp(2.6rem,6vw,3.6rem);line-height:1;color:var(--ink);font-variant-numeric:tabular-nums}
-.stat span{display:block;font-size:.85rem;line-height:1.35;color:var(--dim);margin-top:.35rem}
-
-.uses{display:grid;gap:.9rem}
-.uses div{display:grid;grid-template-columns:5.5rem 1fr;gap:1rem;align-items:baseline}
-.uses dt,.uses b{font-family:var(--f-mono);font-size:.76rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:500}
-.uses span{color:var(--dim);font-size:.97rem}
-
-.phases{list-style:none;margin:0;padding:0;display:grid;gap:0;counter-reset:ph}
-.phases li{counter-increment:ph;display:grid;grid-template-columns:2.4rem 1fr;gap:.8rem;padding:.7rem 0;border-bottom:1px solid rgba(236,232,223,.1)}
-.phases li::before{content:counter(ph,decimal-leading-zero);font-family:var(--f-mono);font-size:.78rem;color:var(--accent);padding-top:.2rem}
-.phases b{display:block;font-family:var(--f-display);font-weight:600;font-size:1.3rem;text-transform:uppercase;letter-spacing:.02em;color:var(--ink);line-height:1.1}
-.phases span{font-size:.93rem;color:var(--dim)}
-.subhead{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin:.4rem 0 -.4rem}
+.facts{list-style:none;margin:0;padding:0;display:grid;gap:.55rem}
+.facts li{display:grid;grid-template-columns:1.2rem 1fr;gap:.5rem;color:var(--dim);font-size:.97rem}
+.facts li::before{content:"";width:.5rem;height:1px;background:var(--accent);margin-top:.8rem}
+.facts b{color:var(--ink);font-weight:600}
 
 .close h2{font-size:clamp(2.6rem,6.4vw,5.2rem)}
 .tagline{font-family:var(--f-mono);font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink)}
@@ -122,8 +102,8 @@ p strong{color:var(--ink);font-weight:600}
   <section class="scene hero" data-scene="moon" data-chapter="Prologue">
     <div class="panel">
       <div class="brand"><b>SLAM</b><span>Subsurface Lunar Atlas Mission</span></div>
-      <h1>The second race to the Moon is already on.</h1>
-      <p class="lede">This time the prize isn't a flag. It's a place to stay. And the best places to stay may be underground.</p>
+      <h1>The race back to the Moon is on again.</h1>
+      <p class="lede">Fifty years after Apollo, the United States and China are both going back, and this time they plan to stay. Some of the best places to stay may be underground.</p>
       <div class="cue"><i></i>Scroll</div>
     </div>
   </section>
@@ -132,8 +112,8 @@ p strong{color:var(--ink);font-weight:600}
     <div class="panel">
       <p class="eyebrow">1969 – 1972</p>
       <h2>Twelve people walked on the Moon. Then everyone went home.</h2>
-      <p>Six Apollo landings added up to about 80 hours of moonwalking, all on the near side and all within a few dozen degrees of the equator. The last crew left in December 1972.</p>
-      <p><strong>For the next half-century, nobody went back.</strong> The first race was won by arriving. Nobody had a reason to stay.</p>
+      <p>Six Apollo landings added up to about 80 hours of moonwalking, all on the near side and all close to the equator. The last crew left in December 1972.</p>
+      <p><strong>Nobody went back for over fifty years.</strong> The first race was won by arriving. Nobody had a reason to stay.</p>
     </div>
   </section>
 
@@ -172,45 +152,79 @@ p strong{color:var(--ink);font-weight:600}
       <p class="eyebrow">The new objective</p>
       <h2>Apollo was a visit. This race is about who stays.</h2>
       <p><strong>China has committed to landing its first astronauts on the Moon before 2030.</strong> That deadline is why this is a race again and not a schedule.</p>
-      <p>NASA's Moon Base plan uses robotic missions through 2029 to pick infrastructure sites before astronauts arrive, then moves into power, cargo and communications. China describes the ILRS as a long-duration base with its own transport, energy, navigation and resource use.</p>
-      <p>Both are heading for the <strong>south pole</strong>, where permanently shadowed craters may hold water ice.</p>
-      <p class="callout">Once the Moon becomes infrastructure, knowing the terrain pays off on every mission after.</p>
+      <p>NASA's Moon Base plan sends robots through 2029 to pick infrastructure sites before astronauts arrive. China describes the ILRS as a long-duration base with its own power, transport and resource use. Both are aiming for the <strong>south pole</strong>, where permanently shadowed craters may hold water ice.</p>
+      <p class="callout">Staying means living somewhere. The question is where.</p>
     </div>
   </section>
 
-  <section class="scene" data-scene="thermal" data-chapter="The surface">
-    <div class="panel">
-      <p class="eyebrow">The problem with the surface</p>
-      <h2>Everything built on the surface has to fight the Moon.</h2>
-      <p>Near the equator the ground swings from about <strong>+120 °C</strong> at midday to about <strong>−170 °C</strong> at night, over a day that lasts 29.5 Earth days. With no air and no magnetic field, radiation and micrometeoroids arrive unfiltered. Every kilogram of shielding a surface base needs has to be launched or dug.</p>
-      <p>In the shaded floor of the Mare Tranquillitatis pit, models fit to orbiter measurements put the temperature near <strong>+17 °C</strong>, day and night.</p>
-      <p class="note">Chart: approximate equatorial surface temperature over one lunar day vs. modeled pit floor.</p>
+  <section class="chapter" data-scene="shelter" data-chapter="Why caves">
+    <div class="step">
+      <div class="panel">
+        <p class="eyebrow">Why go underground · 1 of 4</p>
+        <h2>The surface is hostile. A lava tube is a ready-made shelter.</h2>
+        <p>The Moon has no atmosphere and no global magnetic field. Galactic cosmic rays and solar particle storms hit the ground unfiltered, and a crew in a surface habitat absorbs all of it.</p>
+        <p><strong>Several meters of rock overhead stop most of that dose before it reaches anyone.</strong> A lava tube comes with the rock already in place.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="panel">
+        <p class="eyebrow">Why go underground · 2 of 4</p>
+        <h2>No 300-degree temperature swings.</h2>
+        <p>A lunar day lasts 29.5 Earth days. Near the equator the surface climbs to about <strong>+120 °C</strong> in the afternoon and drops to about <strong>−170 °C</strong> through two weeks of night. Every surface system has to survive that cycle again and again.</p>
+        <p>In the shaded floor of the Mare Tranquillitatis pit, models fit to orbiter data put the temperature near <strong>+17 °C</strong>, day and night. Steady temperatures mean smaller heaters, smaller radiators and less power spent just staying alive.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="panel">
+        <p class="eyebrow">Why go underground · 3 of 4</p>
+        <h2>Out of the line of fire.</h2>
+        <p>Micrometeoroids hit the surface constantly and fast. Every landing and every impact throws abrasive dust that wears out seals, joints, optics and radiators.</p>
+        <p>Underground, the roof takes the impacts and very little dust settles. <strong>Equipment lasts longer and needs less maintenance.</strong></p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="panel">
+        <p class="eyebrow">Why go underground · 4 of 4</p>
+        <h2>The volume is already there.</h2>
+        <p>Protecting a surface base means launching shielding from Earth or having robots pile regolith over it. Both cost mass, power and time.</p>
+        <p>Inside a lava tube, <strong>nature has already built the shield and the room</strong>. Every kilogram not spent on shielding can go to life support, science or more crew.</p>
+        <p class="callout">A protected void is only valuable once you know its shape, how to get in and what's inside.</p>
+      </div>
     </div>
   </section>
 
   <section class="scene" data-scene="pits" data-chapter="Second geography">
     <div class="panel">
-      <p class="eyebrow">A second geography</p>
+      <p class="eyebrow">They exist</p>
       <h2>The Moon has holes in it. Some of them lead somewhere.</h2>
-      <p>Lunar Reconnaissance Orbiter imagery has turned up <strong>more than 200 pits</strong>. A few, in the dark lava plains, look like collapsed skylights into lava tubes. In 2024 a team re-analyzing 2010 radar data found a cave conduit running sideways from the Mare Tranquillitatis pit.</p>
-      <p>Meters of rock overhead are free radiation shielding. A stable interior is free thermal control. The volume is already there.</p>
-      <p class="callout">An orbiter can tell you a hole exists. It can't tell you whether a habitat fits inside.</p>
+      <p>Lunar Reconnaissance Orbiter imagery has turned up <strong>more than 200 pits</strong>. A few, in the dark lava plains, look like collapsed skylights into lava tubes.</p>
+      <p>In 2024 a team re-analyzing radar data from 2010 found a cave conduit running sideways from the Mare Tranquillitatis pit. It was the first direct evidence of an accessible cave below the lunar surface.</p>
     </div>
   </section>
 
-  <section class="scene descent" data-scene="descent" data-chapter="Going inside" style="display:block;padding-block:0">
+  <section class="scene" data-scene="orbit" data-chapter="The gap">
+    <div class="panel">
+      <p class="eyebrow">The problem</p>
+      <h2>Nobody has measured one from the inside.</h2>
+      <p>From orbit you see a hole, a shadow and a sunlit sliver of wall. You can't see how far the cave goes, how high the ceiling is, whether the floor is drivable or whether a habitat would fit.</p>
+      <p>Without those answers, no agency can commit a mission, and no company can design a habitat for a cave.</p>
+      <p class="callout">A cave doesn't become infrastructure until it's measured.</p>
+    </div>
+  </section>
+
+  <section class="chapter" data-scene="descent" data-chapter="The solution">
     <div class="step">
       <div class="panel">
-        <p class="eyebrow">SLAM · How it works</p>
-        <h2>SLAM goes inside and measures the space.</h2>
-        <p>A surface station sets down near the rim. It carries the solar power, the radio link to Earth, the data archive and a fixed reference point for the whole survey.</p>
+        <p class="eyebrow">The solution · SLAM</p>
+        <h2>Lower a mapping robot into the cave on a tether.</h2>
+        <p>A surface station sets down near the rim. It carries solar power, the radio link to Earth, the data archive, the tether reel and a fixed reference point for the whole survey.</p>
       </div>
     </div>
     <div class="step">
       <div class="panel">
         <p class="eyebrow">Descent</p>
         <p class="lede">A compact autonomous rover is lowered over the edge on one tether that carries power, fiber-optic data and the load.</p>
-        <p>Tether payout and tension double as sensors: how far down the rover is, and whether the line has snagged.</p>
+        <p>The reel measures payout and tension, so the station always knows how far down the rover is and whether the line has snagged.</p>
       </div>
     </div>
     <div class="step">
@@ -229,63 +243,70 @@ p strong{color:var(--ink);font-weight:600}
     </div>
   </section>
 
-  <section class="scene" data-scene="map" data-chapter="The atlas">
-    <div class="panel">
-      <p class="eyebrow">The product</p>
-      <h2>Google Maps and Street View for the lunar underground.</h2>
-      <p>What comes back is a registered 3D survey, not a breadcrumb trail. An engineer can measure a clearance, look at the actual wall at that coordinate, compare routes and estimate usable volume before any hardware leaves Earth.</p>
-      <dl class="uses">
-        <div><dt>Select</dt><dd><span>Compare candidate caves on volume, access, slope, hazards and uncertainty. Reject a bad site before it becomes a mission.</span></dd></div>
-        <div><dt>Design</dt><dd><span>Fit habitats, power, comms and emergency egress against measured geometry instead of an assumed tube.</span></dd></div>
-        <div><dt>Operate</dt><dd><span>Use the same spatial layer for navigation, inspection and construction underground.</span></dd></div>
-      </dl>
-      <p class="note">Visualization is illustrative, not lunar sensor data.</p>
-    </div>
-  </section>
-
-  <section class="scene" data-scene="access" data-chapter="Why now">
-    <div class="panel">
-      <p class="eyebrow">Why now</p>
-      <h2>Getting to the Moon is becoming something you can buy.</h2>
-      <div class="stats">
-        <div class="stat"><b>17</b><span>CLPS lunar deliveries awarded by NASA</span></div>
-        <div class="stat"><b>60+</b><span>payloads assigned across them</span></div>
-        <div class="stat"><b>$2.6B</b><span>CLPS contract ceiling through Nov. 2028</span></div>
+  <section class="chapter" data-scene="device" data-chapter="The device">
+    <div class="step">
+      <div class="panel">
+        <p class="eyebrow">The device</p>
+        <h2>A small rover built for one job.</h2>
+        <p>Small enough to lower through a skylight, low and wide enough to drive a rubble floor in total darkness. Everything it needs to map is on board, and everything it learns goes up the cable.</p>
       </div>
-      <p>NASA's Commercial Lunar Payload Services buys end-to-end delivery: integration, launch, landing and operations. In 2026 Astrobotic won two Moon Base missions for 2028, and Intuitive Machines took a $180.4M award for a larger cargo-class delivery.</p>
-      <p><strong>SLAM doesn't need to build a rocket or a lander.</strong> It builds the payload and buys the ride.</p>
+    </div>
+    <div class="step">
+      <div class="panel">
+        <p class="eyebrow">Sensors</p>
+        <h2>It sees without daylight.</h2>
+        <ul class="facts">
+          <li><span><b>3D LiDAR</b> measures the cave as millions of points with its own laser, so it works in total darkness.</span></li>
+          <li><span><b>Stereo cameras with onboard lighting</b> record what each wall actually looks like.</span></li>
+          <li><span><b>IMU and wheel odometry</b> track motion between scans.</span></li>
+          <li><span><b>Onboard compute</b> runs SLAM and the autonomy loop: sense, localize, map, choose, move.</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="step">
+      <div class="panel">
+        <p class="eyebrow">Tether</p>
+        <h2>One cable does three jobs.</h2>
+        <ul class="facts">
+          <li><span><b>Copper conductors</b> carry power down from the station's solar array, so the rover doesn't need a large battery.</span></li>
+          <li><span><b>Optical fiber</b> carries every scan up to the surface as it's taken.</span></li>
+          <li><span><b>A tensile braid</b> takes the load for lowering, holding and recovering the rover.</span></li>
+        </ul>
+      </div>
     </div>
   </section>
 
-  <section class="scene" data-scene="build" data-chapter="Build log">
-    <div class="panel">
-      <p class="eyebrow">Build log · October 2026</p>
-      <h2>The lunar rover lives in software first.</h2>
-      <p>SLAM's digital twin runs in MuJoCo with seven generations of rover and tether geometry, exact-CAD interference audits and synthetic LiDAR. The Earth rover is a deliberately cheap surrogate for the mapping and tether system, built to prove the loop in caves and mines before any flight hardware exists.</p>
-      <dl class="specs">
-        <div><dt>Geometry</dt><dd>G.04 active · G.07.1 research candidate</dd></div>
-        <div><dt>Long tether</dt><dd>140 m, 6 mm candidate (G.05)</dd></div>
-        <div><dt>Mass estimate</dt><dd>Rover 7.7 kg · station 53.8 kg incl. cable (G.05)</dd></div>
-        <div><dt>Simulator</dt><dd>MuJoCo 3.3.7, per-ray LiDAR casting</dd></div>
-        <div><dt>Status</dt><dd>Research build, on fabrication hold</dd></div>
-      </dl>
-      <p>Still to prove: full cable-terrain contact, terrain calibrated to lunar regolith, and an end-to-end autonomous pit run. Those are the next tests.</p>
+  <section class="chapter" data-scene="map" data-chapter="The map">
+    <div class="step">
+      <div class="panel">
+        <p class="eyebrow">The product</p>
+        <h2>Google Maps and Street View for the lunar underground.</h2>
+        <p>Every scan is registered into one 3D model of the cave: geometry, matching imagery, the rover's path, where the floor is drivable, a fixed reference frame and a confidence value on every measurement.</p>
+        <p><strong>That map is the product.</strong> Here is what people do with it.</p>
+      </div>
     </div>
-  </section>
-
-  <section class="scene" data-scene="roadmap" data-chapter="Roadmap">
-    <div class="panel">
-      <p class="eyebrow">Roadmap</p>
-      <h2>Prove it cheaply on Earth. Then go.</h2>
-      <p class="subhead">Next</p>
-      <ol class="phases">
-        <li><div><b>Earth surrogate</b><span>Zero-light perception, SLAM accuracy, full lowering and tether payout in real caves and tunnels.</span></div></li>
-        <li><div><b>Digital lunar vehicle</b><span>Keep the flight rover in simulation while requirements mature: terrain, autonomy, structure, thermal, mass.</span></div></li>
-        <li><div><b>Flight development</b><span>Vacuum, thermal and dust qualification once the mapping thesis has evidence.</span></div></li>
-        <li><div><b>Fund and fly</b><span>NASA SBIR/STTR, lunar programs and strategic partners, then a CLPS-class ride.</span></div></li>
-      </ol>
-      <p class="subhead">Then</p>
-      <p>Qualify candidate caves → engineering surveys for habitation → underground operations → a searchable Moon-wide atlas → Mars, where the USGS has catalogued more than a thousand candidate cave entrances.</p>
+    <div class="step">
+      <div class="panel">
+        <p class="eyebrow">Use 1 · Select</p>
+        <h2>Pick the right cave before anything flies.</h2>
+        <p>Mission planners compare candidate caves on ceiling height, narrowest clearance, floor slope, rockfall hazards and usable volume, each with an uncertainty attached.</p>
+        <p><strong>A bad site gets rejected on Earth instead of after landing.</strong></p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="panel">
+        <p class="eyebrow">Use 2 · Design</p>
+        <h2>Build the habitat to fit the real cave.</h2>
+        <p>Habitat and infrastructure teams fit modules against measured walls instead of an assumed tube. They route power and comms from the skylight, place anchors and lighting, and plan an emergency exit before any hardware leaves Earth.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="panel">
+        <p class="eyebrow">Use 3 · Operate</p>
+        <h2>Then run the base from the same map.</h2>
+        <p>Rovers and crews navigate with it. Repeat scans catch rockfall and change over time. Science teams use it to aim ground-penetrating radar, spectrometers and radiation sensors, and to find ice or other resources.</p>
+        <p class="callout">The value is the decision the map lets someone make before hardware leaves Earth.</p>
+      </div>
     </div>
   </section>
 
@@ -293,7 +314,7 @@ p strong{color:var(--ink);font-weight:600}
     <div class="panel">
       <h2>Before anyone builds underground, someone has to map underground.</h2>
       <p class="lede">SLAM intends to own that map.</p>
-      <p class="tagline">Map the Moon. Build from the map. Take the platform farther.</p>
+      <p class="tagline">Map the Moon. Build from the map.</p>
     </div>
   </section>
 </main>
@@ -301,17 +322,15 @@ p strong{color:var(--ink);font-weight:600}
 <footer class="sources">
   <h2>Sources</h2>
   <ol>
-    <li>C. Ding et al., "Towards a habitable Moon: probing subsurface cavities with global penetrating radar," <i>npj Space Exploration</i> 1, 11 (2025).</li>
     <li>L. Carrer et al., "Radar evidence of an accessible cave conduit on the Moon below the Mare Tranquillitatis pit," <i>Nature Astronomy</i> (2024).</li>
     <li>T. Horvath, P. Hayne, D. Paige, "Thermal and illumination environments of lunar pits and caves," <i>Geophysical Research Letters</i> (2022).</li>
     <li>R. Wagner, M. Robinson, "Distribution, formation mechanisms, and significance of lunar pits," <i>Icarus</i> (2014).</li>
-    <li>NASA, <a href="https://www.nasa.gov/commercial-lunar-payload-services/" target="_blank" rel="noopener">Commercial Lunar Payload Services</a>; NASA Moon Base Development (2026); Artemis II mission (April 2026).</li>
-    <li>Astrobotic Moon Base CLPS awards (Jun. 2026); Intuitive Machines $180.4M CLPS award (Mar. 2026).</li>
-    <li>China Manned Space Agency / State Council: crewed landing before 2030. CNSA: ILRS basic model by 2035; Chang'e-4, -5, -6 and -7 mission records.</li>
-    <li>NASA KNaCK: SLAM LiDAR for exploration and mapping of lunar pits and caves (IPCC 2023); JPL subterranean autonomy research.</li>
-    <li>U.S. Geological Survey, "Fundamental science and engineering questions in planetary cave exploration."</li>
+    <li>C. Ding et al., "Towards a habitable Moon: probing subsurface cavities with global penetrating radar," <i>npj Space Exploration</i> 1, 11 (2025).</li>
+    <li>NASA: Artemis II mission (April 2026); Moon Base development (2026); <a href="https://www.nasa.gov/commercial-lunar-payload-services/" target="_blank" rel="noopener">Commercial Lunar Payload Services</a>.</li>
+    <li>China Manned Space Agency: crewed lunar landing before 2030. CNSA: ILRS basic model by 2035; Chang'e-4, -5, -6 and -7 mission records.</li>
+    <li>NASA KNaCK: SLAM LiDAR for exploration and mapping of lunar pits and caves (IPCC 2023).</li>
   </ol>
-  <p>Temperature curve is a simplified illustration of published ranges. Cave cross-section and point cloud are illustrative and not to scale. Google Maps and Street View are functional analogies only; no affiliation with Google, NASA, CNSA or any cited organization is implied.</p>
+  <p>All graphics are illustrative: the Moon, pit, cave cross-sections, rover and point clouds are generated in the browser and are not to scale or real sensor data. Google Maps and Street View are a functional analogy only; no affiliation with Google, NASA, CNSA or any cited organization is implied.</p>
 </footer>
 
 <script>
@@ -321,23 +340,15 @@ p strong{color:var(--ink);font-weight:600}
   const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const css = getComputedStyle(document.documentElement);
   const tok = n => css.getPropertyValue(n).trim();
-  const C = { void: tok('--void'), rock: tok('--rock'), ink: tok('--ink'), dim: tok('--dim'), faint: tok('--faint'), accent: tok('--accent'), us: tok('--us'), cn: tok('--cn') };
+  const C = { void: tok('--void'), ink: tok('--ink'), dim: tok('--dim'), faint: tok('--faint'), accent: tok('--accent'), us: tok('--us'), cn: tok('--cn') };
   const MONO = '500 10.5px "IBM Plex Mono", ui-monospace, Menlo, monospace';
-  const D2R = Math.PI / 180;
+  const D2R = Math.PI / 180, TAU = Math.PI * 2;
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const ease = k => { k = clamp(k, 0, 1); return k * k * (3 - 2 * k); };
+  const lerp = (a, b, k) => a + (b - a) * k;
+  const bump = (p, a, b, e = .05) => ease((p - a) / e) * (1 - ease((p - b) / e));
   function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
   function rgba(hex, a) { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`; }
-
-  let W = 0, H = 0, DPR = 1;
-  const r0 = rng(42);
-  const stars = Array.from({ length: 280 }, () => ({ x: r0(), y: r0(), r: r0() * 1.1 + .25, a: r0() * .55 + .15, ph: r0() * 6.28 }));
-
-  function region() {
-    return W >= 900 ? { x0: W * .44, x1: W * .97, y0: H * .1, y1: H * .9 } : { x0: 12, x1: W - 12, y0: H * .06, y1: H * .58 };
-  }
-
-  /* ---------------- procedural Moon ---------------- */
   function hash3(x, y, z) {
     let h = (Math.imul(x, 374761393) + Math.imul(y, 668265263) + Math.imul(z, 1274126177)) | 0;
     h = Math.imul(h ^ (h >>> 13), 1274126177); h ^= h >>> 16; return (h >>> 0) / 4294967296;
@@ -346,458 +357,148 @@ p strong{color:var(--ink);font-weight:600}
     const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
     const xf = x - xi, yf = y - yi, zf = z - zi;
     const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf), w = zf * zf * (3 - 2 * zf);
-    const l = (a, b, t) => a + (b - a) * t;
-    return l(l(l(hash3(xi, yi, zi), hash3(xi + 1, yi, zi), u), l(hash3(xi, yi + 1, zi), hash3(xi + 1, yi + 1, zi), u), v),
-             l(l(hash3(xi, yi, zi + 1), hash3(xi + 1, yi, zi + 1), u), l(hash3(xi, yi + 1, zi + 1), hash3(xi + 1, yi + 1, zi + 1), u), v), w);
+    return lerp(lerp(lerp(hash3(xi, yi, zi), hash3(xi + 1, yi, zi), u), lerp(hash3(xi, yi + 1, zi), hash3(xi + 1, yi + 1, zi), u), v),
+                lerp(lerp(hash3(xi, yi, zi + 1), hash3(xi + 1, yi, zi + 1), u), lerp(hash3(xi, yi + 1, zi + 1), hash3(xi + 1, yi + 1, zi + 1), u), v), w);
   }
-  function craters(px, py, pz, k, seed, dens) {
+  // crater height field: bowl + raised rim + ejecta falloff, in units of the input space
+  function craterH(px, py, pz, k, seed, dens) {
     const x = px * k, y = py * k, z = pz * k;
     const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
     const ox = x - xi < .5 ? -1 : 0, oy = y - yi < .5 ? -1 : 0, oz = z - zi < .5 ? -1 : 0;
-    let s = 0;
+    let h = 0;
     for (let dx = 0; dx < 2; dx++) for (let dy = 0; dy < 2; dy++) for (let dz = 0; dz < 2; dz++) {
       const cx = xi + ox + dx, cy = yi + oy + dy, cz = zi + oz + dz;
       if (hash3(cx + seed, cy, cz) > dens) continue;
       const fx = cx + .2 + .6 * hash3(cx, cy + seed, cz), fy = cy + .2 + .6 * hash3(cx, cy, cz + seed), fz = cz + .2 + .6 * hash3(cx + seed, cy + seed, cz);
-      const rad = .14 + .3 * hash3(cz, cx, cy + seed);
+      const rad = .12 + .3 * hash3(cz, cx, cy + seed);
       const ex = x - fx, ey = y - fy, ez = z - fz;
-      const d = Math.sqrt(ex * ex + ey * ey + ez * ez);
-      if (d < rad) {
-        const q = d / rad;
-        if (q < .8) s += -.13 * (1 - q / .8) + .16 * (ex / rad) * q;
-        else s += .1 * (1 - (q - .8) / .2);
-      }
+      const q = Math.sqrt(ex * ex + ey * ey + ez * ez) / rad;
+      if (q >= 1.7) continue;
+      const dep = rad * .45, rim = dep * .32;
+      h += q < 1 ? dep * (q * q - 1) + rim * q * q * q * q : rim * Math.exp(-(q - 1) * 5);
     }
-    return s;
+    return h / k;
   }
-  const MARIA = [[18, -57, .42, .3], [33, -16, .28, .34], [28, 17, .16, .34], [8.5, 31, .19, .32], [17, 59, .11, .36], [-8, 51, .15, .28], [-15, 35, .09, .28], [-21, -17, .16, .26], [56, 0, .14, .2], [-10, -23, .1, .22], [-24, -39, .08, .28], [13, 4, .06, .26], [7, -31, .1, .22], [27, 147, .06, .28], [-53, -169, .5, .07], [-20, 10, .05, .12]]
-    .map(([la, lo, s, d]) => ({ x: Math.cos(la * D2R) * Math.sin(lo * D2R), y: Math.sin(la * D2R), z: Math.cos(la * D2R) * Math.cos(lo * D2R), s, d }));
-  const L = (() => { const v = [-.42, .3, .86]; const n = Math.hypot(...v); return v.map(c => c / n); })();
 
-  function renderMoon(size, lat0) {
-    const c = document.createElement('canvas'); c.width = c.height = size;
-    const g = c.getContext('2d'); const img = g.createImageData(size, size); const d = img.data;
-    const r = size / 2, s0 = Math.sin(lat0 * D2R), c0 = Math.cos(lat0 * D2R);
-    for (let py = 0; py < size; py++) for (let px = 0; px < size; px++) {
-      const x = (px + .5 - r) / r, y = (r - py - .5) / r, rr = x * x + y * y;
-      if (rr > 1) continue;
-      const z = Math.sqrt(1 - rr);
-      const wx = x, wy = y * c0 + z * s0, wz = -y * s0 + z * c0;
-      let a = .66 + .22 * (vnoise(wx * 3 + 9, wy * 3, wz * 3) - .5) + .1 * (vnoise(wx * 9, wy * 9 + 3, wz * 9) - .5);
-      const mn = .7 + .6 * vnoise(wx * 7, wy * 7, wz * 7 + 5);
-      for (const m of MARIA) { const dot = wx * m.x + wy * m.y + wz * m.z; if (dot > .6) a -= m.d * Math.exp(-2 * (1 - dot) / (m.s * m.s)) * mn; }
-      a += craters(wx, wy, wz, 6, 11, .5) + craters(wx, wy, wz, 15, 37, .45) * .8 + craters(wx, wy, wz, 34, 91, .4) * .5;
-      const lam = Math.max(0, x * L[0] + y * L[1] + z * L[2]);
-      let v = a * (.05 + .95 * Math.pow(lam, .75));
-      v = clamp(v, 0, 1.1);
-      const i = (py * size + px) * 4;
-      d[i] = Math.min(255, v * 236); d[i + 1] = Math.min(255, v * 231); d[i + 2] = Math.min(255, v * 220);
-      d[i + 3] = 255 * clamp((1 - Math.sqrt(rr)) * r * 1.2, 0, 1);
-    }
-    g.putImageData(img, 0, 0); return c;
+  let W = 0, H = 0, DPR = 1, NOW = 0, SA = 1;
+  const alpha = k => { ctx.globalAlpha = SA * k; };
+  const r0 = rng(42);
+  const stars = Array.from({ length: 300 }, () => ({ x: r0(), y: r0(), r: r0() * 1.1 + .25, a: r0() * .55 + .15, ph: r0() * 6.28, z: r0() }));
+
+  function region() {
+    return W >= 900 ? { x0: W * .44, x1: W * .97, y0: H * .1, y1: H * .9 } : { x0: 12, x1: W - 12, y0: H * .07, y1: H * .56 };
   }
-  const moonTex = { front: null, south: null };
-  function project(lat, lon, lat0, cx, cy, r) {
+  function tag(x, y, text, color = C.ink, align = 'left') {
+    ctx.font = MONO; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    const w = ctx.measureText(text).width;
+    let bx = align === 'left' ? x - 4 : align === 'right' ? x - w - 4 : x - w / 2 - 4;
+    bx = clamp(bx, 4, W - w - 12);
+    ctx.fillStyle = 'rgba(5,7,13,.72)'; ctx.fillRect(bx, y - 8, w + 8, 16);
+    ctx.fillStyle = color; ctx.fillText(text, bx + 4, y);
+  }
+  function ring(x, y, rad, color, t, a = 1) {
+    ctx.lineWidth = 1.2; ctx.strokeStyle = rgba(color, a); ctx.beginPath(); ctx.arc(x, y, rad, 0, TAU); ctx.stroke();
+    const k = (t * .6) % 1;
+    ctx.strokeStyle = rgba(color, a * (1 - k) * .8); ctx.beginPath(); ctx.arc(x, y, rad + k * rad * 2.2, 0, TAU); ctx.stroke();
+  }
+
+  // background raster jobs: heavy textures render in small slices so scrolling never stalls
+  const jobs = []; let jobsOn = false;
+  function queue(job) { jobs.push(job); if (!jobsOn) { jobsOn = true; setTimeout(runJobs, 30); } }
+  function runJobs() {
+    const t0 = performance.now();
+    while (jobs.length && performance.now() - t0 < 12) { if (jobs[0].step()) jobs.shift(); }
+    if (jobs.length) setTimeout(runJobs, 0); else jobsOn = false;
+  }
+  function rasterJob(w, h, shade, done) {
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    const g = c.getContext('2d'); const img = g.createImageData(w, h); let row = 0;
+    return { step() {
+      const end = Math.min(h, row + 3);
+      for (; row < end; row++) for (let x = 0; x < w; x++) shade(x, row, img.data, (row * w + x) * 4);
+      if (row >= h) { g.putImageData(img, 0, 0); done(c); return true; }
+      return false;
+    } };
+  }
+
+  const SCN = {};
+  let drawMoon = () => {};
+  const resizers = [];
+  const moonPlace = (scale = 1) => { const R = region(); return { x: (R.x0 + R.x1) / 2, y: (R.y0 + R.y1) / 2, r: Math.min(R.x1 - R.x0, R.y1 - R.y0) * .42 * scale, a: 1, w: 0 }; };
+  function project(lat, lon, lat0, M) {
     const px = Math.cos(lat * D2R) * Math.sin(lon * D2R), py = Math.sin(lat * D2R), pz = Math.cos(lat * D2R) * Math.cos(lon * D2R);
     const s0 = Math.sin(lat0 * D2R), c0 = Math.cos(lat0 * D2R);
     const vy = py * c0 - pz * s0, vz = py * s0 + pz * c0;
-    return { x: cx + r * px, y: cy - r * vy, vis: vz > 0.02 };
-  }
-  function drawMoon(cx, cy, r, which = 'front') {
-    const tex = moonTex[which];
-    ctx.save();
-    const glow = ctx.createRadialGradient(cx, cy, r * .9, cx, cy, r * 1.35);
-    glow.addColorStop(0, 'rgba(236,232,223,.07)'); glow.addColorStop(1, 'rgba(236,232,223,0)');
-    ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(cx, cy, r * 1.35, 0, 7); ctx.fill();
-    if (tex) ctx.drawImage(tex, cx - r, cy - r, r * 2, r * 2);
-    else { const g = ctx.createRadialGradient(cx - r * .3, cy - r * .3, r * .1, cx, cy, r); g.addColorStop(0, '#bdb9b0'); g.addColorStop(1, '#2a2a2e'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.fill(); }
-    ctx.restore();
-  }
-  function moonPlace(scale = 1) {
-    const R = region(); return { cx: (R.x0 + R.x1) / 2, cy: (R.y0 + R.y1) / 2, r: Math.min(R.x1 - R.x0, R.y1 - R.y0) * .42 * scale };
-  }
-  function tag(x, y, text, color = C.ink, align = 'left') {
-    ctx.font = MONO; ctx.textAlign = align; ctx.textBaseline = 'middle';
-    ctx.fillStyle = rgba('#05070d', .7); const w = ctx.measureText(text).width;
-    const bx = align === 'left' ? x - 4 : align === 'right' ? x - w - 4 : x - w / 2 - 4;
-    ctx.fillRect(bx, y - 8, w + 8, 16);
-    ctx.fillStyle = color; ctx.fillText(text, x, y);
-  }
-  function ring(x, y, rad, color, t, a = 1) {
-    ctx.strokeStyle = rgba(color, a); ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(x, y, rad, 0, 7); ctx.stroke();
-    const k = (t * .6) % 1;
-    ctx.strokeStyle = rgba(color, a * (1 - k) * .8); ctx.beginPath(); ctx.arc(x, y, rad + k * rad * 2.2, 0, 7); ctx.stroke();
+    return { x: M.x + M.r * px, y: M.y - M.r * vy, vis: vz > 0.02 };
   }
   const TRANQ = [8.335, 33.222], MARIUS = [14.09, -56.8];
 
-  /* ---------------- scenes ---------------- */
-  function sceneMoon(p, t) {
-    const m = moonPlace(1.05);
-    const z = 1 + ease(p * 1.3) * .9;
-    const pit = project(TRANQ[0], TRANQ[1], 0, m.cx, m.cy, m.r);
-    const tx = (m.cx - pit.x) * (z - 1) * .9, ty = (m.cy - pit.y) * (z - 1) * .9;
-    ctx.save(); ctx.translate(m.cx + tx, m.cy + ty); ctx.scale(z, z); ctx.translate(-m.cx, -m.cy);
-    drawMoon(m.cx, m.cy, m.r);
-    ctx.restore();
-    const px = m.cx + tx + (pit.x - m.cx) * z, py = m.cy + ty + (pit.y - m.cy) * z;
-    ring(px, py, 7, C.accent, t);
-    tag(px + 16, py - 12, 'MARE TRANQUILLITATIS PIT', C.accent);
-    tag(px + 16, py + 6, '8.3°N 33.2°E · ~100 m ACROSS', C.dim);
-  }
-  const APOLLO = [['11', .67, 23.47], ['12', -3.01, -23.42], ['14', -3.65, -17.47], ['15', 26.13, 3.63], ['16', -8.97, 15.5], ['17', 20.19, 30.77]];
-  function sceneApollo(p, t) {
-    const m = moonPlace(1);
-    drawMoon(m.cx, m.cy, m.r);
-    APOLLO.forEach(([n, la, lo], i) => {
-      const k = ease((p - .05 - i * .05) / .08);
-      if (k <= 0) return;
-      const q = project(la, lo, 0, m.cx, m.cy, m.r);
-      ctx.fillStyle = rgba('#ece8df', k); ctx.beginPath(); ctx.arc(q.x, q.y, 3, 0, 7); ctx.fill();
-      ctx.strokeStyle = rgba('#ece8df', .5 * k); ctx.beginPath(); ctx.arc(q.x, q.y, 7, 0, 7); ctx.stroke();
-      ctx.globalAlpha = k; tag(q.x + 10, q.y - 10, 'APOLLO ' + n, C.ink); ctx.globalAlpha = 1;
-    });
-    const R = region();
-    ctx.globalAlpha = ease((p - .4) / .15);
-    tag(R.x1 - 8, R.y1 - 4, 'LAST DEPARTURE · 14 DEC 1972', C.dim, 'right');
-    ctx.globalAlpha = 1;
-  }
-  function bez(a, b, c, d, t) { const u = 1 - t; return [u * u * u * a[0] + 3 * u * u * t * b[0] + 3 * u * t * t * c[0] + t * t * t * d[0], u * u * u * a[1] + 3 * u * u * t * b[1] + 3 * u * t * t * c[1] + t * t * t * d[1]]; }
-  function curvePts(segs, n = 60) { const out = []; segs.forEach(s => { for (let i = 0; i <= n; i++) out.push(bez(s[0], s[1], s[2], s[3], i / n)); }); return out; }
-  function sceneRace(p, t) {
-    const R = region(), Wd = R.x1 - R.x0, Hd = R.y1 - R.y0;
-    const E = [R.x0 + Wd * .14, R.y0 + Hd * .55], er = Math.min(Wd, Hd) * .07;
-    const M = [R.x0 + Wd * .78, R.y0 + Hd * .45], mr = Math.min(Wd, Hd) * .13;
-    const g = ctx.createRadialGradient(E[0] - er * .4, E[1] - er * .4, er * .1, E[0], E[1], er);
-    g.addColorStop(0, '#cfe0ff'); g.addColorStop(.5, '#3d6fd1'); g.addColorStop(1, '#0d1a3a');
-    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(E[0], E[1], er, 0, 7); ctx.fill();
-    drawMoon(M[0], M[1], mr);
-    tag(E[0], E[1] + er + 16, 'EARTH', C.dim, 'center');
-    const us = curvePts([[E, [E[0] + Wd * .3, E[1] - Hd * .42], [M[0] + mr * 2.2, M[1] - mr * 2], [M[0] + mr * 1.5, M[1]]], [[M[0] + mr * 1.5, M[1]], [M[0] + mr * 2.2, M[1] + mr * 2], [E[0] + Wd * .3, E[1] + Hd * .4], E]]);
-    const cn = curvePts([[E, [E[0] + Wd * .35, E[1] + Hd * .3], [M[0] - mr * 2.4, M[1] + mr * 1.9], [M[0] - mr * .62, M[1] + mr * .78]]]);
-    const draw = (pts, col, speed, off) => {
-      ctx.setLineDash([2, 5]); ctx.strokeStyle = rgba(col, .35); ctx.lineWidth = 1; ctx.beginPath(); pts.forEach((q, i) => i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])); ctx.stroke(); ctx.setLineDash([]);
-      const k = ((RM ? .55 : t * speed) + off + p * .6) % 1, n = pts.length - 1, hi = Math.floor(k * n), lo = Math.max(0, hi - 18);
-      ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.beginPath(); for (let i = lo; i <= hi; i++) i === lo ? ctx.moveTo(pts[i][0], pts[i][1]) : ctx.lineTo(pts[i][0], pts[i][1]); ctx.stroke();
-      ctx.fillStyle = col; ctx.beginPath(); ctx.arc(pts[hi][0], pts[hi][1], 3.2, 0, 7); ctx.fill();
-    };
-    draw(us, C.us, .07, 0); draw(cn, C.cn, .09, .3);
-    tag(E[0] + Wd * .3, E[1] - Hd * .36, 'NASA · ARTEMIS', C.us, 'center');
-    tag(E[0] + Wd * .36, E[1] + Hd * .3, "CNSA · CHANG'E", C.cn, 'center');
-  }
-  function sceneStay(p, t) {
-    const m = moonPlace(1.02);
-    drawMoon(m.cx, m.cy, m.r, 'south');
-    const sp = project(-89.9, 0, -60, m.cx, m.cy, m.r);
-    const sh = project(-89.67, 129.78, -60, m.cx, m.cy, m.r);
-    const g = ctx.createRadialGradient(sp.x, sp.y, 0, sp.x, sp.y, m.r * .35);
-    g.addColorStop(0, rgba(C.accent, .28)); g.addColorStop(1, rgba(C.accent, 0));
-    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(sp.x, sp.y, m.r * .35, 0, 7); ctx.fill();
-    ring(sp.x, sp.y, 6, C.accent, t);
-    tag(sp.x + 14, sp.y + 22, 'SOUTH POLE · SHADOWED CRATERS, POSSIBLE WATER ICE', C.accent);
-    ctx.fillStyle = C.cn; ctx.beginPath(); ctx.arc(sh.x, sh.y, 3, 0, 7); ctx.fill();
-    tag(sh.x - 10, sh.y - 14, "SHACKLETON RIM · CHANG'E-7 TARGET", C.cn, 'right');
-  }
-  function surfT(day) {
-    const D = 14.77;
-    if (day <= D) { const base = -175 + 80 * (day / D); return base + (120 - base) * Math.pow(Math.sin(Math.PI * day / D), .33); }
-    const tn = day - D; return -95 - 80 * (1 - Math.exp(-3 * tn / D)) / (1 - Math.exp(-3));
-  }
-  function sceneThermal(p, t) {
-    const R = region(), Wd = R.x1 - R.x0, Hd = R.y1 - R.y0;
-    const x0 = R.x0 + 54, x1 = R.x1 - 16, y0 = R.y0 + Hd * .1, y1 = R.y1 - Hd * .1;
-    const X = d => x0 + (d / 29.5) * (x1 - x0), Y = T => y1 - (T + 200) / 350 * (y1 - y0);
-    ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(X(14.77), y0, X(29.5) - X(14.77), y1 - y0);
-    ctx.font = MONO; ctx.textBaseline = 'middle';
-    for (let T = -150; T <= 150; T += 50) {
-      ctx.strokeStyle = T === 0 ? rgba('#ece8df', .25) : rgba('#ece8df', .07); ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(x0, Y(T)); ctx.lineTo(x1, Y(T)); ctx.stroke();
-      ctx.fillStyle = C.dim; ctx.textAlign = 'right'; ctx.fillText((T > 0 ? '+' : T < 0 ? '−' : '') + Math.abs(T) + '°', x0 - 8, Y(T));
-    }
-    ctx.textAlign = 'center';
-    [0, 7, 14, 21, 28].forEach(d => { ctx.fillStyle = C.dim; ctx.fillText(d + 'd', X(d), y1 + 14); });
-    ctx.fillStyle = C.faint; ctx.fillText('LUNAR DAY', X(7.4), y0 + 12); ctx.fillText('LUNAR NIGHT', X(22.1), y0 + 12);
-    const lim = 29.5 * clamp(.12 + p * 1.7, 0, 1);
-    ctx.strokeStyle = C.ink; ctx.lineWidth = 2; ctx.beginPath();
-    for (let d = 0; d <= lim; d += .1) { const yy = Y(surfT(d)); d === 0 ? ctx.moveTo(X(d), yy) : ctx.lineTo(X(d), yy); } ctx.stroke();
-    ctx.strokeStyle = C.accent; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(X(0), Y(17)); ctx.lineTo(X(lim), Y(17)); ctx.stroke();
-    tag(X(lim) - 4, Y(17) - 14, 'PIT FLOOR ≈ +17 °C', C.accent, 'right');
-    if (lim > 7.6) tag(X(7.38), Y(120) - 14, 'SURFACE ≈ +120 °C', C.ink, 'center');
-    if (lim > 27) tag(X(27), Y(-175) + 16, '≈ −170 °C', C.ink, 'center');
-  }
-  const pitDots = (() => { const r = rng(9), out = []; for (let i = 0; i < 230; i++) { const u = r() * 2 - 1, th = r() * 6.283; out.push([Math.asin(u) / D2R * .85, th / D2R - 180, r()]); } return out; })();
-  function scenePits(p, t) {
-    const m = moonPlace(1);
-    drawMoon(m.cx, m.cy, m.r);
-    const n = Math.floor(pitDots.length * ease(p * 1.6 + .1));
-    for (let i = 0; i < n; i++) {
-      const [la, lo] = pitDots[i]; const q = project(la, lo, 0, m.cx, m.cy, m.r);
-      if (!q.vis) continue;
-      ctx.fillStyle = rgba(C.accent, .85); ctx.beginPath(); ctx.arc(q.x, q.y, 1.7, 0, 7); ctx.fill();
-    }
-    const a = project(TRANQ[0], TRANQ[1], 0, m.cx, m.cy, m.r), b = project(MARIUS[0], MARIUS[1], 0, m.cx, m.cy, m.r);
-    ring(a.x, a.y, 6, C.ink, t); ring(b.x, b.y, 6, C.ink, t + .5);
-    tag(a.x + 14, a.y - 12, 'TRANQUILLITATIS · CONDUIT CONFIRMED 2024', C.ink);
-    tag(b.x - 14, b.y - 12, 'MARIUS HILLS PIT', C.ink, 'right');
-    const R = region(); tag(R.x1 - 8, R.y1 - 4, 'ORANGE DOTS ILLUSTRATIVE · 200+ PITS CATALOGUED', C.dim, 'right');
-  }
+  /*@SCENES*/
 
-  /* --- descent cross-section --- */
-  let cave = null;
-  function buildCave() {
-    const R = region(), { x0, x1, y0, y1 } = R, Wd = x1 - x0, Hd = y1 - y0;
-    const sY = y0 + Hd * .24, fY = y0 + Hd * .9, cY = y0 + Hd * .55;
-    const pL = x0 + Wd * .2, pR = x0 + Wd * .36;
-    const floor = x => fY + Math.sin(x * .031) * Hd * .018 + Math.sin(x * .11 + 2) * Hd * .006;
-    const ceil = x => Math.min(cY + Math.sin(x * .022 + 1) * Hd * .045 - ((x - pR) / Wd) * Hd * .05 + Math.sin(x * .09) * Hd * .01, floor(x) - Hd * .18);
-    const lwall = y => pL - Math.sin(y * .05) * 3 - Math.sin(y * .13) * 1.5;
-    const rwall = y => pR + Math.sin(y * .07) * 3;
-    const xEnd = x1 + 80;
-    const sx = x0 + Wd * .06, bx = pL + Wd * .045, by = sY - Hd * .07;
-    const endX = x0 + Wd * .9;
-    const rover = p => {
-      const top = by + 16, bot = floor(bx) - 7;
-      if (p < .22) return { x: bx, y: top, ph: 0 };
-      if (p < .48) return { x: bx, y: top + (bot - top) * ease((p - .22) / .26), ph: 1 };
-      const k = ease((p - .5) / .4), x = bx + (endX - bx) * k; return { x, y: floor(x) - 7, ph: p < .5 ? 1 : 2 };
-    };
-    const r = rng(5), pts = [];
-    for (let y = sY; y < fY; y += 3) pts.push([lwall(y) + (r() - .5) * 2.4, y]);
-    for (let y = sY; y < ceil(pR); y += 3) pts.push([rwall(y) + (r() - .5) * 2.4, y]);
-    for (let x = pL; x < xEnd; x += 2.6) pts.push([x, floor(x) + (r() - .5) * 2]);
-    for (let x = pR; x < xEnd; x += 2.6) pts.push([x, ceil(x) + (r() - .5) * 2.4]);
-    for (let i = 0; i < 16; i++) { const cx = pL + 20 + r() * (xEnd - pL - 20), rad = 3 + r() * 6, fy = floor(cx); for (let a = 0; a < Math.PI; a += .35) pts.push([cx + Math.cos(a) * rad, fy - Math.sin(a) * rad * .8]); }
-    const Rr = Math.max(60, Wd * .19), rev = new Float32Array(pts.length).fill(2);
-    for (let i = 0; i <= 500; i++) {
-      const p = i / 500, q = rover(p); if (p < .22) continue;
-      for (let j = 0; j < pts.length; j++) {
-        if (rev[j] < 2) continue;
-        const [px, py] = pts[j];
-        if (q.x < pR && px > pR + 4 && py > sY + 4 && q.y < ceil(pR)) continue;
-        const dx = px - q.x, dy = py - q.y;
-        if (dx * dx + dy * dy < Rr * Rr) rev[j] = p;
-      }
-    }
-    cave = { R, Wd, Hd, sY, fY, pL, pR, floor, ceil, lwall, rwall, xEnd, sx, bx, by, rover, pts, rev, Rr };
-  }
-  function sceneDescent(p, t) {
-    if (!cave) buildCave();
-    const c = cave, { sY, fY, pL, pR, floor, ceil, lwall, rwall, xEnd, sx, bx, by, Rr, Hd, Wd } = c;
-    // ground
-    const g = ctx.createLinearGradient(0, sY, 0, H);
-    g.addColorStop(0, '#1d1d25'); g.addColorStop(1, '#0c0c12');
-    ctx.fillStyle = g; ctx.fillRect(0, sY, W, H - sY);
-    // cavity, revealed where the rover has scanned
-    const cavity = () => {
-      ctx.beginPath(); ctx.moveTo(pL, sY);
-      for (let y = sY; y <= fY; y += 4) ctx.lineTo(lwall(y), y);
-      for (let x = pL; x <= xEnd; x += 4) ctx.lineTo(x, floor(x));
-      for (let x = xEnd; x >= pR; x -= 4) ctx.lineTo(x, ceil(x));
-      for (let y = ceil(pR); y >= sY; y -= 4) ctx.lineTo(rwall(y), y);
-      ctx.closePath();
-    };
-    ctx.save();
-    ctx.beginPath(); ctx.rect(pL - 6, sY - 2, pR - pL + 12, fY - sY);
-    for (let q = .22; q <= p; q += .01) { const rv = c.rover(q); ctx.moveTo(rv.x + Rr, rv.y); ctx.arc(rv.x, rv.y, Rr, 0, Math.PI * 2); }
-    ctx.clip(); cavity(); ctx.fillStyle = C.void; ctx.fill(); ctx.restore();
-    // surface line
-    ctx.strokeStyle = rgba('#ece8df', .35); ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(0, sY); ctx.lineTo(pL, sY); ctx.moveTo(pR, sY); ctx.lineTo(W, sY); ctx.stroke();
-    // unmapped hint
-    const far = clamp(1 - (p - .55) / .3, 0, 1);
-    if (far > 0) { ctx.globalAlpha = far; tag(c.R.x0 + Wd * .72, (sY + fY) / 2 + Hd * .1, 'UNMAPPED · ? ? ?', C.faint, 'center'); ctx.globalAlpha = 1; }
-    // point cloud
-    const rv = c.rover(p);
-    ctx.fillStyle = rgba(C.accent, .62);
-    for (let j = 0; j < c.pts.length; j++) { const a = c.rev[j]; if (a <= p && p - a >= .03) ctx.fillRect(c.pts[j][0] - .8, c.pts[j][1] - .8, 1.7, 1.7); }
-    ctx.fillStyle = '#ffd2b5';
-    const fresh = [];
-    for (let j = 0; j < c.pts.length; j++) { const a = c.rev[j]; if (a <= p && p - a < .03) { ctx.fillRect(c.pts[j][0] - 1, c.pts[j][1] - 1, 2.2, 2.2); } if (a <= p) { const dx = c.pts[j][0] - rv.x, dy = c.pts[j][1] - rv.y; if (dx * dx + dy * dy < Rr * Rr) fresh.push(j); } }
-    // lidar rays + range
-    if (p >= .22) {
-      const off = Math.floor((RM ? 0 : t) * 40);
-      ctx.strokeStyle = rgba(C.accent, .18); ctx.lineWidth = 1; ctx.beginPath();
-      for (let i = 0; i < Math.min(16, fresh.length); i++) { const j = fresh[(off * 7 + i * Math.floor(fresh.length / 16 + 1)) % fresh.length]; ctx.moveTo(rv.x, rv.y - 8); ctx.lineTo(c.pts[j][0], c.pts[j][1]); }
-      ctx.stroke();
-      ctx.setLineDash([3, 5]); ctx.strokeStyle = rgba(C.accent, .3); ctx.beginPath(); ctx.arc(rv.x, rv.y, Rr, 0, 7); ctx.stroke(); ctx.setLineDash([]);
-    }
-    // tether
-    const tp = [[sx + 10, sY - 22], [bx, by]];
-    if (rv.ph < 2) tp.push([rv.x, rv.y - 6]);
-    else { const td = [bx, floor(bx) - 2]; tp.push(td); const mid = (td[0] + rv.x) / 2; tp.push([mid, floor(mid) - 1]); tp.push([rv.x - 10, rv.y]); }
-    ctx.strokeStyle = rgba('#ece8df', .8); ctx.lineWidth = 1.3; ctx.beginPath(); tp.forEach((q, i) => i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])); ctx.stroke();
-    // data packets streaming up (final phase)
-    if (p > .7) {
-      const segs = []; let tot = 0; for (let i = tp.length - 1; i > 0; i--) { const a = tp[i], b = tp[i - 1], l = Math.hypot(b[0] - a[0], b[1] - a[1]); segs.push([a, b, l]); tot += l; }
-      const at = f => { let d = f * tot; for (const [a, b, l] of segs) { if (d <= l) { const k = d / l; return [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k]; } d -= l; } return tp[0]; };
-      const alpha = ease((p - .7) / .06);
-      for (let i = 0; i < 7; i++) { const f = ((RM ? 0 : t) * .35 + i / 7) % 1; const q = at(f); ctx.fillStyle = rgba(C.accent, alpha); ctx.fillRect(q[0] - 2, q[1] - 2, 4, 4); }
-      ctx.globalAlpha = alpha; tag(sx - 4, sY - 74, 'SCANS ARCHIVED AT SURFACE', C.accent); ctx.globalAlpha = 1;
-    }
-    // station
-    ctx.fillStyle = '#2a2a35'; ctx.strokeStyle = C.ink; ctx.lineWidth = 1;
-    ctx.fillRect(sx - 16, sY - 16, 34, 16); ctx.strokeRect(sx - 16, sY - 16, 34, 16);
-    ctx.strokeStyle = '#6f86c9'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(sx - 12, sY - 16); ctx.lineTo(sx - 30, sY - 44); ctx.stroke();
-    ctx.strokeStyle = C.ink; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(sx + 6, sY - 26, 8, Math.PI * 1.05, Math.PI * 1.95); ctx.stroke(); ctx.beginPath(); ctx.moveTo(sx + 6, sY - 16); ctx.lineTo(sx + 6, sY - 22); ctx.stroke();
-    ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(sx + 16, sY - 14); ctx.lineTo(bx, by); ctx.stroke();
-    ctx.fillStyle = C.ink; ctx.beginPath(); ctx.arc(bx, by, 2.5, 0, 7); ctx.fill();
-    tag(sx - 16, sY - 56, 'SURFACE STATION', C.ink);
-    if (p > .22 && p < .55) tag(bx + 10, (by + rv.y) / 2, 'TETHER · POWER + FIBER + LOAD', C.dim);
-    // rover
-    ctx.save(); ctx.translate(rv.x, rv.y);
-    if (rv.ph === 2) { const hl = ctx.createLinearGradient(10, 0, 80, 0); hl.addColorStop(0, 'rgba(255,240,220,.22)'); hl.addColorStop(1, 'rgba(255,240,220,0)'); ctx.fillStyle = hl; ctx.beginPath(); ctx.moveTo(11, -3); ctx.lineTo(80, -22); ctx.lineTo(80, 14); ctx.closePath(); ctx.fill(); }
-    ctx.fillStyle = '#2f2f3b'; ctx.strokeStyle = C.ink; ctx.lineWidth = 1; ctx.fillRect(-11, -6, 22, 9); ctx.strokeRect(-11, -6, 22, 9);
-    ctx.fillStyle = '#0c0c12'; ctx.beginPath(); ctx.arc(-7, 4, 3.4, 0, 7); ctx.arc(7, 4, 3.4, 0, 7); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = C.accent; ctx.shadowColor = C.accent; ctx.shadowBlur = 10; ctx.fillRect(-2.5, -10, 5, 4); ctx.shadowBlur = 0;
-    ctx.restore();
-    tag(rv.x + 16, rv.y - 18, p < .22 ? 'ROVER' : rv.ph === 1 ? 'DESCENDING' : 'MAPPING', C.accent);
-    tag(c.R.x1 - 6, c.R.y1 + 10, 'SCHEMATIC · NOT TO SCALE', C.faint, 'right');
-  }
-
-  /* --- 3D survey --- */
-  const tube = (() => {
-    const r = rng(7), center = s => [(s - .5), .07 * Math.sin(s * 5), .12 * Math.sin(s * 3.2 + 1)];
-    const rw = s => .085 * (1 + .38 * Math.sin(s * 9)), rh = s => .07 * (1 + .3 * Math.cos(s * 7 + 1));
-    const pts = [];
-    for (let i = 0; i < 4200; i++) { const s = r(), th = r() * 6.283, c = center(s); let y = Math.sin(th) * rh(s); const fl = -.55 * rh(s); if (y < fl) y = fl + (r() - .5) * .004; pts.push([c[0], c[1] + y, c[2] + Math.cos(th) * rw(s) * (y <= fl + .003 ? Math.min(1, Math.abs(Math.cos(th)) * 1.6) : 1)]); }
-    const path = []; for (let s = .02; s <= .98; s += .01) { const c = center(s); path.push([c[0], c[1] - .55 * rh(s) + .006, c[2] + .015 * Math.sin(s * 20)]); }
-    let ms = 0, mv = 9; for (let s = .1; s < .9; s += .01) if (rw(s) < mv) { mv = rw(s); ms = s; }
-    const lab = [[.24, 'top', 'CEILING HEIGHT'], [ms, 'side', 'MIN. CLEARANCE'], [.6, 'floor', 'SLOPE'], [.86, 'floor', 'OBSTACLE FIELD']].map(([s, k, txt]) => { const c = center(s); return { txt, p: k === 'top' ? [c[0], c[1] + rh(s), c[2]] : k === 'side' ? [c[0], c[1], c[2] + rw(s)] : [c[0], c[1] - .55 * rh(s), c[2]] }; });
-    return { pts, path, lab };
-  })();
-  function sceneMap(p, t) {
-    const R = region(), Wd = R.x1 - R.x0, Hd = R.y1 - R.y0, cx = (R.x0 + R.x1) / 2, cy = (R.y0 + R.y1) / 2;
-    const S = Math.min(Wd * 1.05, Hd * 1.9);
-    const a = .55 + (RM ? 0 : Math.sin(t * .12) * .3) + (p - .5) * .9, b = .38;
-    const ca = Math.cos(a), sa = Math.sin(a), cb = Math.cos(b), sb = Math.sin(b);
-    const P = q => { const x = q[0] * ca + q[2] * sa, z1 = -q[0] * sa + q[2] * ca; const y = q[1] * cb - z1 * sb, z = q[1] * sb + z1 * cb; const k = 2.4 / (2.4 + z); return [cx + x * S * k, cy - y * S * k, z]; };
-    for (const q of tube.pts) { const [x, y, z] = P(q); const l = clamp(.75 - z * 2.2, .15, 1); ctx.fillStyle = `rgba(${200 * l + 30 | 0},${205 * l + 30 | 0},${220 * l + 30 | 0},${.35 + .5 * l})`; ctx.fillRect(x, y, 1.4, 1.4); }
-    const pp = tube.path.map(P);
-    ctx.strokeStyle = C.accent; ctx.lineWidth = 2.2; ctx.shadowColor = C.accent; ctx.shadowBlur = 8; ctx.beginPath(); pp.forEach((q, i) => i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])); ctx.stroke(); ctx.shadowBlur = 0;
-    const k = Math.floor((((RM ? .5 : t * .06) + p) % 1) * (pp.length - 1)); ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(pp[k][0], pp[k][1], 3, 0, 7); ctx.fill();
-    tube.lab.forEach((l, i) => { const q = P(l.p); const up = i % 2 ? 34 : -34; ctx.strokeStyle = rgba(C.accent, .7); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(q[0], q[1]); ctx.lineTo(q[0], q[1] + up); ctx.stroke(); ctx.fillStyle = C.accent; ctx.beginPath(); ctx.arc(q[0], q[1], 2.5, 0, 7); ctx.fill(); tag(q[0] + 6, q[1] + up, l.txt, C.accent); });
-    tag(R.x1 - 6, R.y1, 'ILLUSTRATIVE SURVEY · NOT LUNAR DATA', C.faint, 'right');
-  }
-  function sceneAccess(p, t) {
-    const m = moonPlace(.62);
-    const tt = RM ? 2 : t;
-    for (let i = 0; i < 3; i++) {
-      const rx = m.r * (1.6 + i * .42), ry = m.r * (.5 + i * .16), rot = -.35 + i * .32;
-      ctx.save(); ctx.translate(m.cx, m.cy); ctx.rotate(rot);
-      ctx.strokeStyle = rgba('#ece8df', .14); ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(0, 0, rx, ry, 0, Math.PI, Math.PI * 2); ctx.stroke();
-      ctx.restore();
-    }
-    drawMoon(m.cx, m.cy, m.r);
-    for (let i = 0; i < 3; i++) {
-      const rx = m.r * (1.6 + i * .42), ry = m.r * (.5 + i * .16), rot = -.35 + i * .32;
-      ctx.save(); ctx.translate(m.cx, m.cy); ctx.rotate(rot);
-      ctx.strokeStyle = rgba('#ece8df', .14); ctx.beginPath(); ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI); ctx.stroke();
-      const an = tt * (.25 + i * .07) + i * 2; ctx.fillStyle = i === 1 ? C.accent : C.ink; ctx.beginPath(); ctx.arc(Math.cos(an) * rx, Math.sin(an) * ry, 3, 0, 7); ctx.fill();
-      ctx.restore();
-    }
-    const R = region();
-    tag(R.x1 - 8, R.y1 - 4, 'COMMERCIAL DELIVERY · CLPS', C.dim, 'right');
-  }
-  function sceneBuild(p, t) {
-    const R = region(), Wd = R.x1 - R.x0, Hd = R.y1 - R.y0;
-    ctx.strokeStyle = rgba(C.us, .07); ctx.lineWidth = 1; ctx.beginPath();
-    for (let x = R.x0; x <= R.x1; x += 24) { ctx.moveTo(x, R.y0); ctx.lineTo(x, R.y1); }
-    for (let y = R.y0; y <= R.y1; y += 24) { ctx.moveTo(R.x0, y); ctx.lineTo(R.x1, y); } ctx.stroke();
-    const bw = Math.min(Wd * .46, 340), bh = bw * .26, cx = R.x0 + Wd * .52, cy = R.y0 + Hd * .55;
-    const line = C.us;
-    ctx.strokeStyle = line; ctx.lineWidth = 1.4;
-    ctx.strokeRect(cx - bw / 2, cy - bh / 2, bw, bh);
-    const wr = bw * .15; [-1, 1].forEach(s => { ctx.beginPath(); ctx.arc(cx + s * bw * .33, cy + bh / 2 + wr * .3, wr, 0, 7); ctx.stroke(); ctx.beginPath(); ctx.arc(cx + s * bw * .33, cy + bh / 2 + wr * .3, wr * .35, 0, 7); ctx.stroke(); });
-    const mx = cx + bw * .3, mt = cy - bh / 2 - bh * .9;
-    ctx.beginPath(); ctx.moveTo(mx, cy - bh / 2); ctx.lineTo(mx, mt); ctx.stroke();
-    ctx.strokeStyle = C.accent; ctx.strokeRect(mx - 10, mt - 12, 20, 12);
-    const sw = (RM ? .4 : t * 1.4) % (Math.PI * 2);
-    ctx.strokeStyle = rgba(C.accent, .5); ctx.beginPath(); ctx.moveTo(mx, mt - 6); ctx.lineTo(mx + Math.cos(sw) * bw * .5, mt - 6 + Math.sin(sw) * bw * .18); ctx.stroke();
-    ctx.strokeStyle = rgba(C.accent, .12); ctx.beginPath(); ctx.ellipse(mx, mt - 6, bw * .5, bw * .18, 0, 0, 7); ctx.stroke();
-    ctx.strokeStyle = line; ctx.strokeRect(cx + bw / 2 - 4, cy - bh * .3, 10, bh * .35);
-    const rx = cx - bw * .3, ry = cy - bh / 2 - bh * .38;
-    ctx.beginPath(); ctx.arc(rx, ry, bh * .38, 0, 7); ctx.stroke(); ctx.beginPath(); ctx.arc(rx, ry, bh * .14, 0, 7); ctx.stroke();
-    ctx.setLineDash([4, 4]); ctx.strokeStyle = rgba('#ece8df', .6); ctx.beginPath(); ctx.moveTo(rx - bh * .38, ry); ctx.quadraticCurveTo(rx - bw * .5, ry - bh, R.x0 + 8, R.y0 + 20); ctx.stroke(); ctx.setLineDash([]);
-    ctx.strokeStyle = line; ctx.strokeRect(cx - bw * .08, cy - bh * .2, bw * .16, bh * .4);
-    const call = (x, y, lx, ly, txt) => { ctx.strokeStyle = rgba('#ece8df', .35); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(lx, ly); ctx.stroke(); ctx.fillStyle = C.ink; ctx.beginPath(); ctx.arc(x, y, 2, 0, 7); ctx.fill(); tag(lx + (lx < x ? -4 : 4), ly, txt, C.ink, lx < x ? 'right' : 'left'); };
-    call(mx, mt - 6, mx + bw * .12, mt - 40, '3D LIDAR');
-    call(cx + bw / 2 + 4, cy - bh * .12, cx + bw / 2 + 24, cy + bh * .9 + wr, 'CAMERAS + LIGHTING');
-    call(rx, ry - bh * .38, rx - bw * .1, ry - bh * 1.5, 'TETHER SPOOL · PAYOUT + TENSION');
-    call(cx, cy, cx - bw * .05, cy + bh * 1.6 + wr, 'IMU + COMPUTE + BUFFER BATTERY');
-    tag(R.x0 + 8, R.y0 + 20, 'TO SURFACE STATION', C.dim);
-    tag(R.x1 - 6, R.y1, 'EARTH SURROGATE MAPPER · SCHEMATIC', C.faint, 'right');
-  }
-  function sceneRoadmap(p, t) {
-    const R = region(), Wd = R.x1 - R.x0, Hd = R.y1 - R.y0;
-    const k = ease(p * 1.2);
-    const mr = Math.min(Wd, Hd) * (.3 - .12 * k);
-    drawMoon(R.x0 + Wd * (.42 - .12 * k), R.y0 + Hd * .5, mr);
-    const ma = ease((p - .25) / .4);
-    if (ma > 0) {
-      const mx = R.x0 + Wd * .84, my = R.y0 + Hd * .38, rr = Math.min(Wd, Hd) * .07 * (.6 + .4 * ma);
-      ctx.globalAlpha = ma;
-      const g = ctx.createRadialGradient(mx - rr * .4, my - rr * .4, rr * .1, mx, my, rr);
-      g.addColorStop(0, '#f0a27a'); g.addColorStop(.6, '#b2512c'); g.addColorStop(1, '#3a160b');
-      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(mx, my, rr, 0, 7); ctx.fill();
-      tag(mx, my + rr + 16, 'MARS · 1,000+ CANDIDATE CAVE ENTRANCES', C.ink, 'center');
-      ctx.globalAlpha = 1;
-    }
-  }
-  function sceneClose(p, t) {
-    const m = moonPlace(1.1);
-    drawMoon(m.cx, m.cy, m.r);
-    const a = project(TRANQ[0], TRANQ[1], 0, m.cx, m.cy, m.r);
-    ring(a.x, a.y, 7, C.accent, t);
-  }
-  const SCENES = { moon: sceneMoon, apollo: sceneApollo, race: sceneRace, stay: sceneStay, thermal: sceneThermal, pits: scenePits, descent: sceneDescent, map: sceneMap, access: sceneAccess, build: sceneBuild, roadmap: sceneRoadmap, close: sceneClose };
-
-  /* ---------------- scroll + loop ---------------- */
+  /* ---------------- scroll engine ---------------- */
   const sections = [...document.querySelectorAll('[data-scene]')];
+  const panels = [...document.querySelectorAll('.panel')];
   const hudN = document.getElementById('hud-n'), hudT = document.getElementById('hud-t'), hudBar = document.getElementById('hud-bar');
-  let cur = 'moon', prev = null, prevP = 0, curP = 0, changeAt = 0, curIdx = -1;
-
-  function resize() {
-    const nw = innerWidth, nh = innerHeight;
-    const rebuild = Math.abs(nw - W) > 1 || Math.abs(nh - H) > 120 || !cave;
-    W = nw; H = nh; DPR = Math.min(2, devicePixelRatio || 1);
+  function sizeCanvas() {
+    W = innerWidth; H = innerHeight; DPR = Math.min(2, devicePixelRatio || 1);
     cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    if (rebuild) cave = null;
   }
-  addEventListener('resize', resize); resize();
-
-  function readScroll(now) {
-    const mid = H * .5; let idx = 0, p = 0;
-    for (let i = 0; i < sections.length; i++) {
-      const r = sections[i].getBoundingClientRect();
-      if (r.top <= mid) { idx = i; p = clamp((mid - r.top) / r.height, 0, 1); }
+  let rt = 0, lastW = 0, lastH = 0;
+  addEventListener('resize', () => {
+    sizeCanvas();
+    if (Math.abs(W - lastW) > 1 || Math.abs(H - lastH) > 120) {
+      clearTimeout(rt); rt = setTimeout(() => { lastW = W; lastH = H; resizers.forEach(f => f()); }, 180);
     }
-    const s = sections[idx].dataset.scene;
-    if (idx !== curIdx) {
-      if (curIdx !== -1) { prev = cur; prevP = curP; changeAt = now; }
-      curIdx = idx; cur = s;
-      hudN.textContent = String(idx + 1).padStart(2, '0'); hudT.textContent = sections[idx].dataset.chapter;
-    }
-    curP = p;
-    hudBar.style.transform = `scaleX(${clamp(scrollY / (document.documentElement.scrollHeight - H), 0, 1)})`;
+  });
+  function blendM(a, b, f) {
+    if (a && b) return { x: lerp(a.x, b.x, f), y: lerp(a.y, b.y, f), r: lerp(a.r, b.r, f), a: lerp(a.a, b.a, f), w: lerp(a.w, b.w, f) };
+    if (a) return { ...a, a: a.a * (1 - f) };
+    if (b) return { ...b, a: b.a * f };
+    return null;
   }
-
+  let ss = scrollY, last = performance.now(), hudIdx = -1;
   function frame(now) {
+    NOW = now;
+    const dt = Math.min(.05, (now - last) / 1000); last = now;
     const t = RM ? 0 : now / 1000;
-    readScroll(now);
-    ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = C.void; ctx.fillRect(0, 0, W, H);
-    for (const s of stars) { ctx.fillStyle = rgba('#ece8df', s.a * (RM ? 1 : .75 + .25 * Math.sin(t * 1.3 + s.ph))); ctx.fillRect(s.x * W, s.y * H, s.r, s.r); }
-    const f = prev ? clamp((now - changeAt) / 450, 0, 1) : 1;
-    if (prev && f < 1) { ctx.globalAlpha = 1 - f; SCENES[prev](prevP, t); }
-    ctx.globalAlpha = f; SCENES[cur](curP, t); ctx.globalAlpha = 1;
-    if (f >= 1) prev = null;
+    ss = RM ? scrollY : ss + (scrollY - ss) * (1 - Math.exp(-dt * 9));
+    if (Math.abs(scrollY - ss) < .4) ss = scrollY;
+    const mid = ss + H * .5;
+    const tops = sections.map(s => { const r = s.getBoundingClientRect(); return [r.top + scrollY, r.height]; });
+    let idx = 0; for (let i = 0; i < tops.length; i++) if (tops[i][0] <= mid) idx = i;
+    const P = i => clamp((mid - tops[i][0]) / tops[i][1], 0, 1);
+    const B = H * .22; let a = idx, b = -1, f = 0;
+    if (idx + 1 < tops.length && tops[idx + 1][0] - mid < B) { b = idx + 1; f = ease((mid - (tops[idx + 1][0] - B)) / (2 * B)); }
+    else if (idx > 0 && mid - tops[idx][0] < B) { a = idx - 1; b = idx; f = ease((mid - tops[idx][0] + B) / (2 * B)); }
+    const SAo = SCN[sections[a].dataset.scene], SBo = b >= 0 ? SCN[sections[b].dataset.scene] : null;
+    const pa = P(a), pb = b >= 0 ? P(b) : 0;
+
+    ctx.globalAlpha = 1; ctx.fillStyle = C.void; ctx.fillRect(0, 0, W, H);
+    for (const s of stars) {
+      const y = ((s.y * H - ss * (.02 + .05 * s.z)) % H + H) % H;
+      ctx.fillStyle = rgba('#ece8df', s.a * (RM ? 1 : .75 + .25 * Math.sin(t * 1.3 + s.ph)));
+      ctx.fillRect(s.x * W, y, s.r, s.r);
+    }
+    const ma = SAo && SAo.moon ? SAo.moon(pa) : null, mb = SBo && SBo.moon ? SBo.moon(pb) : null;
+    const M = b >= 0 ? blendM(ma, mb, f) : ma;
+    drawMoon(M);
+    const Mu = M || moonPlace(1);
+    if (SAo) { SA = b >= 0 ? 1 - f : 1; if (SA > .003) { ctx.save(); alpha(1); SAo.draw(pa, t, Mu); ctx.restore(); } }
+    if (SBo) { SA = f; if (SA > .003) { ctx.save(); alpha(1); SBo.draw(pb, t, Mu); ctx.restore(); } }
+    ctx.globalAlpha = 1; SA = 1;
+
+    if (idx !== hudIdx) { hudIdx = idx; hudN.textContent = String(idx + 1).padStart(2, '0'); hudT.textContent = sections[idx].dataset.chapter; }
+    hudBar.style.transform = `scaleX(${clamp(scrollY / Math.max(1, document.documentElement.scrollHeight - H), 0, 1)})`;
+    if (!RM) for (const el of panels) {
+      const r = el.getBoundingClientRect(); const c = (r.top + r.height / 2) / H - .5;
+      el.style.opacity = (1 - clamp((Math.abs(c) - .32) / .3, 0, 1) * .72).toFixed(3);
+      el.style.transform = `translate3d(0,${(c * -18).toFixed(1)}px,0)`;
+    }
     requestAnimationFrame(frame);
   }
+  sizeCanvas(); lastW = W; lastH = H;
+  resizers.forEach(f => f());
   requestAnimationFrame(frame);
-
-  // build moon textures after first paint so the page appears immediately
-  const texSize = Math.min(760, Math.max(360, Math.round(Math.min(innerWidth, innerHeight) * .9 * Math.min(2, devicePixelRatio || 1))));
-  setTimeout(() => { moonTex.front = renderMoon(texSize, 0); setTimeout(() => { moonTex.south = renderMoon(texSize, -60); }, 30); }, 60);
-  document.fonts && document.fonts.ready.then(() => { /* labels pick up Plex Mono on next frame */ });
 })();
 </script>
