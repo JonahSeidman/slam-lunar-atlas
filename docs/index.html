@@ -115,42 +115,13 @@ p strong{color:var(--ink);font-weight:600}
     </div>
   </section>
 
-  <section class="scene" data-scene="apollo" data-chapter="The first race">
-    <div class="panel">
-      <p class="eyebrow">1969 – 1972</p>
-      <h2>Twelve people walked on the Moon. Then everyone went home.</h2>
-      <p>Six Apollo landings added up to about 80 hours of moonwalking, all on the near side and all close to the equator. The last crew left in December 1972.</p>
-      <p><strong>Nobody went back for over fifty years.</strong> The first race was won by arriving. Nobody had a reason to stay.</p>
-    </div>
-  </section>
-
   <section class="scene" data-scene="race" data-chapter="The new race">
-    <div class="panel wide">
-      <p class="eyebrow">2019 – 2035</p>
-      <h2>Now there are two serious programs, and both are moving.</h2>
-      <div class="tracks">
-        <div class="track cn">
-          <h3>China · CNSA / CMSA</h3>
-          <ol>
-            <li><time>2019</time><span><b>Chang'e-4</b> makes the first soft landing on the far side.</span></li>
-            <li><time>2020</time><span><b>Chang'e-5</b> returns the first lunar samples since 1976.</span></li>
-            <li><time>2024</time><span><b>Chang'e-6</b> returns the first samples ever taken from the far side.</span></li>
-            <li><time>2026</time><span><b>Chang'e-7</b>: orbiter, lander, rover and hopper aimed at south-pole water ice.</span></li>
-            <li class="target"><time>&lt;2030</time><span><b>First Chinese astronauts on the Moon</b>: an official commitment to land a crew before 2030, using Mengzhou, the Lanyue lander and Long March 10.</span></li>
-            <li class="target"><time>2035</time><span>International Lunar Research Station basic model (stated target).</span></li>
-          </ol>
-        </div>
-        <div class="track us">
-          <h3>United States · NASA + industry</h3>
-          <ol>
-            <li><time>2022</time><span><b>Artemis I</b> sends an uncrewed Orion around the Moon and back.</span></li>
-            <li><time>2024</time><span><b>IM-1 Odysseus</b>: first US landing since 1972, flown by a company.</span></li>
-            <li><time>2025</time><span><b>Blue Ghost 1</b> lands and runs a full commercial surface mission.</span></li>
-            <li><time>Apr 2026</time><span><b>Artemis II</b> flies four astronauts around the far side, the first crew near the Moon in 54 years.</span></li>
-            <li class="target"><time>→2029</time><span>Moon Base Phase One: robots scout infrastructure sites before crews arrive.</span></li>
-          </ol>
-        </div>
-      </div>
+    <div class="panel">
+      <p class="eyebrow">The new race</p>
+      <h2>The space race is picking back up.</h2>
+      <p><strong>China has promised to put astronauts on the Moon by 2030.</strong></p>
+      <p><strong>NASA's Artemis IV plans to land two astronauts near the south pole in 2028 for about a week.</strong></p>
+      <p>And they aren't alone. Dozens of landers have already touched down, with more on the way from both countries and their partners.</p>
     </div>
   </section>
 
@@ -158,7 +129,6 @@ p strong{color:var(--ink);font-weight:600}
     <div class="panel">
       <p class="eyebrow">The new objective</p>
       <h2>Apollo was a visit. This race is about who stays.</h2>
-      <p><strong>China has committed to landing its first astronauts on the Moon before 2030.</strong> That deadline is why this is a race again and not a schedule.</p>
       <p>NASA's Moon Base plan sends robots through 2029 to pick infrastructure sites before astronauts arrive. China describes the ILRS as a long-duration base with its own power, transport and resource use. Both are aiming for the <strong>south pole</strong>, where permanently shadowed craters may hold water ice.</p>
       <p class="callout">Staying means living somewhere. The question is where.</p>
     </div>
@@ -258,29 +228,6 @@ p strong{color:var(--ink);font-weight:600}
         <p>Small enough to lower through a skylight, low and wide enough to drive a rubble floor in total darkness. Everything it needs to map is on board, and everything it learns goes up the cable.</p>
       </div>
     </div>
-    <div class="step">
-      <div class="panel">
-        <p class="eyebrow">Sensors</p>
-        <h2>It sees without daylight.</h2>
-        <ul class="facts">
-          <li><span><b>3D LiDAR</b> measures the cave as millions of points with its own laser, so it works in total darkness.</span></li>
-          <li><span><b>Stereo cameras with onboard lighting</b> record what each wall actually looks like.</span></li>
-          <li><span><b>IMU and wheel odometry</b> track motion between scans.</span></li>
-          <li><span><b>Onboard compute</b> runs SLAM and the autonomy loop: sense, localize, map, choose, move.</span></li>
-        </ul>
-      </div>
-    </div>
-    <div class="step">
-      <div class="panel">
-        <p class="eyebrow">Tether</p>
-        <h2>One cable does three jobs.</h2>
-        <ul class="facts">
-          <li><span><b>Copper conductors</b> carry power down from the station's solar array, so the rover doesn't need a large battery.</span></li>
-          <li><span><b>Optical fiber</b> carries every scan up to the surface as it's taken.</span></li>
-          <li><span><b>A tensile braid</b> takes the load for lowering, holding and recovering the rover.</span></li>
-        </ul>
-      </div>
-    </div>
   </section>
 
   <section class="chapter" data-scene="map" data-chapter="The map">
@@ -317,6 +264,16 @@ p strong{color:var(--ink);font-weight:600}
     </div>
   </section>
 
+  <section class="scene" data-scene="beyond" data-chapter="Beyond the Moon">
+    <div class="panel">
+      <p class="eyebrow">What comes next</p>
+      <h2>Every cave mapped trains it for the next world.</h2>
+      <p>Each descent tests the whole system on real terrain: the SLAM pipeline, the autonomy that decides where to drive, the hazard models, tether handling, and the step from raw scans to a finished map.</p>
+      <p><strong>By the end of the lunar campaign, SLAM is a fully trained framework, not a one-off robot.</strong> The same approach carries to Mars, where orbiters have catalogued hundreds of cave candidates and lava tubes are among the best places to look for signs of past life.</p>
+      <p class="callout">Map the Moon first. Then every world with a hole in it.</p>
+    </div>
+  </section>
+
   <section class="scene close" data-scene="close" data-chapter="Epilogue">
     <div class="panel">
       <h2>Before anyone builds underground, someone has to map underground.</h2>
@@ -333,7 +290,7 @@ p strong{color:var(--ink);font-weight:600}
     <li>T. Horvath, P. Hayne, D. Paige, "Thermal and illumination environments of lunar pits and caves," <i>Geophysical Research Letters</i> (2022).</li>
     <li>R. Wagner, M. Robinson, "Distribution, formation mechanisms, and significance of lunar pits," <i>Icarus</i> (2014).</li>
     <li>C. Ding et al., "Towards a habitable Moon: probing subsurface cavities with global penetrating radar," <i>npj Space Exploration</i> 1, 11 (2025).</li>
-    <li>NASA: Artemis II mission (April 2026); Moon Base development (2026); <a href="https://www.nasa.gov/commercial-lunar-payload-services/" target="_blank" rel="noopener">Commercial Lunar Payload Services</a>.</li>
+    <li>NASA: Artemis II mission (April 2026); Artemis IV (early 2028, about a week near the south pole); Moon Base development (2026); <a href="https://www.nasa.gov/commercial-lunar-payload-services/" target="_blank" rel="noopener">Commercial Lunar Payload Services</a>.</li>
     <li>China Manned Space Agency: crewed lunar landing before 2030. CNSA: ILRS basic model by 2035; Chang'e-4, -5, -6 and -7 mission records.</li>
     <li>NASA KNaCK: SLAM LiDAR for exploration and mapping of lunar pits and caves (IPCC 2023).</li>
   </ol>
@@ -557,43 +514,78 @@ p strong{color:var(--ink);font-weight:600}
   };
 
   const APOLLO = [['11', .67, 23.47], ['12', -3.01, -23.42], ['14', -3.65, -17.47], ['15', 26.13, 3.63], ['16', -8.97, 15.5], ['17', 20.19, 30.77]];
-  SCN.apollo = {
-    moon: () => moonPlace(1),
-    draw(p, t, M) {
-      APOLLO.forEach(([n, la, lo], i) => {
-        const k = sstep(.08 + i * .07, .14 + i * .07, p), pt = at([la, lo], M);
-        if (!pt.vis || k <= 0) return;
-        alpha(k); ctx.fillStyle = C.ink; ctx.beginPath(); ctx.arc(pt.x, pt.y, 2.6, 0, TAU); ctx.fill();
-        ctx.strokeStyle = rgba(C.ink, .5); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(pt.x, pt.y); ctx.lineTo(pt.x + 10, pt.y - 10); ctx.stroke();
-        tag(pt.x + 14, pt.y - 12, 'A' + n, C.ink);
-      });
-      const k = sstep(.55, .7, p); if (k <= 0) return;
-      alpha(k); tag(M.x, Math.min(H - 40, M.y + M.r + 26), '6 LANDINGS · 12 MOONWALKERS · ~80 H EVA · LAST LIFTOFF 14 DEC 1972', C.dim, 'center');
-    }
-  };
-
+  // [label, lat, lon, color, labelled?]  landed sites are real; planned sites are approximate
+  const VIO = '#c9aaff';
+  const LANDED = [
+    ...APOLLO.map(([n, la, lo]) => ['A' + n, la, lo, C.ink, 0]),
+    ['LUNA 9', 7.08, -64.37, C.dim, 0], ['LUNA 16', -.51, 56.36, C.dim, 0], ['LUNA 17', 38.24, -35, C.dim, 0], ['LUNA 21', 25.85, 30.45, C.dim, 0], ['LUNA 24', 12.71, 62.21, C.dim, 0],
+    ['SURVEYOR 1', -2.47, -43.34, C.dim, 0], ['SURVEYOR 3', -3.02, -23.42, C.dim, 0], ['SURVEYOR 7', -40.98, -11.51, C.dim, 0],
+    ["CHANG'E-3", 44.12, -19.51, C.cn, 1], ["CHANG'E-5", 43.06, -51.92, C.cn, 1],
+    ['CHANDRAYAAN-3', -69.37, 32.32, VIO, 1], ['SLIM', -13.32, 25.25, VIO, 1],
+    ['IM-1', -80.13, 1.44, C.us, 0], ['BLUE GHOST 1', 18.56, 61.81, C.us, 1], ['IM-2', -84.5, 29.2, C.us, 0]
+  ];
+  const PLANNED = [
+    [-89.4, -5, C.us], [-88, -40, C.us], [-85.3, 47, C.us], [-88.6, 70, C.us],
+    [-89.1, -130, C.cn], [-87.2, -75, C.cn], [-85.6, -25, C.cn], [-88.2, 160, C.cn],
+    [-86.4, 105, VIO]
+  ];
+  const POLE_LIST = [
+    ['SOUTH POLE · PLANNED', C.ink],
+    ['ARTEMIS IV · 2 CREW · ~1 WEEK · 2028', C.us],
+    ['CN CREWED LANDING · BY 2030', C.cn],
+    ["CHANG'E-7 · CHANG'E-8 · ILRS 2035", C.cn],
+    ['GRIFFIN-1 · BLUE MOON MK1 · ARTEMIS V', C.us],
+    ['LUPEX · JAXA / ISRO', VIO]
+  ];
   SCN.race = {
-    moon: p => ({ ...moonPlace(.92), w: lerp(0, .7, ease(p)) }),
+    moon: p => ({ ...moonPlace(.9), w: lerp(0, 1.4, ease(p)) }),
     draw(p, t, M) {
-      const cn = [['CHANG\'E-3', 44.12, -19.51], ['CHANG\'E-5', 43.06, -51.92]], us = [['IM-1', -80.13, 1.44], ['BLUE GHOST 1', 18.56, 61.81]];
-      cn.forEach(([n, la, lo], i) => site(at([la, lo], M), C.cn, n, sstep(.08 + i * .08, .16 + i * .08, p), t, i ? 'right' : 'left'));
-      us.forEach(([n, la, lo], i) => site(at([la, lo], M), C.us, n, sstep(.12 + i * .08, .2 + i * .08, p), t));
-      const kf = sstep(.3, .4, p);
-      if (kf > 0) { alpha(kf); tag(M.x - M.r - 8, M.y - M.r * .55, '← CHANG\'E-4 · CHANG\'E-6 · FAR SIDE', C.cn, 'right'); }
-      const ka = sstep(.35, .5, p); if (ka <= 0) return;
-      alpha(ka * .8); ctx.strokeStyle = rgba(C.us, .65); ctx.lineWidth = 1.2; ctx.setLineDash([4, 6]);
-      ctx.beginPath(); ctx.ellipse(M.x + M.r * .3, M.y + M.r * .05, M.r * 1.5, M.r * .42, -.12, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
-      const a = -Math.PI * .5 + ease((p - .35) / .6) * TAU * .9;
-      const ox = M.x + M.r * .3 + Math.cos(a) * M.r * 1.5 * Math.cos(-.12) - Math.sin(a) * M.r * .42 * Math.sin(-.12);
-      const oy = M.y + M.r * .05 + Math.cos(a) * M.r * 1.5 * Math.sin(-.12) + Math.sin(a) * M.r * .42 * Math.cos(-.12);
-      const behind = Math.sin(a) < 0 && Math.hypot(ox - M.x, oy - M.y) < M.r;
-      if (!behind) { alpha(ka); ctx.fillStyle = C.us; ctx.beginPath(); ctx.arc(ox, oy, 3.5, 0, TAU); ctx.fill(); }
-      alpha(ka); tag(M.x + M.r * .3, M.y + M.r * .62, 'ARTEMIS II · CREWED FLYBY · APR 2026', C.us, 'center');
+      const mob = W < 900;
+      LANDED.forEach(([n, la, lo, c, lab], i) => {
+        const k = sstep(.04 + i * .012, .1 + i * .012, p), pt = at([la, lo], M);
+        if (!pt.vis || k <= 0) return;
+        alpha(k); ctx.fillStyle = c; ctx.beginPath(); ctx.arc(pt.x, pt.y, 2.6, 0, TAU); ctx.fill();
+        if (lab && !mob) tag(pt.x + (lo < -30 ? -10 : 10), pt.y - 9, n, c, lo < -30 ? 'right' : 'left');
+      });
+      const ka0 = sstep(.15, .25, p);
+      if (ka0 > 0) { const a11 = at([.67, 23.47], M); if (a11.vis) { alpha(ka0); tag(a11.x + 10, a11.y - 9, 'APOLLO 11–17', C.ink); } }
+      const kf = sstep(.25, .35, p);
+      if (kf > 0) { alpha(kf); tag(M.x - M.r - 8, M.y - M.r * .55, "← CHANG'E-4 · CHANG'E-6 · FAR SIDE", C.cn, 'right'); }
+      // Artemis II free-return loop
+      const ka = sstep(.3, .45, p);
+      if (ka > 0) {
+        const ex = M.x + M.r * .62, ey = M.y - M.r * .62, erx = M.r * .62, ery = M.r * .2, rot = -.78;
+        ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.arc(M.x, M.y, M.r + 1, 0, TAU, true); ctx.clip('evenodd');
+        alpha(ka * .85); ctx.strokeStyle = rgba(C.us, .7); ctx.lineWidth = 1.2; ctx.setLineDash([4, 5]);
+        ctx.beginPath(); ctx.ellipse(ex, ey, erx, ery, rot, 0, TAU); ctx.stroke(); ctx.setLineDash([]); ctx.restore();
+        const tx = ex + Math.cos(rot) * erx, ty = ey + Math.sin(rot) * erx;
+        alpha(ka); ctx.fillStyle = C.us; ctx.beginPath(); ctx.arc(tx, ty, 3, 0, TAU); ctx.fill();
+        tag(tx + 10, ty - 8, 'ARTEMIS II · CREWED FLYBY · APR 2026', C.us);
+      }
+      // planned: pulsing hollow rings
+      const pulse = RM ? .5 : (t * .8) % 1;
+      PLANNED.forEach(([la, lo, c], i) => {
+        const k = sstep(.45 + i * .02, .52 + i * .02, p), pt = at([la, lo], M);
+        if (!pt.vis || k <= 0) return;
+        alpha(k); ctx.strokeStyle = c; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(pt.x, pt.y, 3.4, 0, TAU); ctx.stroke();
+        alpha(k * (1 - pulse) * .8); ctx.beginPath(); ctx.arc(pt.x, pt.y, 4 + pulse * 10, 0, TAU); ctx.stroke();
+      });
+      const im3 = at([7.5, -59], M), k3 = sstep(.5, .6, p);
+      if (im3.vis && k3 > 0) { alpha(k3); ctx.strokeStyle = C.us; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(im3.x, im3.y, 3.4, 0, TAU); ctx.stroke(); if (!mob) tag(im3.x - 10, im3.y + 12, 'IM-3 · PLANNED', C.us, 'right'); }
+      const kl = sstep(.6, .75, p);
+      if (kl > 0) {
+        const pole = at([-88, 0], M), lx = mob ? M.x - M.r * .9 : M.x + M.r * .62, ly = Math.min(H - 30 - POLE_LIST.length * 17, pole.y - 20);
+        alpha(kl); ctx.strokeStyle = rgba(C.ink, .45); ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(pole.x + 8, pole.y - 4); ctx.lineTo(lx - 6, ly + 4); ctx.stroke();
+        POLE_LIST.forEach(([txt, c], i) => tag(lx, ly + i * 17, txt, i ? c : C.dim));
+      }
+      const kg = sstep(.65, .8, p);
+      if (kg > 0) { alpha(kg); tag(M.x, M.y - M.r - 18, '●  LANDED      ○  PLANNED · SITES APPROXIMATE', C.dim, 'center'); }
     }
   };
 
   SCN.stay = {
-    moon: p => ({ ...moonPlace(1.04), w: lerp(.7, 3, ease(p * 1.5)) }),
+    moon: p => ({ ...moonPlace(1.04), w: lerp(1.4, 3, ease(p * 1.5)) }),
     draw(p, t, M) {
       const k = sstep(.3, .45, p); if (k <= 0) return;
       const sp = project(-89.9, 0, -20 * M.w, M); if (!sp.vis) return;
@@ -631,6 +623,78 @@ p strong{color:var(--ink);font-weight:600}
       site(at(TRANQ, M), C.accent, 'TRANQUILLITATIS PIT · CAVE CONDUIT CONFIRMED 2024', sstep(.55, .7, p), t);
       const kc = sstep(.1, .25, p);
       if (kc > 0) { alpha(kc); tag(M.x, Math.min(H - 40, M.y + M.r + 26), '200+ PITS IDENTIFIED · ILLUSTRATIVE PLACEMENT', C.dim, 'center'); }
+    }
+  };
+
+  /* beyond: the Moon becomes the training ground, Mars is next */
+  const MARS_LON0 = -105;
+  const marsTex = (() => {
+    let cv = null;
+    return () => {
+      if (cv) return cv;
+      const N = 320; cv = document.createElement('canvas'); cv.width = cv.height = N;
+      const g = cv.getContext('2d'), img = g.createImageData(N, N), d = img.data;
+      const fbm = (x, y) => vnoise(x, y, 3) * .55 + vnoise(x * 2.1, y * 2.1, 4) * .27 + vnoise(x * 4.3, y * 4.3, 5) * .13 + vnoise(x * 9, y * 9, 6) * .05;
+      for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) {
+        const nx = (i + .5) / N * 2 - 1, ny = 1 - (j + .5) / N * 2, rr = nx * nx + ny * ny, o = (j * N + i) * 4;
+        if (rr > 1) { d[o + 3] = 0; continue; }
+        const nz = Math.sqrt(1 - rr), lat = Math.asin(ny) / D2R, lon = Math.atan2(nx, nz) / D2R + MARS_LON0;
+        let a = fbm(lon / 28 + 40, lat / 24 + 10);
+        // Valles Marineris and the dark southern highlands
+        const vm = Math.exp(-(((lat + 9 + (lon + 70) * .08) / 2.6) ** 2)) * sstep(-100, -88, lon) * (1 - sstep(-45, -35, lon));
+        a = a - vm * .35 - sstep(-10, -45, lat) * .08;
+        // Tharsis shields
+        let sh = 0; for (const [vl, vo, vr] of [[-8.3, -120.5, 6], [1.5, -113, 5], [-1.5, -104, 5], [18.6, -134, 9]]) { const dd = Math.hypot(lat - vl, (lon - vo) * Math.cos(lat * D2R)) / vr; sh += Math.exp(-dd * dd) * .18 - Math.exp(-((dd - 1) ** 2) * 18) * .05; }
+        a += sh;
+        let c = mixC([92, 38, 22], [196, 104, 62], clamp(a * 1.25 - .15, 0, 1));
+        const cap = sstep(72, 80, lat); c = mixC(c, [238, 232, 224], cap);
+        const L = clamp(nx * -.45 + ny * .35 + nz * .82, 0, 1), sh2 = .12 + .88 * Math.pow(L, .9), limb = .75 + .25 * nz;
+        d[o] = c[0] * sh2 * limb; d[o + 1] = c[1] * sh2 * limb; d[o + 2] = c[2] * sh2 * limb; d[o + 3] = 255 * clamp((1 - Math.sqrt(rr)) * N * .5, 0, 1);
+      }
+      g.putImageData(img, 0, 0); return cv;
+    };
+  })();
+  const marsPt = (lat, lon, cx, cy, r) => { const la = lat * D2R, lo = (lon - MARS_LON0) * D2R; return [cx + r * Math.cos(la) * Math.sin(lo), cy - r * Math.sin(la), Math.cos(la) * Math.cos(lo) > .05]; };
+  SCN.beyond = {
+    moon(p) {
+      const R = region(), w = R.x1 - R.x0, h = R.y1 - R.y0, b = moonPlace(.4);
+      return { ...b, x: R.x0 + w * (W < 900 ? .2 : .18), y: R.y0 + h * .66, a: 1, w: 0 };
+    },
+    draw(p, t, M) {
+      const R = region(), w = R.x1 - R.x0, h = R.y1 - R.y0, mob = W < 900;
+      const mr = Math.min(w, h) * (mob ? .3 : .29), mx = R.x0 + w * (mob ? .7 : .7), my = R.y0 + h * .4;
+      const km = ease(sstep(.05, .35, p));
+      if (km > 0) {
+        const rr = mr * lerp(.85, 1, km);
+        alpha(km * .5); const gl = ctx.createRadialGradient(mx, my, rr * .9, mx, my, rr * 1.35); gl.addColorStop(0, 'rgba(220,120,70,.25)'); gl.addColorStop(1, 'rgba(220,120,70,0)');
+        ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(mx, my, rr * 1.35, 0, TAU); ctx.fill();
+        alpha(km); ctx.drawImage(marsTex(), mx - rr, my - rr, rr * 2, rr * 2);
+        const k2 = sstep(.3, .5, p);
+        if (k2 > 0) {
+          ctx.fillStyle = C.accent;
+          const r2 = rng(5);
+          for (let i = 0; i < 46; i++) {
+            const la = -12 + r2() * 30, lo = -140 + r2() * 45, q = marsPt(la, lo, mx, my, rr);
+            if (!q[2] || r2() > k2 * 1.2) continue;
+            alpha(km * k2 * .8); ctx.beginPath(); ctx.arc(q[0], q[1], 1.3, 0, TAU); ctx.fill();
+          }
+          const ar = marsPt(-8.3, -120.5, mx, my, rr);
+          alpha(km * k2); ring(ar[0], ar[1], 8, C.accent, t, .9);
+          tag(ar[0] + 14, ar[1] + 18, 'ARSIA MONS · SKYLIGHT CANDIDATES', C.accent);
+        }
+        alpha(km); tag(mx, my - rr - 20, 'MARS · HUNDREDS OF CAVE CANDIDATES', C.ink, 'center');
+      }
+      // transfer arc Moon → Mars
+      const ka = sstep(.35, .6, p);
+      if (ka > 0 && M) {
+        const ax = M.x + M.r * .8, ay = M.y - M.r * .8, bx = mx - mr * .7, by = my + mr * .68, cx = (ax + bx) / 2, cy = Math.min(ay, by) - h * .22;
+        const pts = []; for (let i = 0; i <= 40; i++) { const u = i / 40 * ka; pts.push([(1 - u) ** 2 * ax + 2 * u * (1 - u) * cx + u * u * bx, (1 - u) ** 2 * ay + 2 * u * (1 - u) * cy + u * u * by]); }
+        alpha(1); ctx.strokeStyle = rgba(C.accent, .8); ctx.lineWidth = 1.4; ctx.setLineDash([5, 5]); ctx.beginPath(); pts.forEach((q, i) => i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])); ctx.stroke(); ctx.setLineDash([]);
+        const e = pts[pts.length - 1]; ctx.fillStyle = C.accent; ctx.beginPath(); ctx.arc(e[0], e[1], 3, 0, TAU); ctx.fill();
+        const kt = sstep(.55, .7, p);
+        if (kt > 0) { alpha(kt); const mid = pts[20] || e; tag(mid[0], mid[1] - 14, 'SAME RIG · SAME SOFTWARE · TRAINED ON THE MOON', C.accent, 'center'); }
+      }
+      if (M) { alpha(km); tag(M.x, M.y + M.r + 22, 'MOON · TRAINING GROUND', C.ink, 'center'); }
     }
   };
 
@@ -1233,7 +1297,7 @@ p strong{color:var(--ink);font-weight:600}
   SCN.device = {
     moon: () => null,
     draw(p, t) {
-      const s = p * 3, R = region(), w = R.x1 - R.x0, h = R.y1 - R.y0, mob = W < 900;
+      const s = p * .9, R = region(), w = R.x1 - R.x0, h = R.y1 - R.y0, mob = W < 900;
       const k3s = ease(sstep(2.0, 2.3, s));
       const L = Math.min(w * (mob ? .5 : .46), h * .62) * lerp(1, .9, k3s);
       const cx = R.x0 + w * lerp(.5, .64, k3s), cy = R.y0 + h * lerp(.56, .62, k3s);
