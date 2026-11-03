@@ -48,7 +48,8 @@ body{margin:0;background:var(--void);color:var(--ink);font-family:var(--f-body);
 .facts.steps li{transition:opacity .35s,color .35s;opacity:.38}
 .facts.steps li.on{opacity:1}
 .facts.steps li.on b{color:var(--accent)}
-.tall.long{min-height:500vh}
+@media (min-width:900px){.step.tall{align-items:flex-start}}
+.tall.long{min-height:900vh}
 .callout.beat{transition:opacity .35s;opacity:.3}
 .callout.beat.on{opacity:1}
 .step{min-height:100vh;display:flex;align-items:center;padding-block:10vh}
@@ -926,7 +927,7 @@ try {
   SCN.shelter = {
     moon: () => null,
     draw(p, t, M) {
-      const s = Math.min(3, p * 4), Ls = shelterLayout(), bi = Math.round(p * 4);
+      const r = p * 4.6, bi = Math.min(3, Math.floor(r)), s = Math.min(3, bi + sstep(.82, 1, r - bi)), Ls = shelterLayout();
       if (bi !== SH_BEAT) { SH_BEAT = bi; SH_T0 = NOW; }
       const run = ms => RM ? 1 : clamp((NOW - SH_T0) / ms, 0, 1);
       const wR = 1 - sstep(.35, .65, s), wT = sstep(.35, .65, s) * (1 - sstep(1.35, 1.65, s));
@@ -2196,7 +2197,7 @@ try {
     ctx.globalAlpha = 1; SA = 1;
     if (window.HERO3D) HERO3D.show(HERO_ON); HERO_ON = false;
     veil.style.opacity = sstep(.3, .8, P(0)).toFixed(3);
-    if (shelterSec >= 0) { const on = Math.round(P(shelterSec) * 4); shelterLi.forEach((li, i) => li.classList.toggle('on', i === on)); if (shelterCall) shelterCall.classList.toggle('on', on === 4); }
+    if (shelterSec >= 0) { const on = Math.min(4, Math.floor(P(shelterSec) * 4.6)); shelterLi.forEach((li, i) => li.classList.toggle('on', i === on)); if (shelterCall) shelterCall.classList.toggle('on', on === 4); }
 
     if (idx !== hudIdx) { hudIdx = idx; hudN.textContent = String(idx + 1).padStart(2, '0'); hudT.textContent = sections[idx].dataset.chapter; }
     hudBar.style.transform = `scaleX(${clamp(scrollY / Math.max(1, document.documentElement.scrollHeight - H), 0, 1)})`;
@@ -2207,46 +2208,6 @@ try {
     }
     requestAnimationFrame(frame);
   }
-  (() => {
-    const sec = sections[shelterSec]; if (!sec) return;
-    const N = 4; let lock = 0, lastWheel = 0, ty0 = null;
-    const range = () => { const r = sec.getBoundingClientRect(), a = r.top + scrollY; return [a, a + r.height - innerHeight]; };
-    const go = y => { lock = performance.now() + 700; scrollTo({ top: Math.round(y), behavior: 'instant' }); };
-    // returns true when the input was consumed by the section
-    function beat(dir, dist) {
-      const [a, b] = range(), y = scrollY, st = (b - a) / N;
-      if (y < a - 2) { if (dir > 0 && y + dist >= a) { go(a); return true; } return false; }
-      if (y > b + 2) { if (dir < 0 && y - dist <= b) { go(b); return true; } return false; }
-      const i = Math.round((y - a) / st), ni = i + dir;
-      if (ni < 0 || ni > N) return false;
-      if (performance.now() >= lock) go(a + ni * st);
-      return true;
-    }
-    addEventListener('wheel', e => {
-      if (e.ctrlKey || !e.deltaY) return;
-      const now = performance.now(), fresh = now - lastWheel > 220; lastWheel = now;
-      const [a, b] = range(), y = scrollY;
-      const near = y >= a - 2 - Math.abs(e.deltaY) && y <= b + 2 + Math.abs(e.deltaY);
-      if (!near) return;
-      const dir = Math.sign(e.deltaY), [a2, b2] = [a, b], inside = y >= a2 - 2 && y <= b2 + 2;
-      if (inside && !fresh) { const i = Math.round((y - a) / ((b - a) / N)) + dir; if (i >= 0 && i <= N) { e.preventDefault(); return; } return; }
-      if (beat(dir, Math.abs(e.deltaY))) e.preventDefault();
-    }, { passive: false });
-    addEventListener('keydown', e => {
-      const k = e.key, dir = ['ArrowDown', 'PageDown', ' '].includes(k) ? 1 : ['ArrowUp', 'PageUp'].includes(k) ? -1 : 0;
-      if (!dir || e.target.closest && e.target.closest('input,textarea')) return;
-      if (beat(dir, innerHeight * .9)) e.preventDefault();
-    });
-    addEventListener('touchstart', e => { ty0 = e.touches[0].clientY; }, { passive: true });
-    addEventListener('touchmove', e => {
-      if (ty0 == null) return; const [a, b] = range(), y = scrollY, dy = ty0 - e.touches[0].clientY;
-      if (y >= a - 2 && y <= b + 2) { const i = Math.round((y - a) / ((b - a) / N)) + Math.sign(dy); if (i >= 0 && i <= N) e.preventDefault(); }
-    }, { passive: false });
-    addEventListener('touchend', e => {
-      if (ty0 == null) return; const dy = ty0 - e.changedTouches[0].clientY; ty0 = null;
-      if (Math.abs(dy) > 30) beat(Math.sign(dy), Math.abs(dy) * 2);
-    }, { passive: true });
-  })();
   sizeCanvas(); lastW = W; lastH = H;
   resizers.forEach(f => f());
   requestAnimationFrame(frame);
