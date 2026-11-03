@@ -39,12 +39,22 @@ body{margin:0;background:var(--void);color:var(--ink);font-family:var(--f-body);
 .scene{min-height:115vh;display:flex;align-items:center;padding-block:14vh}
 .hero{min-height:160vh;align-items:flex-start;padding-top:14vh}
 .chapter{display:block}
+.intro{display:block;min-height:175vh;padding-top:88vh}
+.intro .panel{max-width:none;justify-items:center;background:none;border:0;-webkit-backdrop-filter:none;backdrop-filter:none;padding:0;padding-right:max(5vw,16px)}
+.tall{min-height:340vh;align-items:flex-start}
+.scene.tall{min-height:230vh}
+.tall>.panel,.tall .panel{position:sticky;top:16vh}
+.facts.steps li{transition:opacity .35s,color .35s;opacity:.38}
+.facts.steps li.on{opacity:1}
+.facts.steps li.on b{color:var(--accent)}
 .step{min-height:100vh;display:flex;align-items:center;padding-block:10vh}
 .panel{max-width:33rem;min-width:0;display:grid;gap:1.1rem;will-change:opacity,transform}
 .panel.wide{max-width:40rem}
 @media (max-width:899px){
   .scene,.step{align-items:flex-end}
   .hero{align-items:flex-end;padding-bottom:8vh}
+  .tall,.scene.tall{align-items:flex-end}
+  .tall>.panel,.tall .panel{top:auto;bottom:2vh}
   .panel{background:var(--panel);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);padding:1.4rem 1.25rem;border:1px solid rgba(236,232,223,.08);border-radius:4px;width:100%}
 }
 
@@ -106,63 +116,37 @@ p strong{color:var(--ink);font-weight:600}
 <div class="hud" aria-hidden="true"><span id="hud-n">01</span><span class="bar"><i id="hud-bar"></i></span><span id="hud-t">Prologue</span></div>
 
 <main class="story">
+  <section class="scene intro" data-scene="intro" data-chapter="SLAM">
+    <div class="panel"><div class="cue"><i></i>Scroll</div></div>
+  </section>
   <section class="scene hero" data-scene="moon" data-chapter="Prologue">
     <div class="panel">
-      <div class="brand"><b>SLAM</b><span>Subsurface Lunar Atlas Mission</span></div>
       <h1>We're going back to the Moon.</h1>
       <p class="lede">The US and China are both planning crewed landings in the next few years, and both want to build bases that last. Some of the best places to put those bases are underground, in lava tubes that nobody has mapped yet.</p>
       <p class="callout">I'm building SLAM, a rover that goes down and maps them.</p>
-      <div class="cue"><i></i>Scroll</div>
     </div>
   </section>
-  <section class="scene" data-scene="race" data-chapter="The new race">
+  <section class="scene tall" data-scene="racestay" data-chapter="The new race">
     <div class="panel">
       <p class="eyebrow">The new race</p>
       <h2>A second space race</h2>
       <p><strong>China wants astronauts on the Moon before 2030.</strong></p>
       <p><strong>NASA's Artemis IV is planned for 2028: two astronauts near the south pole for about a week.</strong></p>
-      <p>Plenty of robotic landers have already gone, and more are booked from both countries and their partners.</p>
-    </div>
-  </section>
-  <section class="scene" data-scene="stay" data-chapter="Why stay">
-    <div class="panel">
-      <p class="eyebrow">The new objective</p>
-      <h2>This time the plan is to stay</h2>
-      <p>NASA's Moon Base plan uses robots through 2029 to scout sites before crews show up. China's ILRS is pitched as a long-term base with its own power, transport and resource use. Both are headed for the <strong>south pole</strong>, where shadowed craters may hold water ice.</p>
+      <p>And this time the plan is to stay. NASA's Moon Base plan uses robots through 2029 to scout sites before crews show up, and China's ILRS is pitched as a long-term base with its own power and resource use. Both are headed for the <strong>south pole</strong>, where shadowed craters may hold water ice.</p>
       <p class="callout">If people are going to live there, someone has to figure out where.</p>
     </div>
   </section>
   <section class="chapter" data-scene="shelter" data-chapter="Why caves">
-    <div class="step">
+    <div class="step tall">
       <div class="panel">
-        <p class="eyebrow">Why go underground · 1 of 4</p>
-        <h2>Radiation</h2>
-        <p>The Moon has no atmosphere and no magnetic field, so cosmic rays and solar storms hit the surface directly. Anyone living in a surface habitat takes the full dose.</p>
-        <p><strong>A few meters of rock blocks most of it.</strong> A lava tube already has that rock overhead.</p>
-      </div>
-    </div>
-    <div class="step">
-      <div class="panel">
-        <p class="eyebrow">Why go underground · 2 of 4</p>
-        <h2>Temperature</h2>
-        <p>One lunar day is about 29.5 Earth days long. Near the equator the surface gets to around <strong>+120 °C</strong> in the afternoon and falls to around <strong>−170 °C</strong> during the two-week night, over and over.</p>
-        <p>Models based on orbiter data put the shaded floor of the Mare Tranquillitatis pit at about <strong>+17 °C</strong>, day and night. That means smaller heaters, smaller radiators and a lot less power just to keep things alive.</p>
-      </div>
-    </div>
-    <div class="step">
-      <div class="panel">
-        <p class="eyebrow">Why go underground · 3 of 4</p>
-        <h2>Impacts and dust</h2>
-        <p>Tiny meteoroids hit the surface all the time. Each impact, and each landing, kicks up sharp dust that grinds down seals, joints, lenses and radiators.</p>
-        <p>Underground, the roof takes the hits and much less dust gets in, so <strong>equipment lasts longer.</strong></p>
-      </div>
-    </div>
-    <div class="step">
-      <div class="panel">
-        <p class="eyebrow">Why go underground · 4 of 4</p>
-        <h2>The space is already there</h2>
-        <p>To shield a base on the surface you either launch the shielding from Earth or have robots bury it in regolith. Both take a lot of mass, power and time.</p>
-        <p>A lava tube <strong>already has the walls and the roof</strong>, so that mass can go to life support, science or more crew instead.</p>
+        <p class="eyebrow">Why go underground</p>
+        <h2>A lava tube is a ready-made shelter</h2>
+        <ul class="facts steps">
+          <li><span><b>Radiation.</b> With no atmosphere or magnetic field, cosmic rays and solar storms hit the surface directly. A few meters of rock blocks most of it.</span></li>
+          <li><span><b>Temperature.</b> The surface swings from about +120 °C to about −170 °C. The shaded floor of the Mare Tranquillitatis pit is modeled at about +17 °C, day and night.</span></li>
+          <li><span><b>Impacts and dust.</b> The roof takes the micrometeoroid hits and keeps out most of the sharp dust that wears down equipment.</span></li>
+          <li><span><b>Space.</b> No launching shielding from Earth or burying a base in regolith. The walls and roof are already there.</span></li>
+        </ul>
         <p class="callout">But none of that helps until you know how big the cave is, how to get in and what's down there.</p>
       </div>
     </div>
@@ -492,7 +476,7 @@ p strong{color:var(--ink);font-weight:600}
   SCN.moon = {
     moon(p) {
       const b = moonPlace(1), k = ease(p), r = b.r * lerp(1, 1.6, k), u = project(TRANQ[0], TRANQ[1], 0, { x: 0, y: 0, r: 1 });
-      return { x: b.x - u.x * r * k * .7, y: b.y - u.y * r * k * .7, r, a: ease(p * 6 + .35), w: 0 };
+      return { x: b.x - u.x * r * k * .7, y: b.y - u.y * r * k * .7, r, a: 1, w: 0 };
     },
     draw(p, t, M) {
       const k = sstep(.3, .55, p); if (k <= 0) return;
@@ -1676,6 +1660,194 @@ p strong{color:var(--ink);font-weight:600}
     }
   };
 
+  /* ---------------- intro: the rover in 3D, turning in front of the name ---------------- */
+  const ROVER3D = (() => {
+    const groups = { body: [], top: [], under: [], wheels: [] };
+    const quad = (arr, pts, col, n, flat) => arr.push({ pts, col, n, flat });
+    const box = (arr, x0, x1, y0, y1, z0, z1, col, sideCol) => {
+      const P = (x, y, z) => [x, y, z];
+      quad(arr, [P(x0, y1, z0), P(x1, y1, z0), P(x1, y1, z1), P(x0, y1, z1)], col, [0, 1, 0]);
+      quad(arr, [P(x0, y0, z0), P(x0, y0, z1), P(x1, y0, z1), P(x1, y0, z0)], sideCol || col, [0, -1, 0]);
+      quad(arr, [P(x1, y0, z0), P(x1, y0, z1), P(x1, y1, z1), P(x1, y1, z0)], sideCol || col, [1, 0, 0]);
+      quad(arr, [P(x0, y0, z0), P(x0, y1, z0), P(x0, y1, z1), P(x0, y0, z1)], sideCol || col, [-1, 0, 0]);
+      quad(arr, [P(x0, y0, z1), P(x0, y1, z1), P(x1, y1, z1), P(x1, y0, z1)], sideCol || col, [0, 0, 1]);
+      quad(arr, [P(x0, y0, z0), P(x1, y0, z0), P(x1, y1, z0), P(x0, y1, z0)], sideCol || col, [0, 0, -1]);
+    };
+    // vertical cylinder (axis y)
+    const cylY = (arr, cx, cz, r, y0, y1, col, capCol, n = 20) => {
+      for (let i = 0; i < n; i++) {
+        const a0 = i / n * TAU, a1 = (i + 1) / n * TAU, am = (a0 + a1) / 2;
+        quad(arr, [[cx + Math.cos(a0) * r, y0, cz + Math.sin(a0) * r], [cx + Math.cos(a1) * r, y0, cz + Math.sin(a1) * r], [cx + Math.cos(a1) * r, y1, cz + Math.sin(a1) * r], [cx + Math.cos(a0) * r, y1, cz + Math.sin(a0) * r]], typeof col === 'function' ? col(i) : col, [Math.cos(am), 0, Math.sin(am)]);
+      }
+      const cap = []; for (let i = 0; i < n; i++) cap.push([cx + Math.cos(i / n * TAU) * r, y1, cz + Math.sin(i / n * TAU) * r]);
+      quad(arr, cap, capCol || col, [0, 1, 0]);
+      const bot = []; for (let i = 0; i < n; i++) bot.push([cx + Math.cos(i / n * TAU) * r, y0, cz + Math.sin(i / n * TAU) * r]);
+      quad(arr, bot, capCol || col, [0, -1, 0]);
+    };
+    const CREAM = [236, 232, 222], CREAM2 = [196, 190, 178], GOLD = [214, 160, 70], DARK = [34, 34, 40], STEEL = [150, 146, 138];
+    // body: gold insulation band under a cream shell
+    box(groups.body, -.46, .46, -.07, 0, -.27, .27, GOLD);
+    box(groups.body, -.46, .46, 0, .19, -.27, .27, CREAM, CREAM2);
+    // tether boot at the rear
+    box(groups.body, -.53, -.46, .03, .13, -.05, .05, DARK);
+    // mast + LiDAR puck
+    cylY(groups.top, .22, 0, .022, .19, .44, STEEL);
+    cylY(groups.top, .22, 0, .085, .44, .56, i => DARK, [110, 110, 120], 24);
+    // APXS under the belly
+    cylY(groups.under, .1, 0, .035, -.16, -.07, [220, 216, 206], [200, 150, 60], 14);
+    // wheels: drum, grouser plates, spoked outer face
+    const WR = .19, WW = .13;
+    for (const wx of [-.31, .31]) for (const side of [-1, 1]) {
+      const zi = side * .3, zo = side * (.3 + WW), w = { c: [wx, 0, (zi + zo) / 2], side, sides: [], face: [], deco: [], zo, zi, wx };
+      const n = 24;
+      for (let i = 0; i < n; i++) {
+        const a0 = i / n * TAU, a1 = (i + 1) / n * TAU, am = (a0 + a1) / 2;
+        quad(w.sides, [[wx + Math.cos(a0) * WR, Math.sin(a0) * WR, zi], [wx + Math.cos(a1) * WR, Math.sin(a1) * WR, zi], [wx + Math.cos(a1) * WR, Math.sin(a1) * WR, zo], [wx + Math.cos(a0) * WR, Math.sin(a0) * WR, zo]], [168, 172, 176], [Math.cos(am), Math.sin(am), 0]);
+      }
+      w.ng = 12; w.WR = WR;
+      groups.wheels.push(w);
+    }
+    return { groups, WR, WW };
+  })();
+
+  SCN.intro = {
+    moon(p) {
+      const b = moonPlace(1), scr = Math.max(0, p * 1.75 - .5) * H;
+      return { ...b, y: b.y + Math.max(0, H * 1.25 - scr), a: 1, w: 0 };
+    },
+    draw(p, t, M) {
+      const mob = W < 900, slide = Math.max(0, p * 1.75 - .5) * H; // moves 1:1 with the page
+      const cx = W / 2, cy = H * (mob ? .5 : .53) - slide, S = Math.min(W * (mob ? .55 : .34), H * .5);
+      // the name, huge, behind the rover
+      const fs = Math.min(W * (mob ? .4 : .34), H * .52);
+      ctx.save(); alpha(1);
+      ctx.font = `800 ${fs}px "Big Shoulders Display", "Arial Narrow", sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+      const ty = cy + fs * .2;
+      const tg = ctx.createLinearGradient(0, ty - fs * .75, 0, ty);
+      tg.addColorStop(0, 'rgba(236,232,223,.95)'); tg.addColorStop(1, 'rgba(236,232,223,.25)');
+      ctx.fillStyle = tg; if ('letterSpacing' in ctx) ctx.letterSpacing = `${Math.round(fs * .02)}px`; ctx.fillText('SLAM', cx, ty);
+      if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+      ctx.font = MONO; ctx.fillStyle = C.dim; ctx.textBaseline = 'middle';
+      if ('letterSpacing' in ctx) ctx.letterSpacing = '3px';
+      ctx.fillText('SUBSURFACE LUNAR ATLAS MISSION', cx, cy + Math.min(S * .62, H * .3));
+      if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+      ctx.restore();
+
+      // camera
+      const yaw = (RM ? .7 : t * .35) + p * 2.2, pit = .3, D = 4;
+      const cyw = Math.cos(yaw), syw = Math.sin(yaw), cp = Math.cos(pit), sp = Math.sin(pit);
+      const toView = ([x, y, z]) => { const x1 = x * cyw + z * syw, z1 = -x * syw + z * cyw; return [x1, y * cp + z1 * sp, -y * sp + z1 * cp]; };
+      const rotN = n => toView(n);
+      const proj = v => { const f = D / (D + v[2]); return [cx + v[0] * S * f, cy + (.05 - v[1]) * S * f]; };
+      const L = (() => { const l = [-.45, .75, -.5], m = Math.hypot(...l); return l.map(c => c / m); })();
+      const shade = (col, n, k = 1) => { const d = Math.max(0, n[0] * L[0] + n[1] * L[1] + n[2] * L[2]), s = (.32 + .68 * d) * k; return `rgb(${Math.min(255, Math.round(col[0] * s))},${Math.min(255, Math.round(col[1] * s))},${Math.min(255, Math.round(col[2] * s))})`; };
+      const visible = (vpts, vn) => { const c = vpts[0]; return vn[0] * c[0] + vn[1] * c[1] + vn[2] * (c[2] + D) < 0; };
+      const fillPoly = (vpts, style, edge) => {
+        ctx.beginPath(); let y0 = 1e9, y1 = -1e9;
+        vpts.forEach((v, i) => { const q = proj(v); y0 = Math.min(y0, q[1]); y1 = Math.max(y1, q[1]); i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]); }); ctx.closePath();
+        if (Array.isArray(style)) { const g = ctx.createLinearGradient(0, y0, 0, y1 + .01); g.addColorStop(0, style[0]); g.addColorStop(1, style[1]); ctx.fillStyle = g; } else ctx.fillStyle = style;
+        ctx.fill(); if (edge) { ctx.strokeStyle = edge; ctx.lineWidth = 1; ctx.stroke(); }
+      };
+      const drawFaces = (faces, cull = true) => {
+        const list = faces.map(f => { const v = f.pts.map(toView), n = rotN(f.n); return { v, n, f, z: v.reduce((a, q) => a + q[2], 0) / v.length }; })
+          .filter(o => !cull || visible(o.v, o.n)).sort((a, b) => b.z - a.z);
+        for (const o of list) fillPoly(o.v, o.v.length === 4 ? [shade(o.f.col, o.n, 1.1), shade(o.f.col, o.n, .8)] : shade(o.f.col, o.n), o.v.length === 4 && o.f.pts.length === 4 && o.f.col[0] > 200 ? 'rgba(255,255,255,.18)' : null);
+      };
+      ctx.save(); alpha(1);
+      // ground shadow + LiDAR rings
+      const g0 = toView([0, -ROVER3D.WR - .035, 0]), gp = proj(g0);
+      ctx.save(); ctx.translate(gp[0], gp[1]); ctx.scale(1, .16);
+      const sh = ctx.createRadialGradient(0, 0, 0, 0, 0, S * .85); sh.addColorStop(0, 'rgba(0,0,0,.7)'); sh.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = sh; ctx.beginPath(); ctx.arc(0, 0, S * .85, 0, TAU); ctx.fill();
+      const ph = RM ? .4 : (t * .4) % 1;
+      for (let k = 0; k < 3; k++) { const q = (k + ph) / 3; ctx.strokeStyle = rgba(C.accent, ((1 - q) * .5).toFixed(3)); ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(0, 0, S * (.5 + q * .9), 0, TAU); ctx.stroke(); }
+      ctx.restore();
+
+      const roll = RM ? 0 : -t * .8;
+      const drawWheel = w => {
+        const { wx, zi, zo, WR: r, ng, side } = w, rot = a => a + roll;
+        // drum
+        drawFaces(w.sides);
+        // grouser plates (thin radial plates across the drum width)
+        const plates = [];
+        for (let k = 0; k < ng; k++) {
+          const a = rot(k * TAU / ng), c = Math.cos(a), s = Math.sin(a), h = r * 1.15, tw = .012;
+          const nx = -s, ny = c;
+          const pts = [[wx + c * r * .96, s * r * .96, zi], [wx + c * h, s * h, zi], [wx + c * h, s * h, zo], [wx + c * r * .96, s * r * .96, zo]];
+          const v = pts.map(toView), n = rotN([nx, ny, 0]);
+          const fv = visible(v, n) ? n : n.map(q => -q);
+          plates.push({ v, n: fv, z: v.reduce((a2, q) => a2 + q[2], 0) / 4, tipv: [toView([wx + c * h + nx * tw, s * h + ny * tw, zi]), toView([wx + c * h + nx * tw, s * h + ny * tw, zo])] });
+        }
+        plates.sort((a, b) => b.z - a.z).forEach(o => { fillPoly(o.v, [shade([196, 200, 204], o.n, 1.1), shade([182, 186, 190], o.n, .75)], 'rgba(30,32,36,.35)'); ctx.strokeStyle = 'rgba(40,42,46,.6)'; ctx.lineWidth = 1; ctx.beginPath(); const q0 = proj(o.v[1]), q1 = proj(o.v[2]); ctx.moveTo(...q0); ctx.lineTo(...q1); ctx.stroke(); });
+        // faces: outer has 4 wide spokes, inner is plain
+        for (const [z, nz, outer] of [[zo, side, true], [zi, -side, false]]) {
+          const n = rotN([0, 0, nz]), ring = [];
+          for (let i = 0; i < 28; i++) { const a = i / 28 * TAU; ring.push(toView([wx + Math.cos(a) * r, Math.sin(a) * r, z])); }
+          if (!visible(ring, n)) continue;
+          fillPoly(ring, shade([70, 74, 80], n));
+          if (!outer) continue;
+          const zz = z + side * .002, P = (a, rr) => toView([wx + Math.cos(a) * rr, Math.sin(a) * rr, zz]);
+          const col = shade([212, 214, 216], n);
+          // rim
+          const rim = []; for (let i = 0; i <= 28; i++) rim.push(P(i / 28 * TAU, r)); for (let i = 28; i >= 0; i--) rim.push(P(i / 28 * TAU, r * .85));
+          fillPoly(rim, col);
+          for (let k = 0; k < 4; k++) {
+            const b = rot(k * TAU / 4 + .4), sp2 = [P(b - .26, r * .2)];
+            for (let i = 0; i <= 6; i++) sp2.push(P(b - .32 + i / 6 * .64, r * .86));
+            sp2.push(P(b + .26, r * .2)); fillPoly(sp2, col);
+          }
+          const hub = []; for (let i = 0; i < 18; i++) hub.push(P(i / 18 * TAU, r * .27)); fillPoly(hub, col);
+          ctx.fillStyle = shade([90, 94, 100], n);
+          for (let k = 0; k < 4; k++) { const q = proj(P(rot(k * TAU / 4 + .78), r * .12)); ctx.beginPath(); ctx.arc(q[0], q[1], Math.max(1, S * .006), 0, TAU); ctx.fill(); }
+        }
+      };
+      // a wheel is in front of the body when its outer face points toward the camera
+      const wd = ROVER3D.groups.wheels.map(w => { const v = toView(w.c), n = rotN([0, 0, w.side]); return { w, z: v[2], near: visible([v], n) }; }).sort((a, b) => b.z - a.z);
+      wd.filter(o => !o.near).forEach(o => drawWheel(o.w));
+      drawFaces(ROVER3D.groups.under);
+      drawFaces(ROVER3D.groups.body);
+      // panel lines and radiator stripes on the top face
+      const topN = rotN([0, 1, 0]);
+      if (topN[1] > 0) {
+        ctx.strokeStyle = 'rgba(120,140,175,.55)'; ctx.lineWidth = 1; ctx.beginPath();
+        for (let u = -.4; u <= -.02; u += .03) { const a = proj(toView([u, .191, -.22])), b2 = proj(toView([u, .191, .22])); ctx.moveTo(...a); ctx.lineTo(...b2); }
+        ctx.stroke();
+      }
+      // label on the side facing the camera
+      for (const zs of [-1, 1]) {
+        const n = rotN([0, 0, zs]); if (n[2] > -.15) continue;
+        const a = proj(toView([.02, .1, zs * .2705])), b2 = proj(toView([.3, .1, zs * .2705]));
+        ctx.save(); ctx.translate(a[0], a[1]); ctx.rotate(Math.atan2(b2[1] - a[1], b2[0] - a[0]));
+        const sx = Math.hypot(b2[0] - a[0], b2[1] - a[1]) / (S * .28); ctx.scale(Math.max(.05, sx), 1);
+        ctx.font = `600 ${Math.round(S * .045)}px "IBM Plex Mono", monospace`; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillStyle = C.accent;
+        ctx.globalAlpha = SA * Math.min(1, -n[2] * 2); ctx.fillText('SLAM-01', 0, 0); ctx.restore(); alpha(1);
+      }
+      drawFaces(ROVER3D.groups.top);
+      // LiDAR window band and sweeping laser dot
+      {
+        const n = 24, y0 = .475, y1 = .515, r = .0855;
+        for (let i = 0; i < n; i++) {
+          const a0 = i / n * TAU, a1 = (i + 1) / n * TAU, nn = rotN([Math.cos((a0 + a1) / 2), 0, Math.sin((a0 + a1) / 2)]);
+          const v = [[.22 + Math.cos(a0) * r, y0, Math.sin(a0) * r], [.22 + Math.cos(a1) * r, y0, Math.sin(a1) * r], [.22 + Math.cos(a1) * r, y1, Math.sin(a1) * r], [.22 + Math.cos(a0) * r, y1, Math.sin(a0) * r]].map(toView);
+          if (!visible(v, nn)) continue; fillPoly(v, shade([30, 44, 80], nn, 1.3));
+        }
+        const la = RM ? 1 : t * 3.2, lp = toView([.22 + Math.cos(la) * r, .495, Math.sin(la) * r]), ln = rotN([Math.cos(la), 0, Math.sin(la)]);
+        if (visible([lp], ln)) {
+          const q = proj(lp); ctx.save(); ctx.globalCompositeOperation = 'lighter';
+          const lg = ctx.createRadialGradient(q[0], q[1], 0, q[0], q[1], S * .08); lg.addColorStop(0, 'rgba(255,150,70,.95)'); lg.addColorStop(1, 'rgba(255,122,47,0)');
+          ctx.fillStyle = lg; ctx.fillRect(q[0] - S * .08, q[1] - S * .08, S * .16, S * .16); ctx.restore();
+        }
+      }
+      wd.filter(o => o.near).forEach(o => drawWheel(o.w));
+      ctx.restore();
+    }
+  };
+
+  SCN.racestay = {
+    moon: p => p < .55 ? SCN.race.moon(p / .55) : SCN.stay.moon((p - .55) / .45),
+    draw: (p, t, M) => p < .55 ? SCN.race.draw(p / .55, t, M) : SCN.stay.draw((p - .55) / .45, t, M)
+  };
+
 /*@SCENES*/
 
   /* ---------------- scroll engine ---------------- */
@@ -1700,7 +1872,8 @@ p strong{color:var(--ink);font-weight:600}
     if (b) return { ...b, a: b.a * f };
     return null;
   }
-  const CONT = new Set(['race>stay', 'pits>orbit']);
+  const CONT = new Set(['intro>moon', 'pits>orbit']);
+  const veil = document.querySelector('.veil'), shelterSec = sections.findIndex(s => s.dataset.scene === 'shelter'), shelterLi = [...document.querySelectorAll('.facts.steps li')];
   let ss = scrollY, last = performance.now(), hudIdx = -1;
   function frame(now) {
     NOW = now;
@@ -1733,6 +1906,8 @@ p strong{color:var(--ink);font-weight:600}
     if (SAo) { SA = b >= 0 ? 1 - f : 1; if (SA > .003) { ctx.save(); alpha(1); SAo.draw(pa, t, Mu); ctx.restore(); } }
     if (SBo) { SA = f; if (SA > .003) { ctx.save(); alpha(1); SBo.draw(pb, t, Mu); ctx.restore(); } }
     ctx.globalAlpha = 1; SA = 1;
+    veil.style.opacity = sstep(.3, .8, P(0)).toFixed(3);
+    if (shelterSec >= 0) { const on = Math.min(3, Math.floor(P(shelterSec) * 4)); shelterLi.forEach((li, i) => li.classList.toggle('on', i === on)); }
 
     if (idx !== hudIdx) { hudIdx = idx; hudN.textContent = String(idx + 1).padStart(2, '0'); hudT.textContent = sections[idx].dataset.chapter; }
     hudBar.style.transform = `scaleX(${clamp(scrollY / Math.max(1, document.documentElement.scrollHeight - H), 0, 1)})`;
