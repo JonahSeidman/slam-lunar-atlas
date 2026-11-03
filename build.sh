@@ -12,5 +12,5 @@ mkdir -p docs
   awk 'body { print } /^<\/style>$/ { body = 1 }' index.html
   printf '</body>\n</html>\n'
 } > docs/index.html
-cp rover.glb og.jpg favicon.svg favicon-32.png apple-touch-icon.png docs/
+cp rover.glb og.jpg favicon.svg favicon-32.png apple-touch-icon.png CNAME docs/
 echo "docs/ built"
