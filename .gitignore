@@ -1,3 +1,8 @@
 .DS_Store
 *.png
+!/favicon-32.png
+!/apple-touch-icon.png
+!/docs/favicon-32.png
+!/docs/apple-touch-icon.png
 check.js
+tools/node_modules/

@@ -1,6 +1,20 @@
 <title>SLAM Lunar Atlas</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="The US and China are heading back to the Moon. SLAM is a rover that maps lunar lava tubes.">
+<meta name="theme-color" content="#05070d">
+<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SLAM Lunar Atlas">
+<meta property="og:title" content="SLAM Lunar Atlas">
+<meta property="og:description" content="The US and China are heading back to the Moon. SLAM is a rover that maps lunar lava tubes.">
+<meta property="og:url" content="https://jonahseidman.github.io/slam-lunar-atlas/">
+<meta property="og:image" content="https://jonahseidman.github.io/slam-lunar-atlas/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The SLAM rover in front of the SLAM wordmark, on orange target rings">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -23,7 +37,7 @@
 *{box-sizing:border-box}
 body{margin:0;background:var(--void);color:var(--ink);font-family:var(--f-body);font-size:1.0625rem;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 #sky{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block}
-#hero3d{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block;pointer-events:none;visibility:hidden}
+#hero3d{position:fixed;left:0;top:0;width:1px;height:1px;z-index:0;display:block;pointer-events:none;visibility:hidden}
 .veil{position:fixed;inset:0;z-index:0;pointer-events:none;background:linear-gradient(90deg,rgba(5,7,13,.94) 0%,rgba(5,7,13,.8) 30%,rgba(5,7,13,0) 47%)}
 @media (max-width:899px){.veil{display:none}}
 
@@ -112,39 +126,54 @@ p strong{color:var(--ink);font-weight:600}
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 <script type="module">
 // Hero: the real ATLAS G071 Phoebe model, rendered over the name. The scroll engine calls HERO3D.render() each frame.
+// rover.glb is a display build of the CAD export (tools/web-model.mjs): tether dropped, centred on the body, parts merged, meshopt-compressed.
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 const cv = document.getElementById('hero3d');
 const H3 = window.HERO3D = { ready: false, failed: false, show() {}, render() { return 0; } };
 try {
-  const r = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: true, powerPreference: 'high-performance' });
+  const r = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: true, powerPreference: 'low-power' }); // the integrated GPU is plenty; don't wake a laptop's discrete one
   r.setClearColor(0x000000, 0); r.outputColorSpace = THREE.SRGBColorSpace; r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = 1.0;
-  const scene = new THREE.Scene();
-  scene.environment = new THREE.PMREMGenerator(r).fromScene(new RoomEnvironment(), .04).texture;
+  const scene = new THREE.Scene(), pm = new THREE.PMREMGenerator(r), room = new RoomEnvironment();
+  scene.environment = pm.fromScene(room, .04).texture; pm.dispose(); room.dispose?.();
   const key = new THREE.DirectionalLight(0xfff3e4, 2.4); key.position.set(-2.5, 3.5, 2.5);
   const rim = new THREE.DirectionalLight(0xff8a40, 2.2); rim.position.set(2.5, 1.4, -3);
   scene.add(key, rim, new THREE.HemisphereLight(0x9fb4ff, 0x1a1410, .4));
   const cam = new THREE.PerspectiveCamera(26, 1, .05, 60), spin = new THREE.Group(); scene.add(spin);
-  let w = 0, h = 0, dpr = 0;
-  new GLTFLoader().load('rover.glb?v=e9436a3d', g => {   // ?v = first 8 of the GLB's md5; bump it with every new model so browsers can't reuse a stale copy
-    const m = g.scene; m.traverse(o => { if (/^tether_/.test(o.name)) o.visible = false; }); m.updateMatrixWorld(true);
-    const c = new THREE.Box3().setFromObject(m.getObjectByName('body') || m).getCenter(new THREE.Vector3());
-    m.position.set(-c.x, 0, -c.z); spin.add(m);
+  const v = new THREE.Vector3(), hull = [];   // hull: a 12-gon prism around the spin axis that holds the model at any yaw
+  let bw = 0, bh = 0, dpr = 0, shown = false, freeT = 0;
+  new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).load('rover.glb?v=aab908f6', g => {   // ?v = first 8 of the GLB's md5; bump it with every new model so browsers can't reuse a stale copy
+    const b = new THREE.Box3().setFromObject(g.scene), k = 1 / Math.cos(Math.PI / 12);   // measured before parenting, so unrotated
+    const rh = Math.max(...[b.min.x, b.max.x].flatMap(x => [b.min.z, b.max.z].map(z => Math.hypot(x, z)))) * k;
+    for (const y of [b.min.y, b.max.y]) for (let i = 0; i < 12; i++) hull.push(new THREE.Vector3(Math.cos(i * Math.PI / 6) * rh, y, Math.sin(i * Math.PI / 6) * rh));
+    spin.add(g.scene);
     H3.t0 = performance.now(); H3.ready = true;
   }, undefined, () => { H3.failed = true; });
-  H3.show = on => { cv.style.visibility = on && H3.ready ? 'visible' : 'hidden'; };
+  H3.show = on => {
+    on = !!(on && H3.ready); if (on === shown) return; shown = on;
+    cv.style.visibility = on ? 'visible' : 'hidden'; clearTimeout(freeT);
+    if (!on) freeT = setTimeout(() => { r.setSize(1, 1, false); bw = bh = 0; }, 3000);   // give the drawing buffers back once the hero has scrolled away
+  };
   H3.render = (cx, cy, S, yaw, a) => {
     const W = innerWidth, H = innerHeight, d = Math.min(2, devicePixelRatio || 1);
-    if (W !== w || H !== h || d !== dpr) { w = W; h = H; dpr = d; r.setPixelRatio(d); r.setSize(W, H, false); }
     const pxPerM = S * 2.25, fov = 26 * Math.PI / 180, dist = H / (2 * Math.tan(fov / 2) * pxPerM), pit = .42, ty = .15;
     cam.aspect = W / H; cam.position.set(0, ty + Math.sin(pit) * dist, Math.cos(pit) * dist); cam.lookAt(0, ty, 0);
-    cam.setViewOffset(W, H, W / 2 - cx, H / 2 - cy, W, H); cam.updateProjectionMatrix();
+    cam.setViewOffset(W, H, W / 2 - cx, H / 2 - cy, W, H); cam.updateProjectionMatrix(); cam.updateMatrixWorld();
+    v.set(0, 0, 0).project(cam); const gy = (1 - v.y) / 2 * H;
+    // draw only the screen box the model can occupy, not the whole viewport. Scrolling just shifts the box, so it keeps its size until a resize.
+    let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+    for (const q of hull) { v.copy(q).project(cam); const x = (v.x + 1) / 2 * W, y = (1 - v.y) / 2 * H; x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+    const nw = Math.ceil(x1 - x0) + 8, nh = Math.ceil(y1 - y0) + 8;
+    if (nw > bw || nh > bh || nw < bw - 24 || nh < bh - 24 || d !== dpr) { bw = nw; bh = nh; dpr = d; r.setPixelRatio(d); r.setSize(bw, bh, false); cv.style.width = bw + 'px'; cv.style.height = bh + 'px'; }
+    const ox = Math.round((x0 + x1 - bw) / 2), oy = Math.round((y0 + y1 - bh) / 2);
+    cv.style.transform = `translate3d(${ox}px,${oy}px,0)`;
+    cam.setViewOffset(W, H, W / 2 - cx + ox, H / 2 - cy + oy, bw, bh); cam.updateProjectionMatrix();
     spin.rotation.y = yaw;
     cv.style.opacity = (a * Math.min(1, (performance.now() - H3.t0) / 700)).toFixed(3);
     r.render(scene, cam);
-    const g = new THREE.Vector3(0, 0, 0).project(cam);
-    return (1 - g.y) / 2 * H;
+    return gy;
   };
 } catch (e) { H3.failed = true; }
 </script>
@@ -374,7 +403,7 @@ try {
     return h / k;
   }
 
-  let W = 0, H = 0, DPR = 1, NOW = 0, SA = 1;
+  let W = 0, H = 0, DPR = 1, NOW = 0, SA = 1, FADE = 0;   // FADE: a texture is fading in until then, so the frame loop runs at full rate
   const alpha = k => { ctx.globalAlpha = SA * k; };
   // keep the previous shot's overlay on screen while the camera moves on, clearing as the new one arrives
   const carry = (name, k, t, M) => { if (k <= 0) return; const s0 = SA; SA *= k; ctx.save(); SCN[name].draw(1, t, M); ctx.restore(); SA = s0; alpha(1); };
@@ -495,7 +524,7 @@ try {
       const v = 255 * Math.min(1.05, alb * I * .95 + alb * .028);
       const e = clamp((1 - Math.sqrt(rr)) * sc, 0, 1);
       d[o] = Math.min(255, v * 1.01); d[o + 1] = v * .975; d[o + 2] = v * (.92 + .03 * m); d[o + 3] = 255 * e;
-    }, c => { if (S >= moonSize[slot]) { moonTex[slot] = c; moonSize[slot] = S; moonBorn[slot] = performance.now(); } });
+    }, c => { if (S >= moonSize[slot]) { moonTex[slot] = c; moonSize[slot] = S; moonBorn[slot] = performance.now(); FADE = moonBorn[slot] + 750; } });
   }
   /* real-time moon: albedo + relief baked once into an equirect map, then shaded on a sphere in WebGL so it can turn */
   const GLM = (() => {
@@ -565,7 +594,7 @@ try {
         if (grow < EH) return false;
         gl.bindTexture(gl.TEXTURE_2D, tex); gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, EW, EH, 0, gl.RGBA, gl.UNSIGNED_BYTE, d);
-        if (!S.ready) S.born = performance.now();
+        if (!S.ready) FADE = (S.born = performance.now()) + 750;
         S.ready = true; done && done(); return true;
       } };
     };
@@ -576,8 +605,9 @@ try {
       return [px * cl + pz * sl, py, -px * sl + pz * cl];
     };
     S.draw = (M, x0, y0, cw, ch, lat0, lon0) => {
+      // the buffer only needs to hold the moon's box (drawn bottom-left): grow to it, never past the viewport
       const Wd = Math.round(W * DPR), Hd = Math.round(H * DPR);
-      if (c.width !== Wd || c.height !== Hd) { c.width = Wd; c.height = Hd; }
+      if (c.width < cw || c.height < ch || c.width > Wd || c.height > Hd) { c.width = Math.min(Wd, Math.max(cw, c.width)); c.height = Math.min(Hd, Math.max(ch, c.height)); }
       gl.viewport(0, 0, cw, ch); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
       gl.uniform3f(uC, (M.x - x0) * DPR, ch - (M.y - y0) * DPR, M.r * DPR);
       gl.uniformMatrix3fv(uM, false, [...S.v2b([1, 0, 0], lat0, lon0), ...S.v2b([0, 1, 0], lat0, lon0), ...S.v2b([0, 0, 1], lat0, lon0)]);
@@ -1121,7 +1151,7 @@ try {
       }
       const c = clamp(val, 0, 1.1) * 232;
       d[o] = Math.min(255, c * 1.02); d[o + 1] = Math.min(255, c); d[o + 2] = Math.min(255, c * .95); d[o + 3] = 255 * fade;
-    }, c => { if (S >= pitSize) { if (!pitTex) pitBorn = performance.now(); pitTex = c; pitSize = S; } });
+    }, c => { if (S >= pitSize) { if (!pitTex) FADE = (pitBorn = performance.now()) + 650; pitTex = c; pitSize = S; } });
   }
   resizers.push(() => {
     const R = region(), want = Math.round(clamp(Math.min(R.x1 - R.x0, R.y1 - R.y0) * DPR * .95 * PIT_E, 480, 1440) / 32) * 32;
@@ -2195,15 +2225,24 @@ try {
   let HERO_ON = false; const HERO_WAIT = performance.now() + 9000;
   const CONT = new Set(['intro>moon', 'pits>orbit']);
   const veil = document.querySelector('.veil');
-  let ss = scrollY, last = performance.now(), hudIdx = -1;
+  let ss = scrollY, last = performance.now(), hudIdx = -1, drawn = -1e9, lastSY = NaN, busy = 0, tops = null;
+  // section tops (document coords) only move when the layout does: re-measure after a resize, the web-font swap, or a content size change
+  const relayout = () => { tops = null; busy = performance.now() + 600; };
+  addEventListener('resize', relayout); document.fonts?.ready.then(relayout);
+  new ResizeObserver(relayout).observe(document.querySelector('.story') || document.body);
   function frame(now) {
-    NOW = now;
+    requestAnimationFrame(frame);
+    // full rate only while something is moving (scroll, its easing, a relayout, a texture or the hero fading in); otherwise ~30 fps, and a slow tick under reduced motion
+    const sy = scrollY; if (sy !== lastSY) { lastSY = sy; busy = now + 600; }
+    const moving = now < busy || now < FADE || Math.abs(sy - ss) > .4 || (window.HERO3D && now - HERO3D.t0 < 800);
+    if (now - drawn < (moving ? 12 : RM ? 120 : 30)) return;
+    drawn = now; NOW = now;
     const dt = Math.min(.05, (now - last) / 1000); last = now;
     const t = RM ? 0 : now / 1000;
     ss = RM ? scrollY : ss + (scrollY - ss) * (1 - Math.exp(-dt * 9));
     if (Math.abs(scrollY - ss) < .4) ss = scrollY;
     const mid = ss + H * .5;
-    const tops = sections.map(s => { const r = s.getBoundingClientRect(); return [r.top + scrollY, r.height]; });
+    if (!tops) tops = sections.map(s => { const r = s.getBoundingClientRect(); return [r.top + scrollY, r.height]; });
     let idx = 0; for (let i = 0; i < tops.length; i++) if (tops[i][0] <= mid) idx = i;
     const P = i => clamp((mid - tops[i][0]) / tops[i][1], 0, 1);
     const B = H * .22; let a = idx, b = -1, f = 0;
@@ -2228,16 +2267,19 @@ try {
     if (SBo) { SA = f; if (SA > .003) { ctx.save(); alpha(1); SBo.draw(pb, t, Mu); ctx.restore(); } }
     ctx.globalAlpha = 1; SA = 1;
     if (window.HERO3D) HERO3D.show(HERO_ON); HERO_ON = false;
-    veil.style.opacity = sstep(.3, .8, P(0)).toFixed(3);
 
     if (idx !== hudIdx) { hudIdx = idx; hudN.textContent = String(idx + 1).padStart(2, '0'); hudT.textContent = sections[idx].dataset.chapter; }
-    hudBar.style.transform = `scaleX(${clamp(scrollY / Math.max(1, document.documentElement.scrollHeight - H), 0, 1)})`;
-    if (!RM) for (const el of panels) {
-      const r = el.getBoundingClientRect(); if (!r.height) continue; const c = (r.top + r.height / 2) / H - .5;
-      el.style.opacity = (1 - clamp((Math.abs(c) - .32) / .3, 0, 1) * .72).toFixed(3);
-      el.style.transform = `translate3d(0,${(c * -18).toFixed(1)}px,0)`;
+    if (!moving) return;   // the DOM below only changes with scroll or layout
+    veil.style.opacity = sstep(.3, .8, P(0)).toFixed(3);
+    hudBar.style.transform = `scaleX(${clamp(sy / Math.max(1, document.documentElement.scrollHeight - H), 0, 1)})`;
+    if (!RM) {
+      const rs = panels.map(el => el.getBoundingClientRect());   // all reads, then all writes: one style pass instead of one per panel
+      panels.forEach((el, i) => {
+        const r = rs[i]; if (!r.height) return; const c = (r.top + r.height / 2) / H - .5;
+        el.style.opacity = (1 - clamp((Math.abs(c) - .32) / .3, 0, 1) * .72).toFixed(3);
+        el.style.transform = `translate3d(0,${(c * -18).toFixed(1)}px,0)`;
+      });
     }
-    requestAnimationFrame(frame);
   }
   sizeCanvas(); lastW = W; lastH = H;
   resizers.forEach(f => f());
