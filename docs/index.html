@@ -30,6 +30,7 @@
 *{box-sizing:border-box}
 body{margin:0;background:var(--void);color:var(--ink);font-family:var(--f-body);font-size:1.0625rem;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 #sky{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block}
+#hero3d{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block;pointer-events:none;visibility:hidden}
 .veil{position:fixed;inset:0;z-index:0;pointer-events:none;background:linear-gradient(90deg,rgba(5,7,13,.94) 0%,rgba(5,7,13,.8) 30%,rgba(5,7,13,0) 47%)}
 @media (max-width:899px){.veil{display:none}}
 
@@ -112,6 +113,46 @@ p strong{color:var(--ink);font-weight:600}
 </style>
 
 <canvas id="sky" aria-hidden="true"></canvas>
+<canvas id="hero3d" aria-hidden="true"></canvas>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script type="module">
+// Hero: the real ATLAS G071 mini model, rendered over the name. The scroll engine calls HERO3D.render() each frame.
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+const cv = document.getElementById('hero3d');
+const H3 = window.HERO3D = { ready: false, failed: false, show() {}, render() { return 0; } };
+try {
+  const r = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: true, powerPreference: 'high-performance' });
+  r.setClearColor(0x000000, 0); r.outputColorSpace = THREE.SRGBColorSpace; r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = 1.0;
+  const scene = new THREE.Scene();
+  scene.environment = new THREE.PMREMGenerator(r).fromScene(new RoomEnvironment(), .04).texture;
+  const key = new THREE.DirectionalLight(0xfff3e4, 2.4); key.position.set(-2.5, 3.5, 2.5);
+  const rim = new THREE.DirectionalLight(0xff8a40, 2.2); rim.position.set(2.5, 1.4, -3);
+  scene.add(key, rim, new THREE.HemisphereLight(0x9fb4ff, 0x1a1410, .4));
+  const cam = new THREE.PerspectiveCamera(26, 1, .05, 60), spin = new THREE.Group(); scene.add(spin);
+  let w = 0, h = 0, dpr = 0;
+  new GLTFLoader().load('rover.glb', g => {
+    const m = g.scene; m.updateMatrixWorld(true);
+    const c = new THREE.Box3().setFromObject(m.getObjectByName('body') || m).getCenter(new THREE.Vector3());
+    m.position.set(-c.x, 0, -c.z); spin.add(m);
+    H3.t0 = performance.now(); H3.ready = true;
+  }, undefined, () => { H3.failed = true; });
+  H3.show = on => { cv.style.visibility = on && H3.ready ? 'visible' : 'hidden'; };
+  H3.render = (cx, cy, S, yaw, a) => {
+    const W = innerWidth, H = innerHeight, d = Math.min(2, devicePixelRatio || 1);
+    if (W !== w || H !== h || d !== dpr) { w = W; h = H; dpr = d; r.setPixelRatio(d); r.setSize(W, H, false); }
+    const pxPerM = S * 2.25, fov = 26 * Math.PI / 180, dist = H / (2 * Math.tan(fov / 2) * pxPerM), pit = .42, ty = .15;
+    cam.aspect = W / H; cam.position.set(0, ty + Math.sin(pit) * dist, Math.cos(pit) * dist); cam.lookAt(0, ty, 0);
+    cam.setViewOffset(W, H, W / 2 - cx, H / 2 - cy, W, H); cam.updateProjectionMatrix();
+    spin.rotation.y = yaw;
+    cv.style.opacity = (a * Math.min(1, (performance.now() - H3.t0) / 700)).toFixed(3);
+    r.render(scene, cam);
+    const g = new THREE.Vector3(0, 0, 0).project(cam);
+    return (1 - g.y) / 2 * H;
+  };
+} catch (e) { H3.failed = true; }
+</script>
 <div class="veil" aria-hidden="true"></div>
 <div class="hud" aria-hidden="true"><span id="hud-n">01</span><span class="bar"><i id="hud-bar"></i></span><span id="hud-t">Prologue</span></div>
 
@@ -1148,15 +1189,151 @@ p strong{color:var(--ink);font-weight:600}
     ctx.fillStyle = mg; ctx.fillRect(X(x0), Y(yB - mh), X(x1) - X(x0), Y(yB) - Y(yB - mh));
     ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.fillRect(X(x0), Y(yT), X(x1) - X(x0), 1);
   }
+  // ATLAS G071 mini, side view drawn from the CAD renders. Units are mm: x forward, z up, ground at z = 0.
+  // dep = [dx, dz] is where the far side lands, giving a little depth. part(name, f) lets a scene offset parts.
+  function atlasWheel(x, z, a, far) {
+    ctx.save(); ctx.translate(x, -z); ctx.rotate(a);
+    const R = 72, Rr = 58;
+    ctx.beginPath();
+    for (let i = 0; i < 18; i++) {
+      const b = i * TAU / 18, w0 = .15, w1 = .1, sk = .05;
+      ctx.moveTo(Math.cos(b - w0) * Rr, Math.sin(b - w0) * Rr);
+      ctx.lineTo(Math.cos(b - w1 + sk) * R, Math.sin(b - w1 + sk) * R);
+      ctx.lineTo(Math.cos(b + w1 + sk) * R, Math.sin(b + w1 + sk) * R);
+      ctx.lineTo(Math.cos(b + w0) * Rr, Math.sin(b + w0) * Rr); ctx.closePath();
+    }
+    ctx.fillStyle = far ? '#0b0c0e' : '#202227'; ctx.fill();
+    if (!far) { ctx.strokeStyle = 'rgba(255,255,255,.16)'; ctx.lineWidth = 1.6; ctx.stroke(); }
+    // rim and web, with six windows cut through so whatever is behind shows
+    ctx.beginPath(); ctx.arc(0, 0, Rr + 1, 0, TAU);
+    for (let i = 0; i < 6; i++) { const b = i * TAU / 6, wx = Math.cos(b) * 38, wy = Math.sin(b) * 38; ctx.moveTo(wx + 14, wy); ctx.arc(wx, wy, 14, 0, TAU); }
+    if (far) ctx.fillStyle = '#0d0e10';
+    else { ctx.save(); ctx.rotate(-a); const g = ctx.createLinearGradient(-R, -R, R, R); g.addColorStop(0, '#454953'); g.addColorStop(.5, '#17181c'); g.addColorStop(1, '#0c0d0f'); ctx.restore(); ctx.fillStyle = g; }
+    ctx.fill('evenodd');
+    if (!far) {
+      ctx.strokeStyle = 'rgba(255,255,255,.14)'; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.arc(0, 0, Rr - 2, 0, TAU); ctx.stroke();
+      ctx.lineWidth = 1.2; ctx.beginPath(); for (let i = 0; i < 6; i++) { const b = i * TAU / 6, wx = Math.cos(b) * 38, wy = Math.sin(b) * 38; ctx.moveTo(wx + 14, wy); ctx.arc(wx, wy, 14, 0, TAU); } ctx.stroke();
+    }
+    ctx.rotate(-a);
+    const hg = ctx.createRadialGradient(-5, -6, 1, 0, 0, 17); hg.addColorStop(0, far ? '#2a2c31' : '#8a8f99'); hg.addColorStop(.45, far ? '#121315' : '#2a2c31'); hg.addColorStop(1, '#08090a');
+    ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(0, 0, 16, 0, TAU); ctx.fill();
+    ctx.restore();
+  }
+  function atlasPts(ox, oy, k, dep) {
+    const P = (x, z, d = 0) => [ox + (x + dep[0] * d) * k, oy - (z + dep[1] * d) * k];
+    return { P, lidar: P(116, 275, .5), eye: P(-300, 335, .5), apxs: P(10, 40, .5), apxsTop: P(10, 46, .5), apxsFace: P(10, 34, .5), top: P(-60, 150, .5), wheelF: P(175, 115), wheelR: P(-130, 72), mast: P(60, 200, .5) };
+  }
+  function atlas(ox, oy, k, o = {}) {
+    const { t = 0, roll = 0, lidar = 0, dep = [40, -30], shift, hook } = o;
+    const [dx, dz] = dep, Z = z => -z;
+    const part = (name, f) => { const s = shift && shift(name); if (!s) return f(); ctx.save(); ctx.translate(s[0] / k, s[1] / k); f(); ctx.restore(); };
+    const poly = pts => { ctx.beginPath(); pts.forEach(([x, z], i) => i ? ctx.lineTo(x, Z(z)) : ctx.moveTo(x, Z(z))); ctx.closePath(); };
+    const D = (x, z, d) => [x + dx * d, z + dz * d];
+    ctx.save(); ctx.translate(ox, oy); ctx.scale(k, k);
+    const fine = k > .35;
+    // far wheels
+    part('wheels', () => { for (const wx of [-130, 130]) atlasWheel(wx + dx, 72 + dz, roll + wx * .01 + .3, true); });
+    if (hook) { ctx.save(); ctx.scale(1 / k, 1 / k); ctx.translate(-ox, -oy); hook(); ctx.restore(); }
+    // top deck: OSR radiator tiles
+    poly([[-196, 147], [188, 147], D(188, 147, 1), D(-196, 147, 1)]);
+    const tg = ctx.createLinearGradient(0, Z(147), 0, Z(147 + dz)); tg.addColorStop(0, '#d8dadd'); tg.addColorStop(1, '#b4b7bc'); ctx.fillStyle = tg; ctx.fill();
+    if (fine) {
+      for (let i = 0; i < 18; i++) for (let j = 0; j < 9; j++) {
+        const x0 = -176 + i * 20, d0 = .06 + j * .1;
+        if (x0 > 30 && x0 < 120 && j > 2 && j < 7) continue;
+        poly([D(x0, 147, d0), D(x0 + 17.6, 147, d0), D(x0 + 17.6, 147, d0 + .088), D(x0, 147, d0 + .088)]);
+        ctx.fillStyle = (i + j) % 3 ? '#eef0f2' : '#ffffff'; ctx.fill();
+      }
+    }
+    // front face
+    poly([[192, 147], D(192, 147, 1), D(192, 50, 1), [192, 50]]);
+    const fg = ctx.createLinearGradient(192, 0, 192 + dx, 0); fg.addColorStop(0, '#b9bcc1'); fg.addColorStop(1, '#8d9096'); ctx.fillStyle = fg; ctx.fill();
+    if (fine) { poly([D(192, 112, .3), D(192, 112, .7), D(192, 96, .7), D(192, 96, .3)]); ctx.fillStyle = '#16171a'; ctx.fill(); }
+    // far guard rail
+    const rail = d => { poly([D(-195, 150, d), D(190, 150, d), D(190, 162, d), D(-195, 162, d)]); const g = ctx.createLinearGradient(0, Z(162 + dz * d), 0, Z(150 + dz * d)); g.addColorStop(0, '#c9ccd1'); g.addColorStop(1, '#55585e'); ctx.fillStyle = g; ctx.fill(); ctx.fillStyle = '#1b1c1f'; for (const x of [-195, 182]) { poly([D(x, 149, d), D(x + 9, 149, d), D(x + 9, 163, d), D(x, 163, d)]); ctx.fill(); } };
+    rail(.92);
+    // e-stop on the rear deck
+    part('mast', () => {
+      poly([D(-162, 147, .75), D(-138, 147, .75), D(-138, 166, .75), D(-162, 166, .75)]); ctx.fillStyle = '#e2b52a'; ctx.fill();
+      const [ex, ez] = D(-150, 166, .75); ctx.fillStyle = '#d6372b'; ctx.beginPath(); ctx.ellipse(ex, Z(ez), 13, 9, 0, Math.PI, 0); ctx.fill();
+    });
+    // mast: pedestal, plate, 40-degree wedge, L2 head with its dark dome
+    part('mast', () => {
+      ctx.save(); ctx.translate(dx * .5, -dz * .5);
+      poly([[34, 150], [100, 150], [88, 193], [46, 193]]);
+      let g = ctx.createLinearGradient(34, 0, 100, 0); g.addColorStop(0, '#f0f1f2'); g.addColorStop(.6, '#cfd1d4'); g.addColorStop(1, '#9a9da2'); ctx.fillStyle = g; ctx.fill();
+      ctx.fillStyle = '#26272b'; ctx.fillRect(15, Z(200), 82, 6);
+      poly([[22, 200], [100, 200], [100, 214], [52, 252]]); ctx.fillStyle = '#1d1e22'; ctx.fill();
+      ctx.save(); ctx.translate(85, Z(249)); ctx.rotate(-40 * Math.PI / 180);
+      g = ctx.createLinearGradient(0, -34, 0, 34); g.addColorStop(0, '#fbfbfb'); g.addColorStop(.55, '#d9dbde'); g.addColorStop(1, '#9fa2a7');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.roundRect(-36, -34, 62, 68, 9); ctx.fill();
+      ctx.fillStyle = '#3a3c41'; ctx.fillRect(22, -30, 5, 60);
+      const dg = ctx.createRadialGradient(36, -12, 2, 30, 0, 32); dg.addColorStop(0, '#6b7080'); dg.addColorStop(.3, '#1a1c22'); dg.addColorStop(1, '#050608');
+      ctx.fillStyle = dg; ctx.beginPath(); ctx.ellipse(26, 0, 30, 33, 0, -Math.PI / 2, Math.PI / 2); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.beginPath(); ctx.ellipse(38, -14, 5, 3, -.6, 0, TAU); ctx.fill();
+      if (lidar > 0) {
+        const sw = Math.sin(RM ? .6 : t * 3.2) * 24;
+        ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha *= lidar;
+        const lg = ctx.createRadialGradient(40, sw, 0, 40, sw, 34); lg.addColorStop(0, 'rgba(255,150,70,.95)'); lg.addColorStop(.3, 'rgba(255,122,47,.35)'); lg.addColorStop(1, 'rgba(255,122,47,0)');
+        ctx.fillStyle = lg; ctx.fillRect(6, sw - 34, 68, 68); ctx.restore();
+      }
+      ctx.restore(); ctx.restore();
+    });
+    // tow tower, arm (pitched up 20 degrees), spring snubber up to the eye
+    part('tow', () => {
+      ctx.save(); ctx.translate(dx * .5, -dz * .5);
+      ctx.fillStyle = '#e4e5e7'; ctx.beginPath(); ctx.roundRect(-34, Z(186), 62, 36, 8); ctx.fill();
+      ctx.fillStyle = '#18191c'; ctx.beginPath(); ctx.roundRect(-10, Z(206), 20, 22, 4); ctx.fill();
+      ctx.fillStyle = '#26272b'; ctx.beginPath(); ctx.arc(-24, Z(186), 7, Math.PI, 0); ctx.fill();
+      const p0 = [0, 197], p1 = [-33, 209], p2 = [-300, 335], ang = Math.atan2(-(p2[1] - p1[1]), p2[0] - p1[0]), len = Math.hypot(p2[0] - p1[0], p2[1] - p1[1]);
+      // copper lead from the gland, cable-tied along the snubber
+      ctx.strokeStyle = '#15161a'; ctx.lineWidth = 5; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(-24, Z(190)); ctx.quadraticCurveTo(-52, Z(222), -90, Z(246)); ctx.lineTo(-318, Z(356)); ctx.stroke();
+      ctx.strokeStyle = '#121316'; ctx.lineWidth = 12; ctx.beginPath(); ctx.moveTo(p0[0], Z(p0[1])); ctx.lineTo(p1[0], Z(p1[1])); ctx.stroke();
+      ctx.fillStyle = '#2c2e33'; ctx.beginPath(); ctx.arc(0, Z(197), 9, 0, TAU); ctx.fill(); ctx.fillStyle = '#9ea2a8'; ctx.beginPath(); ctx.arc(0, Z(197), 3.5, 0, TAU); ctx.fill();
+      ctx.save(); ctx.translate(p1[0], Z(p1[1])); ctx.rotate(ang);
+      let g = ctx.createLinearGradient(0, -8, 0, 8); g.addColorStop(0, '#d9dce0'); g.addColorStop(.5, '#8f939a'); g.addColorStop(1, '#4a4d53');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.roundRect(0, -8, 46, 16, 4); ctx.fill();
+      ctx.fillStyle = '#1a1b1f'; ctx.fillRect(46, -4, len - 70, 8);
+      if (fine) { ctx.strokeStyle = '#b8bcc2'; ctx.lineWidth = 1.6; ctx.beginPath(); for (let u = 50; u < len - 30; u += 5) { ctx.moveTo(u, -9); ctx.lineTo(u + 3, 9); } ctx.stroke(); }
+      else { ctx.fillStyle = '#7d8188'; ctx.fillRect(50, -8, len - 80, 16); }
+      ctx.fillStyle = '#8f939a'; ctx.fillRect(len - 26, -5, 14, 10);
+      ctx.strokeStyle = '#d4a63c'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(len - 4, 0, 9, 0, TAU); ctx.stroke();
+      ctx.restore(); ctx.lineCap = 'butt';
+      ctx.restore();
+    });
+    // body side: white shell, belt and skid bands, gold MLI blanket
+    const sg = ctx.createLinearGradient(0, Z(147), 0, Z(46)); sg.addColorStop(0, '#fbfbfa'); sg.addColorStop(.5, '#e0e1e2'); sg.addColorStop(1, '#a7a9ac');
+    ctx.fillStyle = sg; ctx.beginPath(); ctx.roundRect(-200, Z(147), 392, 101, 12); ctx.fill();
+    ctx.fillStyle = '#2b2c30'; ctx.fillRect(-196, Z(54), 384, 6);
+    const mg = ctx.createLinearGradient(-180, Z(128), 175, Z(56)); mg.addColorStop(0, '#d8b863'); mg.addColorStop(.3, '#8a6a2a'); mg.addColorStop(.55, '#c9a14c'); mg.addColorStop(.8, '#6f5221'); mg.addColorStop(1, '#b38a3c');
+    ctx.fillStyle = mg; ctx.fillRect(-178, Z(128), 354, 70);
+    if (fine) {
+      ctx.save(); ctx.beginPath(); ctx.rect(-178, Z(128), 354, 70); ctx.clip(); ctx.globalAlpha *= .16; ctx.lineWidth = 2;
+      for (let i = 0; i < 26; i++) { const x = -178 + ((i * 53) % 354), y = 60 + ((i * 29) % 66); ctx.strokeStyle = i % 2 ? '#fff0c0' : '#3b2a0c'; ctx.beginPath(); ctx.moveTo(x, Z(y)); ctx.quadraticCurveTo(x + 10, Z(y + 8), x + 22, Z(y + 2)); ctx.stroke(); }
+      ctx.restore();
+      ctx.fillStyle = '#e9e6dc'; for (const x of [-120, 0, 120]) { ctx.beginPath(); ctx.arc(x, Z(92), 3, 0, TAU); ctx.fill(); }
+      ctx.fillStyle = '#6b6e74'; for (let x = -184; x <= 176; x += 30) { ctx.beginPath(); ctx.arc(x, Z(139), 1.8, 0, TAU); ctx.fill(); }
+    }
+    ctx.strokeStyle = '#4a3a1c'; ctx.lineWidth = 3; ctx.strokeRect(-178, Z(128), 354, 70);
+    // bumper posts
+    ctx.fillStyle = '#18191c'; ctx.beginPath(); ctx.roundRect(186, Z(140), 12, 82, 4); ctx.roundRect(-208, Z(140), 12, 82, 4); ctx.fill();
+    ctx.fillStyle = '#ffffff'; ctx.globalAlpha *= .8; ctx.fillRect(-190, Z(147), 376, 1.5 / k); ctx.globalAlpha /= .8;
+    rail(0);
+    // APXS head on the belly, nadir-looking
+    part('apxs', () => {
+      ctx.save(); ctx.translate(dx * .5, -dz * .5);
+      const g = ctx.createLinearGradient(-12, 0, 32, 0); g.addColorStop(0, '#6e7177'); g.addColorStop(.4, '#e9ebee'); g.addColorStop(1, '#5a5d63');
+      ctx.fillStyle = g; ctx.fillRect(-12, Z(46), 44, 9); ctx.fillStyle = '#2a2b2f'; ctx.fillRect(-14, Z(37), 48, 3);
+      ctx.restore();
+    });
+    // near wheels
+    part('wheels', () => { for (const wx of [-130, 130]) atlasWheel(wx, 72, roll + wx * .01, false); });
+    ctx.restore();
+  }
   function roverDraw(x, y, ang, rw, t, roll, lights) {
-    const rh = rw * .42, r = rh * .5, wy = rh * .8 - r, wx = rw * .32, ex = rw * .07, ey = -rh * .1;
-    const X = u => u, Y = v => v;
+    const rh = rw * .42;
     ctx.save(); ctx.translate(x, y); ctx.rotate(ang);
-    for (const s of [-1, 1]) grouserWheel(s * wx + ex * 2.2, wy + ey * 2.2, r, roll + s, ex * .5, ey * .5, true);
-    roverBox(X, Y, -rw * .42, rw * .42, wy - r * .75, wy + r * .45, ex * 2.2, ey * 2.2, rw);
-    ctx.fillStyle = '#4a4740'; ctx.fillRect(rw * .1 - 1, wy - r * .75 - rh * .4 + ey, 2, rh * .4);
-    lidarPuck(rw * .1, wy - r * .75 - rh * .68 + ey, rh * .2, rh * .3, t, lights ? 1 : 0);
-    for (const s of [-1, 1]) grouserWheel(s * wx, wy, r, roll + s * .5, ex * .5, ey * .5, false);
+    atlas(0, rh * .8, rw / 404, { t, roll, lidar: lights ? 1 : 0, dep: [34, 26] });
     ctx.restore();
   }
   const rot = (x, y, a) => [x * Math.cos(a) - y * Math.sin(a), x * Math.sin(a) + y * Math.cos(a)];
@@ -1250,22 +1427,22 @@ p strong{color:var(--ink);font-weight:600}
       const dropY = -(1 - kSt) * h * .35, plume = kSt < 1 ? 1 - kSt * .6 : 0;
       const tipY = g - S * 1.02 + dropY, tip = [lerp(L.sx + S * .45, sc, kb), tipY];
       // rover state
-      const aHang = Math.PI / 2, [ax0, ay0] = rot(-rw / 2, -rh * .45, aHang);
+      const aHang = Math.PI / 2, [ax0, ay0] = rot(-rw * .74, -rh * 1.2, aHang);
       const yTop = tip[1] + 8, yBot = fl(sc) - rw - 4, yA = lerp(yTop, yBot, kd);
       const hang = [tip[0] - ax0, yA - ay0];
       const x0d = sc + rw * .7, xE = rx - w * .12, cxD = lerp(x0d, xE, kx);
       const slope = Math.atan2(fl(cxD + 6) - fl(cxD - 6), 12);
       const rest = [cxD, fl(cxD) - rh * .8];
       const ang = lerp(aHang, slope, kv), cx = lerp(hang[0], rest[0], kv), cy = lerp(hang[1], rest[1], kv);
-      const att = rot(-rw / 2, -rh * .45, ang), attach = [cx + att[0], cy + att[1]];
-      const ld = rot(rw * .16, -rh * 1.15, ang), lid = [cx + ld[0], cy + ld[1]];
+      const att = rot(-rw * .74, -rh * 1.2, ang), attach = [cx + att[0], cy + att[1]];
+      const ld = rot(rw * .29, -rh * .85, ang), lid = [cx + ld[0], cy + ld[1]];
       const depth = kd * 100, run = kx * 160, payout = depth + run + kv * 4;
       const tension = s < 1.05 ? 0 : kv < .5 ? 51 + Math.sin(t * 3) * 2 : 11 + Math.sin(t * 2) * 1.5;
 
       // point cloud
       const range = (f - g) * .5, scan = s > 1.1;
       const hangLidX = tip[0], hangLidY0 = yTop, hangLidY1 = lerp(yTop, yBot, kd) + rw * .9;
-      const lid0 = (() => { const q = rot(rw * .16, -rh * 1.15, slope); return [x0d + q[0], fl(x0d) - rh * .8 + q[1]]; })();
+      const lid0 = (() => { const q = rot(rw * .29, -rh * .85, slope); return [x0d + q[0], fl(x0d) - rh * .8 + q[1]]; })();
       let shown = 0;
       if (scan) {
         for (const P of L.pts) {
@@ -1299,7 +1476,7 @@ p strong{color:var(--ink);font-weight:600}
       const path = [st.reel, [tip[0], tip[1] - 3.2]];
       if (kv >= 1) { path.push([tip[0], fl(tip[0]) - 1.5]); for (let x = tip[0] + 8; x < attach[0]; x += 8) path.push([x, fl(x) - 1.5]); }
       path.push(attach);
-      ctx.strokeStyle = '#d9c39a'; ctx.lineWidth = 1.3; ctx.beginPath(); path.forEach((q, i) => i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])); ctx.stroke();
+      ctx.strokeStyle = '#e0913a'; ctx.lineWidth = 1.4; ctx.beginPath(); path.forEach((q, i) => i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])); ctx.stroke();
       roverDraw(cx, cy, ang, rw, t, cxD / (rh * .42), kv > .3);
       // packets climbing the tether
       if (scan) {
@@ -1415,72 +1592,40 @@ p strong{color:var(--ink);font-weight:600}
         for (let k = 0; k < 3; k++) { const q = (k + ph) / 3, rk = .3 + q * .85; alpha(kl * (1 - q) * .55); ctx.strokeStyle = C.accent; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(X(.1), fy, rk * L, rk * L * .07, 0, 0, TAU); ctx.stroke(); }
         alpha(1);
       }
-      // geometry: four drum wheels, two per side; far side is offset up-right
-      const WR = L * .17, hy = fy - WR * 1.16, WX = [-.32, .32], dX = .16, dY = -.11, ex = L * .06, ey = -L * .04;
-      const yT = (hy - cy) / L - .14, yB = (hy - cy) / L + .08;
-      // far wheels
-      off([0, .3], () => WX.forEach((u, i) => grouserWheel(X(u + dX), Y((hy - cy) / L + dY), WR, roll + i, ex, ey, true)));
-      // tether from the rear
-      const c0 = [X(-.47), Y(yT + .05)], c1 = [X(-.7), Y(yT + .02)], c2 = [X(-.78), Y(-.5)], c3 = [X(-.98), Y(-.85)];
+      // the rover, side view after the CAD renders; parts fly in from offsets
+      const k = L * .00225, gx = X(.02), dep = [70, 50];
+      const OFF = { wheels: [0, .3], mast: [0, -.42], tow: [-.35, 0], apxs: [0, .25] };
+      const A = atlasPts(gx, fy, k, dep);
+      const kc = 1 - sstep(.72, .95, kA);
+      atlas(gx, fy, k, { t, roll, lidar: kl, dep, shift: n => OFF[n] ? [OFF[n][0] * L * e, OFF[n][1] * L * e] : null, hook: () => {
+        if (kc <= 0) return;
+        off([0, -.65], () => {
+          alpha(kc); const bt = A.top[1];
+          ctx.fillStyle = '#0f1914'; ctx.beginPath(); ctx.roundRect(X(-.24), bt - L * .02, L * .3, L * .12, 3); ctx.fill();
+          ctx.strokeStyle = rgba(C.accent, .5); ctx.lineWidth = 1; ctx.stroke();
+          ctx.fillStyle = '#2b302c'; ctx.fillRect(X(-.2), bt, L * .08, L * .07); ctx.fillRect(X(-.08), bt, L * .05, L * .05);
+          alpha(1);
+        });
+      } });
+      // tether leaves the snubber eye
+      const c0 = A.eye, c1 = [c0[0] - L * .2, c0[1] + L * .02], c2 = [X(-.85), Y(-.6)], c3 = [X(-1.0), Y(-.92)];
       off([-.35, 0], () => {
         ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(...c0); ctx.bezierCurveTo(...c1, ...c2, ...c3);
-        ctx.strokeStyle = '#1d1c1a'; ctx.lineWidth = Math.max(3, L * .024); ctx.stroke();
-        ctx.strokeStyle = '#5a5246'; ctx.lineWidth = Math.max(1.5, L * .012); ctx.stroke();
-        ctx.save(); ctx.translate(-1, -1); ctx.strokeStyle = 'rgba(232,212,170,.5)'; ctx.lineWidth = 1; ctx.stroke(); ctx.restore(); ctx.lineCap = 'butt';
+        ctx.strokeStyle = '#7a4314'; ctx.lineWidth = Math.max(3, L * .016); ctx.stroke();
+        ctx.strokeStyle = '#e0913a'; ctx.lineWidth = Math.max(1.6, L * .01); ctx.stroke(); ctx.lineCap = 'butt';
       });
-      // compute module slides in from above
-      const kc = 1 - sstep(.72, .95, kA);
-      if (kc > 0) off([0, -.65], () => {
-        alpha(kc);
-        ctx.fillStyle = '#0f1914'; ctx.beginPath(); ctx.roundRect(X(-.22), Y(yT + .03), L * .3, L * .12, 3); ctx.fill();
-        ctx.strokeStyle = rgba(C.accent, .5); ctx.lineWidth = 1; ctx.stroke();
-        ctx.fillStyle = '#2b302c'; ctx.fillRect(X(-.18), Y(yT + .05), L * .08, L * .07); ctx.fillRect(X(-.06), Y(yT + .05), L * .05, L * .05);
-        alpha(1);
-      });
-      // body
-      roverBox(X, Y, -.44, .44, yT, yB, dX, dY, L);
-      ctx.strokeStyle = 'rgba(120,140,175,.55)'; ctx.lineWidth = 1; ctx.beginPath();
-      for (let u = -.38; u <= -.02; u += .028) { ctx.moveTo(X(u + dX * .15), Y(yT + dY * .15)); ctx.lineTo(X(u + dX * .85), Y(yT + dY * .85)); }
-      ctx.stroke();
-      ctx.fillStyle = 'rgba(5,7,13,.38)';
-      for (let k = 0; k < 5; k++) { ctx.beginPath(); ctx.roundRect(X(-.4 + k * .03), Y(yT + .03), Math.max(2, L * .012), L * .1, 2); ctx.fill(); }
-      ctx.font = `600 ${Math.max(9, Math.round(L * .036))}px "IBM Plex Mono", monospace`; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-      ctx.fillStyle = C.accent; ctx.fillText('SLAM-01', X(-.08), Y(yT + .07));
-      // tether boot
-      off([-.35, 0], () => {
-        const bgg = ctx.createLinearGradient(0, c0[1] - L * .04, 0, c0[1] + L * .04); bgg.addColorStop(0, '#4a4a52'); bgg.addColorStop(1, '#141417');
-        ctx.fillStyle = bgg; ctx.beginPath(); ctx.roundRect(X(-.5), c0[1] - L * .035, L * .06, L * .07, 3); ctx.fill();
-        ctx.fillStyle = C.accent; ctx.fillRect(X(-.455), c0[1] - L * .03, Math.max(2, L * .008), L * .06);
-      });
-      // APXS in the belly, aimed straight down
-      const ax = X(.12), ay0 = Y(yB), ay1 = fy - L * .02;
-      off([0, .25], () => {
-        const hg = ctx.createLinearGradient(ax - L * .025, 0, ax + L * .025, 0); hg.addColorStop(0, '#5e5a52'); hg.addColorStop(.4, '#e9e4d9'); hg.addColorStop(1, '#6b665d');
-        ctx.fillStyle = hg; ctx.fillRect(ax - L * .022, ay0, L * .044, ay1 - ay0);
-        const gg = ctx.createLinearGradient(ax - L * .03, 0, ax + L * .03, 0); gg.addColorStop(0, '#9c6a1e'); gg.addColorStop(.4, '#ffe2a0'); gg.addColorStop(1, '#9c6a1e');
-        ctx.fillStyle = gg; ctx.fillRect(ax - L * .03, ay1 - L * .018, L * .06, L * .014);
-      });
+      const ax = A.apxs[0], ay0 = A.apxsTop[1], ay1 = A.apxsFace[1];
       const kx = sstep(.55, .75, s) * (RM ? .8 : .6 + .4 * Math.sin(t * 3));
       if (kx > 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; alpha(kx); ctx.translate(ax, fy); ctx.scale(1, .3); const xg = ctx.createRadialGradient(0, 0, 0, 0, 0, L * .12); xg.addColorStop(0, 'rgba(201,170,255,.8)'); xg.addColorStop(1, 'rgba(201,170,255,0)'); ctx.fillStyle = xg; ctx.fillRect(-L * .12, -L * .12, L * .24, L * .24); ctx.restore(); alpha(1); }
-      // LiDAR mast
-      const mx = X(.2 + dX * .5), mTop = Y(yT + dY * .5), pt0 = mTop - L * .34;
-      off([0, -.42], () => {
-        const mg2 = ctx.createLinearGradient(mx - 3, 0, mx + 3, 0); mg2.addColorStop(0, '#2c2a26'); mg2.addColorStop(.5, '#8d877c'); mg2.addColorStop(1, '#2c2a26');
-        ctx.fillStyle = mg2; ctx.fillRect(mx - Math.max(1.5, L * .011), pt0 + L * .1, Math.max(3, L * .022), mTop - pt0 - L * .1);
-        ctx.fillStyle = '#3a3834'; ctx.beginPath(); ctx.ellipse(mx, mTop, L * .04, L * .01, 0, 0, TAU); ctx.fill();
-        lidarPuck(mx, pt0, L * .065, L * .1, t, kl);
-      });
-      // near wheels
-      off([0, .3], () => WX.forEach((u, i) => grouserWheel(X(u), hy, WR, roll + i * .5, ex, ey, false)));
       const k1 = sstep(.38, .55, s);
       if (k1 > 0) {
         alpha(k1);
-        callout(mx + L * .065, pt0 + L * .05, X(.5), Y(-.66), '3D LIDAR', C.accent);
-        callout(X(-.12), Y(yT + .02), X(-.25), Y(-.55), 'ONBOARD COMPUTER', C.accent, 'right');
-        callout(ax + L * .025, (ay0 + ay1) / 2, X(.62), Y(.55), 'APXS · ELEMENTAL COMPOSITION', VIOLET);
-        callout(X(-.5), c0[1], X(-.72), Y(.12), 'TETHER · POWER, DATA, LOAD', C.ink, 'right');
-        callout(X(.32 + .1), hy - WR * 1.05, X(.66), Y(-.24), '4 GROUSERED WHEELS · CLIMBS RUBBLE', C.ink);
-        callout(X(-.32), hy, X(-.62), Y(.52), 'IMU + WHEEL ODOMETRY', C.ink, 'right');
+        callout(A.lidar[0], A.lidar[1], X(.5), Y(-.66), '3D LIDAR', C.accent);
+        callout(A.top[0], A.top[1], X(-.2), Y(-.62), 'ONBOARD COMPUTER', C.accent, 'right');
+        callout(ax + L * .05, (ay0 + ay1) / 2, X(.62), Y(.55), 'APXS · ELEMENTAL COMPOSITION', VIOLET);
+        callout(c0[0], c0[1], X(-.78), Y(-.16), 'TETHER · POWER, DATA, LOAD', C.ink, 'right');
+        callout(A.wheelF[0], A.wheelF[1], X(.66), Y(-.2), '4 GROUSERED WHEELS · CLIMBS RUBBLE', C.ink);
+        callout(A.wheelR[0], A.wheelR[1], X(-.62), Y(.52), 'IMU + WHEEL ODOMETRY', C.ink, 'right');
         alpha(1);
       }
     }
@@ -1733,8 +1878,20 @@ p strong{color:var(--ink);font-weight:600}
       if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
       ctx.restore();
 
-      // camera
-      const yaw = (RM ? .7 : t * .35) + p * 2.2, pit = .3, D = 4;
+      const H3 = window.HERO3D, yaw = (RM ? .7 : t * .35) + p * 2.2;
+      if (!(H3 && H3.failed) && (H3 && H3.ready || NOW < HERO_WAIT)) {
+        HERO_ON = true;
+        const gy = H3 && H3.ready ? H3.render(cx, cy, S, -yaw + .6, SA) : cy + S * .4;
+        ctx.save(); alpha(1); ctx.translate(cx, gy); ctx.scale(1, .16);
+        const sh = ctx.createRadialGradient(0, 0, 0, 0, 0, S * .85); sh.addColorStop(0, 'rgba(0,0,0,.7)'); sh.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = sh; ctx.beginPath(); ctx.arc(0, 0, S * .85, 0, TAU); ctx.fill();
+        const ph = RM ? .4 : (t * .4) % 1;
+        for (let k = 0; k < 3; k++) { const q = (k + ph) / 3; ctx.strokeStyle = rgba(C.accent, ((1 - q) * .5).toFixed(3)); ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(0, 0, S * (.5 + q * .9), 0, TAU); ctx.stroke(); }
+        ctx.restore();
+        return;
+      }
+      // fallback: hand-built model if WebGL or the file is unavailable
+      const pit = .3, D = 4;
       const cyw = Math.cos(yaw), syw = Math.sin(yaw), cp = Math.cos(pit), sp = Math.sin(pit);
       const toView = ([x, y, z]) => { const x1 = x * cyw + z * syw, z1 = -x * syw + z * cyw; return [x1, y * cp + z1 * sp, -y * sp + z1 * cp]; };
       const rotN = n => toView(n);
@@ -1872,6 +2029,7 @@ p strong{color:var(--ink);font-weight:600}
     if (b) return { ...b, a: b.a * f };
     return null;
   }
+  let HERO_ON = false; const HERO_WAIT = performance.now() + 9000;
   const CONT = new Set(['intro>moon', 'pits>orbit']);
   const veil = document.querySelector('.veil'), shelterSec = sections.findIndex(s => s.dataset.scene === 'shelter'), shelterLi = [...document.querySelectorAll('.facts.steps li')];
   let ss = scrollY, last = performance.now(), hudIdx = -1;
@@ -1906,6 +2064,7 @@ p strong{color:var(--ink);font-weight:600}
     if (SAo) { SA = b >= 0 ? 1 - f : 1; if (SA > .003) { ctx.save(); alpha(1); SAo.draw(pa, t, Mu); ctx.restore(); } }
     if (SBo) { SA = f; if (SA > .003) { ctx.save(); alpha(1); SBo.draw(pb, t, Mu); ctx.restore(); } }
     ctx.globalAlpha = 1; SA = 1;
+    if (window.HERO3D) HERO3D.show(HERO_ON); HERO_ON = false;
     veil.style.opacity = sstep(.3, .8, P(0)).toFixed(3);
     if (shelterSec >= 0) { const on = Math.min(3, Math.floor(P(shelterSec) * 4)); shelterLi.forEach((li, i) => li.classList.toggle('on', i === on)); }
 
