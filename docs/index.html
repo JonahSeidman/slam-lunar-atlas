@@ -42,17 +42,16 @@ body{margin:0;background:var(--void);color:var(--ink);font-family:var(--f-body);
 .chapter{display:block}
 .intro{display:block;min-height:175vh;padding-top:88vh}
 .intro .panel{max-width:none;justify-items:center;background:none;border:0;-webkit-backdrop-filter:none;backdrop-filter:none;padding:0;padding-right:max(5vw,16px)}
-.tall{min-height:340vh;align-items:flex-start}
-.scene.tall{min-height:230vh}
-.tall>.panel,.tall .panel{position:sticky;top:16vh}
+.scene.tall{min-height:230vh;align-items:flex-start}
+.tall .panel{position:sticky;top:16vh}
 .step{min-height:100vh;display:flex;align-items:center;padding-block:10vh}
 .panel{max-width:33rem;min-width:0;display:grid;gap:1.1rem;will-change:opacity,transform}
 .panel.wide{max-width:40rem}
 @media (max-width:899px){
   .scene,.step{align-items:flex-end}
   .hero{align-items:flex-end;padding-bottom:8vh}
-  .tall,.scene.tall{align-items:flex-end}
-  .tall>.panel,.tall .panel{top:auto;bottom:2vh}
+  .scene.tall{align-items:flex-end}
+  .tall .panel{top:auto;bottom:2vh}
   .panel{background:var(--panel);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);padding:1.4rem 1.25rem;border:1px solid rgba(236,232,223,.08);border-radius:4px;width:100%}
 }
 
@@ -85,10 +84,6 @@ p strong{color:var(--ink);font-weight:600}
 .track li.target time{color:var(--faint)}
 .track li b{color:var(--ink);font-weight:600}
 
-.facts{list-style:none;margin:0;padding:0;display:grid;gap:.55rem}
-.facts li{display:grid;grid-template-columns:1.2rem 1fr;gap:.5rem;color:var(--dim);font-size:.97rem}
-.facts li::before{content:"";width:.5rem;height:1px;background:var(--accent);margin-top:.8rem}
-.facts b{color:var(--ink);font-weight:600}
 
 .close h2{font-size:clamp(2.6rem,6.4vw,5.2rem)}
 .tagline{font-family:var(--f-mono);font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink)}
@@ -160,8 +155,8 @@ try {
   <section class="scene hero" data-scene="moon" data-chapter="Prologue">
     <div class="panel">
       <h1>We're going back to the Moon.</h1>
-      <p class="lede">The US and China are both planning crewed landings in the next few years, and both want to build bases that last. Some of the best places to put those bases are underground, in lava tubes that nobody has mapped yet.</p>
-      <p class="callout">I'm building SLAM, a rover that goes down and maps them.</p>
+      <p class="lede">The US and China are both planning crewed landings in the next few years, and both want to build bases that last. Some of the best places to put those bases are underground, in caves called lava tubes that nobody has mapped yet.</p>
+      <p class="callout">I'm building SLAM, a rover that goes down into those caves and maps them.</p>
     </div>
   </section>
   <section class="scene tall" data-scene="racestay" data-chapter="The new race">
@@ -171,13 +166,13 @@ try {
       <p><strong>China wants astronauts on the Moon before 2030.</strong></p>
       <p><strong>NASA's Artemis IV is planned for 2028: two astronauts near the south pole for about a week.</strong></p>
       <p>And this time the plan is to stay. NASA's Moon Base plan uses robots through 2029 to scout sites before crews show up, and China's ILRS is pitched as a long-term base with its own power and resource use. Both are headed for the <strong>south pole</strong>, where shadowed craters may hold water ice.</p>
-      <p class="callout">If people are going to live there, someone has to figure out where.</p>
+      <p class="callout">If people are going to live there, someone has to figure out where. I think the answer is inside the Moon's caves.</p>
     </div>
   </section>
   <section class="chapter" data-scene="shelter" data-chapter="Why caves">
     <div class="step">
       <div class="panel">
-        <p class="eyebrow">Why go underground · 1 of 4</p>
+        <p class="eyebrow">Why live in a cave · 1 of 4</p>
         <h2>Radiation</h2>
         <p>The Moon has no atmosphere and no magnetic field, so cosmic rays and solar storms hit the surface directly. Anyone living in a surface habitat takes the full dose.</p>
         <p><strong>A few meters of rock blocks most of it.</strong> A lava tube already has that rock overhead.</p>
@@ -185,7 +180,7 @@ try {
     </div>
     <div class="step">
       <div class="panel">
-        <p class="eyebrow">Why go underground · 2 of 4</p>
+        <p class="eyebrow">Why live in a cave · 2 of 4</p>
         <h2>Temperature</h2>
         <p>One lunar day is about 29.5 Earth days long. Near the equator the surface gets to around <strong>+120 °C</strong> in the afternoon and falls to around <strong>−170 °C</strong> during the two-week night, over and over.</p>
         <p>Models based on orbiter data put the shaded floor of the Mare Tranquillitatis pit at about <strong>+17 °C</strong>, day and night. That means smaller heaters, smaller radiators and a lot less power just to keep things alive.</p>
@@ -193,7 +188,7 @@ try {
     </div>
     <div class="step">
       <div class="panel">
-        <p class="eyebrow">Why go underground · 3 of 4</p>
+        <p class="eyebrow">Why live in a cave · 3 of 4</p>
         <h2>Impacts and dust</h2>
         <p>Tiny meteoroids hit the surface all the time. Each impact, and each landing, kicks up sharp dust that grinds down seals, joints, lenses and radiators.</p>
         <p>Underground, the roof takes the hits and much less dust gets in, so <strong>equipment lasts longer.</strong></p>
@@ -201,7 +196,7 @@ try {
     </div>
     <div class="step">
       <div class="panel">
-        <p class="eyebrow">Why go underground · 4 of 4</p>
+        <p class="eyebrow">Why live in a cave · 4 of 4</p>
         <h2>The space is already there</h2>
         <p>To shield a base on the surface you either launch the shielding from Earth or have robots bury it in regolith. Both take a lot of mass, power and time.</p>
         <p>A lava tube <strong>already has the walls and the roof</strong>, so that mass can go to life support, science or more crew instead.</p>
@@ -601,9 +596,11 @@ try {
     if (!M || M.a < .003 || M.r < 1) return;
     ctx.save();
     ctx.globalAlpha = M.a;
-    const g = ctx.createRadialGradient(M.x, M.y, M.r * .95, M.x, M.y, M.r * 1.45);
-    g.addColorStop(0, 'rgba(236,232,223,.08)'); g.addColorStop(1, 'rgba(236,232,223,0)');
-    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(M.x, M.y, M.r * 1.45, 0, TAU); ctx.fill();
+    if (Math.hypot(Math.max(M.x, W - M.x), Math.max(M.y, H - M.y)) > M.r * .95) {
+      const g = ctx.createRadialGradient(M.x, M.y, M.r * .95, M.x, M.y, M.r * 1.45);
+      g.addColorStop(0, 'rgba(236,232,223,.08)'); g.addColorStop(1, 'rgba(236,232,223,0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(M.x, M.y, M.r * 1.45, 0, TAU); ctx.fill();
+    }
     if (GLM.gl) {
       const kf = GLM.ready ? clamp((NOW - GLM.born) / 700, 0, 1) : 0;
       if (kf < 1) {
@@ -1074,15 +1071,18 @@ try {
   };
 
   /* ---------------- the gap: zoom from the globe into an orbital view of the pit ---------------- */
-  let pitTex = null, pitBorn = 0, pitSize = 0; const PIT_E = 1.7;
+  let pitTex = null, pitBorn = 0, pitSize = 0; const PIT_E = 1.7, PIT_Z = 60; // texture spans PIT_E pit frames; globe zooms PIT_Z×
   function pitJob(S) {
     let prev = new Float32Array(S), cur = new Float32Array(S), row = -1;
     const L = (() => { const l = Math.hypot(.83, -.1, .5); return [.83 / l, -.1 / l, .5 / l]; })();
     return rasterJob(S, S, (x, y, d, o) => {
       if (y !== row) { const tmp = prev; prev = cur; cur = tmp; row = y; }
-      const u = .5 + (x / S - .5) * PIT_E, v = .5 + (y / S - .5) * PIT_E, dx = u - .5, dy = v - .5, ang = Math.atan2(dy, dx);
+      const u = .5 + (x / S - .5) * PIT_E, v = .5 + (y / S - .5) * PIT_E, dx = u - .5, dy = v - .5, rr = Math.hypot(dx, dy);
+      const fade = 1 - sstep(.36, .5, rr / PIT_E);
+      if (fade <= 0) { cur[x] = 0; return; } // fully transparent corner: nothing to shade
+      const ang = Math.atan2(dy, dx);
       const rp = .19 * (1 + (vnoise(Math.cos(ang) * 2 + 5, Math.sin(ang) * 2 + 5, 3) - .5) * .22 + (vnoise(Math.cos(ang) * 7 + 9, Math.sin(ang) * 7, 1) - .5) * .06);
-      const q = Math.hypot(dx, dy) / rp;
+      const q = rr / rp;
       let h = craterH(u, v, .37, 9, 5, .4) + craterH(u, v, .71, 24, 9, .5) * .8 + craterH(u, v, .13, 70, 13, .55) * .6 + (vnoise(u * 30, v * 30, 2) - .5) * .004;
       if (q > 1) h += .01 * Math.exp(-(q - 1) * 3.5);
       cur[x] = h;
@@ -1106,8 +1106,8 @@ try {
         }
       }
       const c = clamp(val, 0, 1.1) * 232;
-      d[o] = Math.min(255, c * 1.02); d[o + 1] = Math.min(255, c); d[o + 2] = Math.min(255, c * .95); d[o + 3] = 255 * (1 - sstep(.36, .5, Math.hypot(x / S - .5, y / S - .5)));
-    }, c => { if (S >= pitSize) { pitTex = c; pitSize = S; pitBorn = performance.now(); } });
+      d[o] = Math.min(255, c * 1.02); d[o + 1] = Math.min(255, c); d[o + 2] = Math.min(255, c * .95); d[o + 3] = 255 * fade;
+    }, c => { if (S >= pitSize) { if (!pitTex) pitBorn = performance.now(); pitTex = c; pitSize = S; } });
   }
   resizers.push(() => {
     const R = region(), want = Math.round(clamp(Math.min(R.x1 - R.x0, R.y1 - R.y0) * DPR * .95 * PIT_E, 480, 1440) / 32) * 32;
@@ -1129,39 +1129,39 @@ try {
       // first turn the globe until the Tranquillitatis pit faces us, then drop straight down onto it
       const b = moonPlace(1), F = pitFrame(p), ks = ease(p / .16), kz = ease((p - .14) / .28);
       const Mo = { x: 0, y: 0, r: 1, w: lerp(0, -TRANQ[0] / 20, ks), lo: lerp(0, TRANQ[1], ks) }, [l0, o0] = moonRot(Mo);
-      const u = project(TRANQ[0], TRANQ[1], l0, { x: 0, y: 0, r: 1 }, o0), r = b.r * Math.pow(60, kz);
+      const u = project(TRANQ[0], TRANQ[1], l0, { x: 0, y: 0, r: 1 }, o0), r = b.r * Math.pow(PIT_Z, kz);
       const tx = lerp(b.x + u.x * b.r, F.cx, kz), ty = lerp(b.y + u.y * b.r, F.cy, kz);
       return { x: tx - u.x * r, y: ty - u.y * r, r, a: 1, w: Mo.w, lo: Mo.lo };
     },
     draw(p, t, M) {
-      // the pit close-up lives on the surface: same scale as the globe, so the zoom simply arrives at it
-      {
-        const kz = ease((p - .14) / .28), F0 = pitFrame(p), ps = F0.s * PIT_E * Math.pow(60, kz - 1), pc = at(TRANQ, M);
-        if (ps > 4 && pc.vis) {
-          alpha(1);
-          if (pitTex) { ctx.globalAlpha = SA * clamp((NOW - pitBorn) / 600, 0, 1); ctx.imageSmoothingQuality = 'high'; ctx.drawImage(pitTex, pc.x - ps / 2, pc.y - ps / 2, ps, ps); }
-        }
+      const F = pitFrame(p), pc = at(TRANQ, M);
+      // the pit close-up lives on the surface, sized off the globe as drawn, so the zoom simply arrives at it
+      if (pitTex && pc.vis) {
+        const ps = M.r / moonPlace(1).r * F.s * PIT_E / PIT_Z;
+        alpha(sstep(.04, .14, p) * clamp((NOW - pitBorn) / 600, 0, 1)); ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(pitTex, pc.x - ps / 2, pc.y - ps / 2, ps, ps);
       }
       if (M.a > .05) carry('pits', (1 - sstep(.06, .3, p)) * M.a, t, M);
       // targeting box: hunts while the globe turns, locks on the pit, then opens up as we zoom
       const kf = sstep(.02, .08, p) * (1 - sstep(.34, .42, p));
       if (kf > 0 && M.a > .05) {
-        const pt = at(TRANQ, M), lock = sstep(.1, .17, p), kz = sstep(.17, .36, p);
-        const rr = lerp(46, 14, lock) + 40 * kz, j = (1 - lock) * (RM ? 0 : 6);
-        const qx = pt.x + Math.sin(t * 7.3) * j, qy = pt.y + Math.cos(t * 5.9) * j;
+        const lock = sstep(.1, .17, p), kOpen = sstep(.17, .36, p);
+        const rr = lerp(46, 14, lock) + 40 * kOpen, j = (1 - lock) * (RM ? 0 : 6);
+        const qx = pc.x + Math.sin(t * 7.3) * j, qy = pc.y + Math.cos(t * 5.9) * j;
         alpha(kf); ctx.strokeStyle = rgba(C.accent, .9); ctx.lineWidth = 1.2;
         brackets(qx - rr, qy - rr, rr * 2, rr * 2, rgba(C.accent, .9), Math.min(12, rr * .6));
         ctx.beginPath(); ctx.moveTo(qx - rr - 10, qy); ctx.lineTo(qx - rr + 4, qy); ctx.moveTo(qx + rr - 4, qy); ctx.lineTo(qx + rr + 10, qy);
         ctx.moveTo(qx, qy - rr - 10); ctx.lineTo(qx, qy - rr + 4); ctx.moveTo(qx, qy + rr - 4); ctx.lineTo(qx, qy + rr + 10); ctx.stroke();
-        alpha(kf * (1 - kz)); tag(qx, qy - rr - 18, lock < 1 ? 'LOCATING · MARE TRANQUILLITATIS' : 'TARGET LOCKED · 8.3°N 33.2°E', C.accent, 'center');
+        alpha(kf * (1 - kOpen)); tag(qx, qy - rr - 18, lock < 1 ? 'LOCATING · MARE TRANQUILLITATIS' : 'TARGET LOCKED · 8.3°N 33.2°E', C.accent, 'center');
       }
       const k = sstep(.27, .42, p); if (k <= 0) return;
-      const F = pitFrame(p), { x, y, s, cx, cy } = F;
+      const { x, y, s, cx, cy } = F;
       alpha(k);
-      ctx.save(); ctx.beginPath(); ctx.rect(x, y, s, s); ctx.clip();
-      const vg = ctx.createRadialGradient(cx, cy, s * .32, cx, cy, s * .75);
+      // vignette over the whole frame (not just the box) so the terrain carries on past the brackets
+      const vg = ctx.createRadialGradient(cx, cy, s * .32, cx, cy, s * 1.0);
       vg.addColorStop(0, 'rgba(5,7,13,0)'); vg.addColorStop(1, 'rgba(5,7,13,.78)');
-      ctx.fillStyle = vg; ctx.fillRect(x, y, s, s);
+      ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+      ctx.save(); ctx.beginPath(); ctx.rect(x, y, s, s); ctx.clip();
       // scan line sweep, like a frame coming down from orbit
       const sw = (t * .12) % 1; alpha(k * .5);
       const sg = ctx.createLinearGradient(0, y + sw * s - 40, 0, y + sw * s);
