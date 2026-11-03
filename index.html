@@ -36,16 +36,26 @@ body{margin:0;background:var(--void);color:var(--ink);font-family:var(--f-body);
 .intro{display:block;min-height:175vh;padding-top:88vh}
 .intro .panel{max-width:none;justify-items:center;background:none;border:0;-webkit-backdrop-filter:none;backdrop-filter:none;padding:0;padding-right:max(5vw,16px)}
 .scene.tall{min-height:230vh;align-items:flex-start}
-.tall .panel{position:sticky;top:16vh}
+.tall .stack{position:sticky;top:16vh;max-width:33rem;display:grid;gap:1.1rem;will-change:opacity,transform}
+@media (min-width:900px){.stack .panel{display:contents}}
 .step{min-height:100vh;display:flex;align-items:center;padding-block:10vh}
 .panel{max-width:33rem;min-width:0;display:grid;gap:1.1rem;will-change:opacity,transform}
 .panel.wide{max-width:40rem}
 @media (max-width:899px){
+  body{font-size:1rem;line-height:1.55}
   .scene,.step{align-items:flex-end}
-  .hero{align-items:flex-end;padding-bottom:8vh}
-  .scene.tall{align-items:flex-end}
-  .tall .panel{top:auto;bottom:2vh}
-  .panel{background:var(--panel);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);padding:1.4rem 1.25rem;border:1px solid rgba(236,232,223,.08);border-radius:4px;width:100%}
+  .scene:not(.intro){padding-bottom:5vh}
+  .step{padding-block:8vh 4vh}
+  .hero{align-items:flex-end}
+  /* phone: the long race/stay text splits into two cards that scroll past the Moon instead of pinning over it */
+  .scene.tall{min-height:250vh;flex-direction:column;align-items:stretch;padding-block:95vh 6vh}
+  .tall .stack{display:contents}
+  .stack .panel + .panel{margin-top:auto}
+  .panel{background:var(--panel);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);padding:1.15rem 1.1rem;gap:.8rem;border:1px solid rgba(236,232,223,.08);border-radius:4px;width:100%}
+  h1{font-size:2.75rem}
+  h2{font-size:2.05rem}
+  .lede{font-size:1.08rem}
+  .callout{font-size:1.28rem}
 }
 
 .eyebrow{font-family:var(--f-mono);font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0}
@@ -94,7 +104,7 @@ p strong{color:var(--ink);font-weight:600}
 .hud #hud-n{color:var(--accent);font-variant-numeric:tabular-nums}
 .hud .bar{width:4.5rem;height:1px;background:var(--faint);position:relative;overflow:hidden}
 .hud .bar i{position:absolute;inset:0;background:var(--accent);transform-origin:left;transform:scaleX(0)}
-@media (max-width:899px){.hud{top:calc(10px + env(safe-area-inset-top,0px));bottom:auto;right:max(16px,env(safe-area-inset-right,0px));left:auto}}
+@media (max-width:899px){.hud{top:calc(8px + env(safe-area-inset-top,0px));bottom:auto;right:max(10px,env(safe-area-inset-right,0px));left:auto;padding:.35rem .55rem;border-radius:3px;background:rgba(5,7,13,.78);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}}
 </style>
 
 <canvas id="sky" aria-hidden="true"></canvas>
@@ -153,13 +163,17 @@ try {
     </div>
   </section>
   <section class="scene tall" data-scene="racestay" data-chapter="The new race">
-    <div class="panel">
-      <p class="eyebrow">The new race</p>
-      <h2>A second space race</h2>
-      <p><strong>China wants astronauts on the Moon before 2030.</strong></p>
-      <p><strong>NASA's Artemis IV is planned for 2028: two astronauts near the south pole for about a week.</strong></p>
-      <p>And this time the plan is to stay. NASA's Moon Base plan uses robots through 2029 to scout sites before crews show up, and China's ILRS is pitched as a long-term base with its own power and resource use. Both are headed for the <strong>south pole</strong>, where shadowed craters may hold water ice.</p>
-      <p class="callout">If people are going to live there, someone has to figure out where. I think the answer is inside the Moon's caves.</p>
+    <div class="stack">
+      <div class="panel">
+        <p class="eyebrow">The new race</p>
+        <h2>A second space race</h2>
+        <p><strong>China wants astronauts on the Moon before 2030.</strong></p>
+        <p><strong>NASA's Artemis IV is planned for 2028: two astronauts near the south pole for about a week.</strong></p>
+      </div>
+      <div class="panel">
+        <p>And this time the plan is to stay. NASA's Moon Base plan uses robots through 2029 to scout sites before crews show up, and China's ILRS is pitched as a long-term base with its own power and resource use. Both are headed for the <strong>south pole</strong>, where shadowed craters may hold water ice.</p>
+        <p class="callout">If people are going to live there, someone has to figure out where. I think the answer is inside the Moon's caves.</p>
+      </div>
     </div>
   </section>
   <section class="chapter" data-scene="shelter" data-chapter="Why caves">
@@ -368,7 +382,7 @@ try {
   const stars = Array.from({ length: 300 }, () => ({ x: r0(), y: r0(), r: r0() * 1.1 + .25, a: r0() * .55 + .15, ph: r0() * 6.28, z: r0() }));
 
   function region() {
-    return W >= 900 ? { x0: W * .44, x1: W * .97, y0: H * .1, y1: H * .9 } : { x0: 12, x1: W - 12, y0: H * .07, y1: H * .56 };
+    return W >= 900 ? { x0: W * .44, x1: W * .97, y0: H * .1, y1: H * .9 } : { x0: 12, x1: W - 12, y0: H * .07, y1: H * .53 };
   }
   function tag(x, y, text, color = C.ink, align = 'left') {
     ctx.font = MONO; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
@@ -626,7 +640,11 @@ try {
     if (!pt.vis || k <= 0) return;
     alpha(k); ctx.fillStyle = color; ctx.beginPath(); ctx.arc(pt.x, pt.y, 3, 0, TAU); ctx.fill();
     ring(pt.x, pt.y, 6, color, t, .7);
-    if (label) tag(pt.x + (align === 'left' ? 12 : -12), pt.y, label, color, align);
+    if (!label) return;
+    ctx.font = MONO; const lw = ctx.measureText(label).width + 8;
+    // no room beside the marker (phones): centre the label over it instead of letting the clamp slide it across the dot
+    if (align === 'left' ? pt.x + 12 + lw > W - 12 : pt.x - 12 - lw < 4) tag(pt.x, pt.y + (align === 'left' ? -20 : 20), label, color, 'center');
+    else tag(pt.x + (align === 'left' ? 12 : -12), pt.y, label, color, align);
   }
 
   /* hero: the moon drifts in and the pit target slides toward center */
@@ -703,13 +721,15 @@ try {
       if (im3.vis && k3 > 0) { alpha(k3); ctx.strokeStyle = C.us; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(im3.x, im3.y, 3.4, 0, TAU); ctx.stroke(); if (!mob) tag(im3.x - 10, im3.y + 12, 'IM-3 · PLANNED', C.us, 'right'); }
       const kl = sstep(.6, .75, p);
       if (kl > 0) {
-        const pole = at([-88, 0], M), lx = mob ? M.x - M.r * .9 : M.x + M.r * .62, ly = Math.min(H - 30 - POLE_LIST.length * 17, pole.y - 20);
+        const pole = at([-88, 0], M), n = POLE_LIST.length;
+        // phone: the text card sits right under the Moon, so the list stacks upward over the dark limb instead of hanging below the pole
+        const lx = mob ? region().x0 + 4 : M.x + M.r * .62, ly = mob ? pole.y - 34 - (n - 1) * 17 : Math.min(H - 30 - n * 17, pole.y - 20);
         alpha(kl); ctx.strokeStyle = rgba(C.ink, .45); ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.moveTo(pole.x + 8, pole.y - 4); ctx.lineTo(lx - 6, ly + 4); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(pole.x + (mob ? -6 : 8), pole.y - 4); ctx.lineTo(mob ? lx + 136 : lx - 6, mob ? ly + (n - 1) * 17 + 2 : ly + 4); ctx.stroke();
         POLE_LIST.forEach(([txt, c], i) => tag(lx, ly + i * 17, txt, i ? c : C.dim));
       }
       const kg = sstep(.65, .8, p);
-      if (kg > 0) { alpha(kg); tag(M.x, M.y - M.r - 18, '●  LANDED      ○  PLANNED · SITES APPROXIMATE', C.dim, 'center'); }
+      if (kg > 0) { alpha(kg); tag(M.x, mob ? region().y0 : M.y - M.r - 18, '●  LANDED      ○  PLANNED · SITES APPROXIMATE', C.dim, 'center'); }
     }
   };
 
@@ -748,9 +768,10 @@ try {
         const pt = at([la, lo], M); if (!pt.vis) continue;
         alpha(k * .85); ctx.beginPath(); ctx.arc(pt.x, pt.y, 1.5, 0, TAU); ctx.fill();
       }
-      const k = sstep(.45, .6, p);
+      const e = W < 900 ? -.12 : 0; // phone: the card rises over the Moon sooner, so name both pits earlier
+      const k = sstep(.45 + e, .6 + e, p);
       alpha(1); site(at(MARIUS, M), C.ink, 'MARIUS HILLS PIT', k, t, 'right');
-      site(at(TRANQ, M), C.accent, 'TRANQUILLITATIS PIT · CAVE CONDUIT CONFIRMED 2024', sstep(.55, .7, p), t);
+      site(at(TRANQ, M), C.accent, e ? 'TRANQUILLITATIS PIT · CAVE CONFIRMED 2024' : 'TRANQUILLITATIS PIT · CAVE CONDUIT CONFIRMED 2024', sstep(.55 + e, .7 + e, p), t);
       const kc = sstep(.1, .25, p);
       if (kc > 0) { alpha(kc); tag(M.x, Math.min(H - 40, M.y + M.r + 26), '200+ PITS IDENTIFIED · ILLUSTRATIVE PLACEMENT', C.dim, 'center'); }
     }
@@ -860,7 +881,7 @@ try {
         const kt = sstep(.55, .7, p);
         if (kt > 0) { alpha(kt); const mid = pts[20] || e; tag(mid[0], mid[1] - 14, 'SAME ROVER · SAME SOFTWARE', C.accent, 'center'); }
       }
-      if (M) { alpha(km); tag(M.x, M.y + M.r + 22, 'MOON · TRAINING GROUND', C.ink, 'center'); }
+      if (M) { alpha(km); tag(M.x, mob ? M.y - M.r - 16 : M.y + M.r + 22, 'MOON · TRAINING GROUND', C.ink, 'center'); } // phone: the card covers the space under it
     }
   };
 
@@ -1163,7 +1184,7 @@ try {
       ctx.restore();
       alpha(k); brackets(x, y, s, s, rgba(C.ink, .55));
       tag(x + 4, y - 14, 'MARE TRANQUILLITATIS PIT · 8.3°N 33.2°E', C.accent);
-      tag(x + s, y + s + 16, 'ORBITAL VIEW · ILLUSTRATIVE', C.faint, 'right');
+      if (W < 900) tag(x + s - 6, y + s - 14, 'ORBITAL VIEW · ILLUSTRATIVE', C.faint, 'right'); else tag(x + s, y + s + 16, 'ORBITAL VIEW · ILLUSTRATIVE', C.faint, 'right');
       const pr = s * .19, bx = x + 16, by = y + s - 18;
       ctx.strokeStyle = C.ink; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(bx, by - 4); ctx.lineTo(bx, by); ctx.lineTo(bx + pr * 2, by); ctx.lineTo(bx + pr * 2, by - 4); ctx.stroke();
       tag(bx + pr, by - 12, '~100 M', C.ink, 'center');
@@ -1661,7 +1682,7 @@ try {
       const k3 = sstep(2.9, 3.1, s);
       if (k3 > 0) {
         alpha(k3);
-        const bx = R.x0 + w * (L.mob ? .5 : .56), by = R.y0 + (L.mob ? 26 : 30), bw = R.x1 - bx, bh = Math.max(40, g - by - 26);
+        const bx = R.x0 + w * (L.mob ? .5 : .56), by = R.y0 + (L.mob ? 44 : 30), bw = R.x1 - bx, bh = Math.max(40, g - by - 26);
         ctx.fillStyle = 'rgba(5,7,13,.8)'; ctx.fillRect(bx, by, bw, bh); brackets(bx, by, bw, bh, rgba(C.ink, .5), 10);
         tag(bx + 4, by - 12, `SURFACE ARCHIVE · ${(shown * 3).toLocaleString('en-US')} SCANS SAFE`, C.accent);
         const mxs = (bw - 12) / (rx - lx), mys = (bh - 12) / (f - g), sc2 = Math.min(mxs, mys * 1.6);
@@ -1754,12 +1775,13 @@ try {
       const k1 = sstep(.38, .55, s);
       if (k1 > 0) {
         alpha(k1);
+        // phone: same callouts, shorter words, so they fit beside a rover that's half the size
         callout(A.lidar[0], A.lidar[1], X(.5), Y(-.66), '3D LIDAR', C.accent);
-        callout(A.top[0], A.top[1], X(-.2), Y(-.62), 'ONBOARD COMPUTER', C.accent, 'right');
-        callout(ax + L * .05, (ay0 + ay1) / 2, X(.62), Y(.55), 'APXS · ELEMENTAL COMPOSITION', VIOLET);
-        callout(c0[0], c0[1], X(-.78), Y(-.16), 'TETHER · POWER, DATA, LOAD', C.ink, 'right');
-        callout(A.wheelF[0], A.wheelF[1], X(.66), Y(-.2), '4 GROUSERED WHEELS · CLIMBS RUBBLE', C.ink);
-        callout(A.wheelR[0], A.wheelR[1], X(-.62), Y(.52), 'IMU + WHEEL ODOMETRY', C.ink, 'right');
+        callout(A.top[0], A.top[1], X(-.2), Y(-.62), mob ? 'COMPUTER' : 'ONBOARD COMPUTER', C.accent, 'right');
+        callout(ax + L * .05, (ay0 + ay1) / 2, X(.62), Y(.55), mob ? 'APXS · COMPOSITION' : 'APXS · ELEMENTAL COMPOSITION', VIOLET);
+        callout(c0[0], c0[1], X(-.78), Y(-.16), mob ? 'TETHER' : 'TETHER · POWER, DATA, LOAD', C.ink, 'right');
+        callout(A.wheelF[0], A.wheelF[1], X(.66), Y(-.2), mob ? 'GROUSERED WHEELS' : '4 GROUSERED WHEELS · CLIMBS RUBBLE', C.ink);
+        callout(A.wheelR[0], A.wheelR[1], X(-.62), Y(.52), mob ? 'IMU + ODOMETRY' : 'IMU + WHEEL ODOMETRY', C.ink, 'right');
         alpha(1);
       }
     }
@@ -1819,7 +1841,7 @@ try {
         return [ocx + x1 * S * f, ocy - (y2 + .05) * S * f, f];
       };
       const PP = q => P(q[0], q[1], q[2]);
-      const kR = .03 + ease(clamp(s / .8, 0, 1)) * .97;
+      const kR = .03 + ease(clamp(s / (mob ? .5 : .8), 0, 1)) * .97; // phone: build sooner, so the labels land while the card is still low
       const T = TUBE, pulse = RM ? 1 : .5 + .5 * Math.sin(t * 4);
       alpha(1);
       for (const q of T.pts) {
@@ -1854,7 +1876,7 @@ try {
         }
         const ax = (d, c) => { const e = PP([T.sk.c[0] + d[0] * .14, T.sk.c[1] + T.floorH(.1, 0) + d[1] * .14, T.sk.c[2] + d[2] * .14]); line([skB, e], c, 1.6); };
         ax([1, 0, 0], C.accent); ax([0, 1, 0], C.ink); ax([0, 0, 1], C.us);
-        const k0 = sstep(.5, .8, s);
+        const k0 = mob ? sstep(.3, .5, s) : sstep(.5, .8, s);
         if (k0 > 0) {
           alpha(w0 * k0);
           const mid = PP(T.at(.55, 0, T.B(.55) + .02)), cam = PP(T.at(.36, 0, .1)), rp = PP(T.at(.72, 0, .03));
@@ -1868,15 +1890,17 @@ try {
       // step 1: select
       if (w1 > 0) {
         alpha(w1);
-        const dim = (a, b, txt, side = 1) => {
+        const dim = (a, b, txt, side = 1, mo) => {
           const A_ = PP(a), B_ = PP(b); ctx.strokeStyle = C.ink; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(A_[0], A_[1]); ctx.lineTo(B_[0], B_[1]);
           const dx = B_[0] - A_[0], dy = B_[1] - A_[1], l = Math.hypot(dx, dy) || 1, nx = -dy / l * 5, ny = dx / l * 5;
           ctx.moveTo(A_[0] - nx, A_[1] - ny); ctx.lineTo(A_[0] + nx, A_[1] + ny); ctx.moveTo(B_[0] - nx, B_[1] - ny); ctx.lineTo(B_[0] + nx, B_[1] + ny); ctx.stroke();
-          tag((A_[0] + B_[0]) / 2 + side * 10, (A_[1] + B_[1]) / 2, txt, C.ink, side > 0 ? 'left' : 'right');
+          const mx = (A_[0] + B_[0]) / 2, my = (A_[1] + B_[1]) / 2;
+          if (mob && mo) callout(mx, my, mx + mo[0], my + mo[1], txt, C.ink, 'center'); // phone: pull the label clear of the cloud
+          else tag(mx + side * 10, my, txt, C.ink, side > 0 ? 'left' : 'right');
         };
-        dim(T.at(.45, 0, T.floorH(.45, 0)), T.at(.45, 0, T.B(.45)), 'CEILING 21.4 M ± 0.3');
+        dim(T.at(.45, 0, T.floorH(.45, 0)), T.at(.45, 0, T.B(.45)), 'CEILING 21.4 M ± 0.3', 1, [-10, -78]);
         const ca = T.A(.7), hh = T.B(.7) * .35, th0 = Math.asin(.35);
-        dim(T.at(.7, -ca * Math.cos(th0), hh), T.at(.7, ca * Math.cos(th0), hh), 'NARROWEST 11.8 M ± 0.2', 1);
+        dim(T.at(.7, -ca * Math.cos(th0), hh), T.at(.7, ca * Math.cos(th0), hh), 'NARROWEST 11.8 M ± 0.2', 1, [-20, 62]);
         const s0 = PP(T.at(.22, 0, T.floorH(.22, 0) + .01)), s1 = PP(T.at(.32, 0, T.floorH(.32, 0) + .01));
         line([s0, s1], C.ink, 1.6); tag(s0[0] - 8, s0[1] + 22, 'FLOOR SLOPE 4.1° ± 0.2', C.ink, 'right');
         const hz = PP(T.at(.82, 0, T.B(.82)));
@@ -1911,8 +1935,9 @@ try {
         const k2 = sstep(2.05, 2.3, s);
         if (k2 > 0) {
           alpha(w2 * k2);
-          tag(m2[0] + 12, m2[1] - 20, 'MODULES FIT TO MEASURED WALLS', C.ink);
-          const pm = pw[Math.floor(pw.length * .6)]; tag(pm[0] + 10, pm[1] - 16, 'POWER + COMMS FROM SKYLIGHT', C.accent);
+          const pm = pw[Math.floor(pw.length * .6)];
+          if (mob) { callout(m2[0], m2[1] + 40, m2[0], m2[1] + 82, 'MODULES FIT TO MEASURED WALLS', C.ink, 'center'); callout(pm[0], pm[1], pm[0] + 60, pm[1] - 60, 'POWER + COMMS FROM SKYLIGHT', C.accent, 'center'); }
+          else { tag(m2[0] + 12, m2[1] - 20, 'MODULES FIT TO MEASURED WALLS', C.ink); tag(pm[0] + 10, pm[1] - 16, 'POWER + COMMS FROM SKYLIGHT', C.accent); }
           const em = eg[Math.floor(eg.length * .5)]; tag(em[0], em[1] + 24, 'EMERGENCY EGRESS', GOOD, 'center');
           const lt = PP(T.at(.56, 0, T.B(.56) - .01)); tag(lt[0] + 10, lt[1] - 14, 'LIGHTING', '#ffd59a');
         }
@@ -1929,9 +1954,10 @@ try {
         const k3 = sstep(3.05, 3.3, s);
         if (k3 > 0) {
           alpha(w3 * k3);
-          tag(hz[0] + 22, hz[1] - 18, 'REPEAT SCAN · ROCKFALL DETECTED', C.cn);
-          const pin = (u, lat, txt, c) => { const b = PP(T.at(u, lat, T.floorH(u, lat))), tp = [b[0], b[1] - 34]; line([b, tp], c, 1.2); ctx.fillStyle = c; ctx.beginPath(); ctx.arc(tp[0], tp[1], 3, 0, TAU); ctx.fill(); tag(tp[0], tp[1] - 12, txt, c, 'center'); };
-          pin(.3, .1, 'GPR TARGET', '#c9aaff'); pin(.6, -.12, 'APXS · COMPOSITION', '#c9aaff'); pin(.9, .1, 'RADIATION', '#9fc4ff');
+          if (mob) callout(hz[0], hz[1] + 16, hz[0] - 20, hz[1] + 64, 'REPEAT SCAN · ROCKFALL DETECTED', C.cn, 'right');
+          else tag(hz[0] + 22, hz[1] - 18, 'REPEAT SCAN · ROCKFALL DETECTED', C.cn);
+          const pin = (u, lat, txt, c, ht = 34) => { const b = PP(T.at(u, lat, T.floorH(u, lat))), tp = [b[0], b[1] - ht]; line([b, tp], c, 1.2); ctx.fillStyle = c; ctx.beginPath(); ctx.arc(tp[0], tp[1], 3, 0, TAU); ctx.fill(); tag(tp[0], tp[1] - 12, txt, c, 'center'); };
+          pin(.3, .1, 'GPR TARGET', '#c9aaff'); pin(.6, -.12, 'APXS · COMPOSITION', '#c9aaff', mob ? 72 : 34); pin(.9, .1, 'RADIATION', '#9fc4ff');
           const lx = R.x0 + 8, ly = R.y1 - 10;
           [[GOOD, 'DRIVABLE'], ['#ffc861', 'CAUTION'], [C.cn, 'NO-GO']].forEach(([c, txt], i) => { ctx.fillStyle = c; ctx.fillRect(lx + i * 96, ly - 4, 8, 8); tag(lx + i * 96 + 14, ly, txt, C.dim); });
         }
@@ -2143,7 +2169,7 @@ try {
 
   /* ---------------- scroll engine ---------------- */
   const sections = [...document.querySelectorAll('[data-scene]')];
-  const panels = [...document.querySelectorAll('.panel')];
+  const panels = [...document.querySelectorAll('.panel, .stack')]; // whichever of the two has a box at this width gets the fade
   const hudN = document.getElementById('hud-n'), hudT = document.getElementById('hud-t'), hudBar = document.getElementById('hud-bar');
   function sizeCanvas() {
     W = innerWidth; H = innerHeight; DPR = Math.min(2, devicePixelRatio || 1);
@@ -2204,7 +2230,7 @@ try {
     if (idx !== hudIdx) { hudIdx = idx; hudN.textContent = String(idx + 1).padStart(2, '0'); hudT.textContent = sections[idx].dataset.chapter; }
     hudBar.style.transform = `scaleX(${clamp(scrollY / Math.max(1, document.documentElement.scrollHeight - H), 0, 1)})`;
     if (!RM) for (const el of panels) {
-      const r = el.getBoundingClientRect(); const c = (r.top + r.height / 2) / H - .5;
+      const r = el.getBoundingClientRect(); if (!r.height) continue; const c = (r.top + r.height / 2) / H - .5;
       el.style.opacity = (1 - clamp((Math.abs(c) - .32) / .3, 0, 1) * .72).toFixed(3);
       el.style.transform = `translate3d(0,${(c * -18).toFixed(1)}px,0)`;
     }
