@@ -41,7 +41,7 @@ body{margin:0;background:var(--void);color:var(--ink);font-family:var(--f-body);
 .facts.steps li{transition:opacity .35s,color .35s;opacity:.38}
 .facts.steps li.on{opacity:1}
 .facts.steps li.on b{color:var(--accent)}
-@media (min-width:900px){.step.tall{align-items:flex-start}}
+@media (min-width:900px){.step.tall{align-items:flex-start}.tall.long .panel{position:relative;top:auto}}
 .tall.long{min-height:900vh}
 .callout.beat{transition:opacity .35s;opacity:.3}
 .callout.beat.on{opacity:1}
@@ -916,17 +916,16 @@ try {
     for (let s = 0; s <= 24; s++) ctx.lineTo(x + w * s / 24, g + Math.sin(s * 2.1) * 1.2 - (s % 7 === 3 ? 1.5 : 0));
     ctx.lineTo(x + w, g + 5); ctx.lineTo(x, g + 5); ctx.closePath(); ctx.fill();
   }
-  let SH_BEAT = -1, SH_T0 = 0;
   SCN.shelter = {
     moon: () => null,
     draw(p, t, M) {
-      const r = p * 4.6, bi = Math.min(3, Math.floor(r)), s = Math.min(3, bi + sstep(.82, 1, r - bi)), Ls = shelterLayout();
-      if (bi !== SH_BEAT) { SH_BEAT = bi; SH_T0 = NOW; }
-      const run = ms => RM ? 1 : clamp((NOW - SH_T0) / ms, 0, 1);
-      const wR = 1 - sstep(.35, .65, s), wT = sstep(.35, .65, s) * (1 - sstep(1.35, 1.65, s));
-      const wM = sstep(1.35, 1.65, s) * (1 - sstep(2.35, 2.65, s)), wV = sstep(2.35, 2.65, s);
-      const uT = bi === 1 ? run(2600) : bi > 1 ? 1 : 0, dph = (.8 + uT * 1.05) % 1, T = surfT(dph), sun = Math.sin(dph * TAU);
-      const uV = bi === 3 ? run(1600) : bi > 3 ? 1 : 0;
+      // r runs 0..4.6: one unit per point, the last .6 holds for the closing line. Every animation is scrubbed by scroll.
+      const r = p * 4.6, Ls = shelterLayout(), U = i => clamp((r - i - .1) / .8, 0, 1);
+      const X = i => sstep(i - .1, i + .1, r);
+      const wR = 1 - X(1), wT = X(1) * (1 - X(2)), wM = X(2) * (1 - X(3)), wV = X(3);
+      const uR = U(0), uT = U(1), uM = U(2), uV = U(3);
+      const dph = (.8 + uT * 1.05) % 1, T = surfT(dph), sun = Math.sin(dph * TAU);
+      ctx.translate(0, lerp(H * .035, -H * .035, p));
       for (const L of Ls) {
         const { x, y, w, h, g, ceil, floor, cave, hw, hh: hH, hx, hy } = L;
         ctx.save(); ctx.beginPath(); ctx.roundRect(x, y, w, h, 4); ctx.clip();
@@ -967,7 +966,7 @@ try {
         // radiation: galactic cosmic rays and solar particles
         if (wR > .01) {
           for (let i = 0; i < 30; i++) {
-            const ph = (t * .45 + hh(i, 1)) % 1, x0 = x + w * (.04 + .92 * hh(i, 2)), sl = (hh(i, 3) - .5) * .5;
+            const ph = (uR * 3.2 + hh(i, 1)) % 1, x0 = x + w * (.04 + .92 * hh(i, 2)), sl = (hh(i, 3) - .5) * .5;
             const y0 = y - 20, xAt = yy => x0 + (yy - y0) * sl;
             let stop;
             if (cave) stop = g + (ceil - g) * (.2 + .65 * hh(i, 6));
@@ -981,12 +980,12 @@ try {
           }
           alpha(wR);
           ctx.fillStyle = 'rgba(236,232,223,.12)'; ctx.fillRect(x + 10, y + 34, w * .42, 4);
-          ctx.fillStyle = cave ? '#9ad7a0' : '#c9aaff'; ctx.fillRect(x + 10, y + 34, w * .42 * (cave ? .1 : .9), 4);
+          ctx.fillStyle = cave ? '#9ad7a0' : '#c9aaff'; ctx.fillRect(x + 10, y + 34, w * .42 * (cave ? .1 : .9) * ease(uR), 4);
         }
         // micrometeoroids and dust
         if (wM > .01) {
           for (let i = 0; i < 12; i++) {
-            const ph = (t * .5 + hh(i, 11)) % 1, ix = x + w * (.06 + .88 * hh(i, 12));
+            const ph = (uM * 3 + hh(i, 11)) % 1, ix = x + w * (.06 + .88 * hh(i, 12));
             const nearHab = !cave && hh(i, 13) < .35, tx = nearHab ? hx + (hh(i, 14) - .5) * hw * 1.4 : ix;
             const ty = nearHab && Math.abs(tx - hx) < hw / 2 ? hy - hH : g + 1;
             if (ph < .22) {
@@ -1004,7 +1003,7 @@ try {
               }
             }
           }
-          if (!cave) { alpha(wM * .5); ctx.fillStyle = 'rgba(150,140,120,.6)'; ctx.beginPath(); ctx.roundRect(hx - hw / 2, hy - hH - 2, hw, hH * .35, hH * .3); ctx.fill(); }
+          if (!cave) { alpha(wM * .5 * uM); ctx.fillStyle = 'rgba(150,140,120,.6)'; ctx.beginPath(); ctx.roundRect(hx - hw / 2, hy - hH - 2, hw, hH * .35, hH * .3); ctx.fill(); }
         }
         // day/night: sun crossing the sky
         if (wT > .01 && sun > 0) {
@@ -2156,6 +2155,7 @@ try {
   let HERO_ON = false; const HERO_WAIT = performance.now() + 9000;
   const CONT = new Set(['intro>moon', 'pits>orbit']);
   const veil = document.querySelector('.veil'), shelterSec = sections.findIndex(s => s.dataset.scene === 'shelter'), shelterLi = [...document.querySelectorAll('.facts.steps li')], shelterCall = document.querySelector('.callout.beat');
+  const shP = shelterSec >= 0 ? sections[shelterSec].querySelector('.panel') : null, DESK = matchMedia('(min-width:900px)'); let SH_TY = 0;
   let ss = scrollY, last = performance.now(), hudIdx = -1;
   function frame(now) {
     NOW = now;
@@ -2194,7 +2194,18 @@ try {
 
     if (idx !== hudIdx) { hudIdx = idx; hudN.textContent = String(idx + 1).padStart(2, '0'); hudT.textContent = sections[idx].dataset.chapter; }
     hudBar.style.transform = `scaleX(${clamp(scrollY / Math.max(1, document.documentElement.scrollHeight - H), 0, 1)})`;
+    // shelter text: moves with the page on the way in and out, creeps up slowly while the section plays
+    const shOn = shP && DESK.matches;
+    if (shOn) {
+      const sr = sections[shelterSec].getBoundingClientRect(), L = Math.max(1, sr.height - H), Hp = shP.offsetHeight;
+      const Ye = Math.min(H * .06, H * .95 - Hp), Ys = Math.max(Ye, Math.min(H * .36, H * .96 - Hp));
+      const want = sr.top > 0 ? sr.top + Ys : sr.top < -L ? sr.top + L + Ye : lerp(Ys, Ye, -sr.top / L);
+      SH_TY = want - (shP.getBoundingClientRect().top - SH_TY);
+      shP.style.transform = `translate3d(0,${SH_TY.toFixed(1)}px,0)`;
+      const c = (want + Hp / 2) / H - .5; shP.style.opacity = (1 - clamp((Math.abs(c) - .32) / .3, 0, 1) * .72).toFixed(3);
+    } else if (shP && SH_TY) { SH_TY = 0; shP.style.transform = ''; }
     if (!RM) for (const el of panels) {
+      if (shOn && el === shP) continue;
       const r = el.getBoundingClientRect(); const c = (r.top + r.height / 2) / H - .5;
       el.style.opacity = (1 - clamp((Math.abs(c) - .32) / .3, 0, 1) * .72).toFixed(3);
       el.style.transform = `translate3d(0,${(c * -18).toFixed(1)}px,0)`;
