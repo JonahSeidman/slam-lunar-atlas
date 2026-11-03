@@ -118,7 +118,7 @@ p strong{color:var(--ink);font-weight:600}
 <canvas id="hero3d" aria-hidden="true"></canvas>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 <script type="module">
-// Hero: the real ATLAS G071 mini model, rendered over the name. The scroll engine calls HERO3D.render() each frame.
+// Hero: the real ATLAS G071 Phoebe model, rendered over the name. The scroll engine calls HERO3D.render() each frame.
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
@@ -1351,7 +1351,7 @@ try {
     ctx.fillStyle = mg; ctx.fillRect(X(x0), Y(yB - mh), X(x1) - X(x0), Y(yB) - Y(yB - mh));
     ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.fillRect(X(x0), Y(yT), X(x1) - X(x0), 1);
   }
-  // ATLAS G071 mini, side view drawn from the CAD renders. Units are mm: x forward, z up, ground at z = 0.
+  // ATLAS G071 Phoebe, side view drawn from the CAD renders. Units are mm: x forward, z up, ground at z = 0.
   // dep = [dx, dz] is where the far side lands, giving a little depth. part(name, f) lets a scene offset parts.
   function atlasWheel(x, z, a, far) {
     ctx.save(); ctx.translate(x, -z); ctx.rotate(a);
@@ -1443,8 +1443,10 @@ try {
       ctx.fillStyle = '#18191c'; ctx.beginPath(); ctx.roundRect(-10, Z(206), 20, 22, 4); ctx.fill();
       ctx.fillStyle = '#26272b'; ctx.beginPath(); ctx.arc(-24, Z(186), 7, Math.PI, 0); ctx.fill();
       const p0 = [0, 197], p1 = [-33, 209], p2 = [-300, 335], ang = Math.atan2(-(p2[1] - p1[1]), p2[0] - p1[0]), len = Math.hypot(p2[0] - p1[0], p2[1] - p1[1]);
-      // copper lead from the gland, cable-tied along the snubber
-      ctx.strokeStyle = '#15161a'; ctx.lineWidth = 5; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(-24, Z(190)); ctx.quadraticCurveTo(-52, Z(222), -90, Z(246)); ctx.lineTo(-318, Z(356)); ctx.stroke();
+      // power/data lead: short drop out of the gland, then strapped along the underside of the snubber up to the eye
+      const ux = (p2[0] - p1[0]) / len, uz = (p2[1] - p1[1]) / len, off = (d, o) => [p1[0] + ux * d - uz * o, Z(p1[1] + uz * d + ux * o)]; // o > 0 is below the axis
+      ctx.strokeStyle = '#15161a'; ctx.lineWidth = 5; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(-24, Z(190));
+      ctx.quadraticCurveTo(-30, Z(199), ...off(6, 11)); ctx.lineTo(...off(len - 10, 10)); ctx.stroke();
       ctx.strokeStyle = '#121316'; ctx.lineWidth = 12; ctx.beginPath(); ctx.moveTo(p0[0], Z(p0[1])); ctx.lineTo(p1[0], Z(p1[1])); ctx.stroke();
       ctx.fillStyle = '#2c2e33'; ctx.beginPath(); ctx.arc(0, Z(197), 9, 0, TAU); ctx.fill(); ctx.fillStyle = '#9ea2a8'; ctx.beginPath(); ctx.arc(0, Z(197), 3.5, 0, TAU); ctx.fill();
       ctx.save(); ctx.translate(p1[0], Z(p1[1])); ctx.rotate(ang);
