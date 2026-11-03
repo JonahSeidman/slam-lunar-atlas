@@ -1098,12 +1098,12 @@ p strong{color:var(--ink);font-weight:600}
   function lidarPuck(x, yt, rx, hgt, t, on) {
     const ry = rx * .28, yb = yt + hgt;
     const g = ctx.createLinearGradient(x - rx, 0, x + rx, 0);
-    g.addColorStop(0, '#7a3a10'); g.addColorStop(.32, '#f0a35a'); g.addColorStop(.55, '#d06f26'); g.addColorStop(1, '#5e2b0a');
+    g.addColorStop(0, '#141417'); g.addColorStop(.32, '#55555e'); g.addColorStop(.55, '#25252b'); g.addColorStop(1, '#0d0d10');
     ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(x, yb, rx, ry, 0, 0, Math.PI); ctx.lineTo(x - rx, yt); ctx.ellipse(x, yt, rx, ry, 0, Math.PI, 0, true); ctx.closePath(); ctx.fill();
     const w0 = yt + hgt * .34, w1 = yt + hgt * .7;
     const wg = ctx.createLinearGradient(x - rx, 0, x + rx, 0); wg.addColorStop(0, '#05070d'); wg.addColorStop(.35, '#1b2440'); wg.addColorStop(1, '#05070d');
     ctx.fillStyle = wg; ctx.fillRect(x - rx, w0, rx * 2, w1 - w0);
-    ctx.fillStyle = '#f2b06c'; ctx.beginPath(); ctx.ellipse(x, yt, rx, ry, 0, 0, TAU); ctx.fill();
+    ctx.fillStyle = '#6a6a74'; ctx.beginPath(); ctx.ellipse(x, yt, rx, ry, 0, 0, TAU); ctx.fill();
     ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(x, yt, rx * .62, ry * .62, 0, 0, TAU); ctx.stroke();
     if (on > 0) {
       const sx = x + Math.sin(RM ? .6 : t * 3.2) * rx * .82, sy = (w0 + w1) / 2;
@@ -1116,7 +1116,7 @@ p strong{color:var(--ink);font-weight:600}
   // grousered drum wheel (spoked face, open between spokes), extruded along depth vector (ex, ey)
   function grouserWheel(x, y, r, a, ex, ey, far) {
     const sh = far ? .55 : 1, col = (c, k = 1) => `rgb(${Math.round(c[0] * sh * k)},${Math.round(c[1] * sh * k)},${Math.round(c[2] * sh * k)})`;
-    const LIGHT = [92, 94, 98], MID = [48, 50, 54], DARK = [16, 17, 19];
+    const LIGHT = [205, 208, 210], MID = [150, 155, 160], DARK = [78, 82, 87];
     ctx.save(); ctx.translate(x, y);
     const el = Math.hypot(ex, ey) || 1, nx = -ey / el, ny = ex / el;
     // drum body (back circle + side hull)
@@ -1164,39 +1164,14 @@ p strong{color:var(--ink);font-weight:600}
     ctx.fillStyle = mg; ctx.fillRect(X(x0), Y(yB - mh), X(x1) - X(x0), Y(yB) - Y(yB - mh));
     ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.fillRect(X(x0), Y(yT), X(x1) - X(x0), 1);
   }
-  // details from the CAD model: aluminium top rails with bolts, red canister at the rear, gold tube along the top
-  function roverKit(X, Y, x0, x1, yT, dx, dy, L) {
-    const rail = (ya, ka) => {
-      const g = ctx.createLinearGradient(0, Y(yT + dy * ka) - L * .018, 0, Y(yT + dy * ka) + L * .012); g.addColorStop(0, '#e6e8ea'); g.addColorStop(1, '#8e9398');
-      ctx.fillStyle = g; ctx.fillRect(X(x0 + dx * ka) , Y(yT + dy * ka) - L * .018, X(x1) - X(x0), L * .022);
-      ctx.fillStyle = '#4b4f54'; for (let u = x0 + .04; u < x1; u += .09) { ctx.beginPath(); ctx.arc(X(u + dx * ka), Y(yT + dy * ka) - L * .007, Math.max(.8, L * .005), 0, TAU); ctx.fill(); }
-    };
-    rail(0, .85); rail(0, 0);
-    // red canister, standing at the rear
-    const rx = x0 + .1 + dx * .4, rb = Y(yT + dy * .4) - L * .01, rw = L * .05, rh = L * .14;
-    const rg = ctx.createLinearGradient(X(rx) - rw, 0, X(rx) + rw, 0); rg.addColorStop(0, '#7d0d10'); rg.addColorStop(.35, '#ff5a52'); rg.addColorStop(.6, '#d61f22'); rg.addColorStop(1, '#5e080a');
-    ctx.fillStyle = rg; ctx.fillRect(X(rx) - rw, rb - rh, rw * 2, rh);
-    ctx.fillStyle = '#ff6b62'; ctx.beginPath(); ctx.ellipse(X(rx), rb - rh, rw, rw * .3, 0, 0, TAU); ctx.fill();
-    ctx.fillStyle = '#c3c7cb'; ctx.fillRect(X(rx) - rw * 1.08, rb - rh * .55, rw * 2.16, Math.max(1.5, L * .008));
-    // gold tube on a post, angled back over the canister
-    const px = x0 + .5 + dx * .5, py = Y(yT + dy * .5) - L * .1;
-    ctx.fillStyle = '#b5babf'; ctx.fillRect(X(px) - L * .01, py, L * .02, Y(yT + dy * .5) - py);
-    ctx.save(); ctx.translate(X(px), py); ctx.rotate(Math.PI + .2);
-    const tl = L * .62, tr = L * .022, tg = ctx.createLinearGradient(0, -tr, 0, tr); tg.addColorStop(0, '#fff0b0'); tg.addColorStop(.4, '#f2b632'); tg.addColorStop(1, '#8a5a0c');
-    ctx.fillStyle = tg; ctx.beginPath(); ctx.roundRect(-L * .06, -tr, tl, tr * 2, tr); ctx.fill();
-    ctx.fillStyle = '#c98a1c'; ctx.fillRect(-L * .02, -tr * 1.15, L * .05, tr * 2.3);
-    ctx.fillStyle = '#3a3a3e'; ctx.beginPath(); ctx.arc(0, 0, tr * .6, 0, TAU); ctx.fill();
-    ctx.restore();
-  }
   function roverDraw(x, y, ang, rw, t, roll, lights) {
     const rh = rw * .42, r = rh * .5, wy = rh * .8 - r, wx = rw * .32, ex = rw * .07, ey = -rh * .1;
     const X = u => u, Y = v => v;
     ctx.save(); ctx.translate(x, y); ctx.rotate(ang);
     for (const s of [-1, 1]) grouserWheel(s * wx + ex * 2.2, wy + ey * 2.2, r, roll + s, ex * .5, ey * .5, true);
     roverBox(X, Y, -rw * .42, rw * .42, wy - r * .75, wy + r * .45, ex * 2.2, ey * 2.2, rw);
-    roverKit(u => u * rw, v => v * rw, -.42, .42, (wy - r * .75) / rw, ex * 2.2 / rw, ey * 2.2 / rw, rw);
-    ctx.fillStyle = '#18181b'; ctx.beginPath(); ctx.moveTo(rw * .02, wy - r * .75 + ey); ctx.lineTo(rw * .22, wy - r * .75 + ey); ctx.lineTo(rw * .18, wy - r * .75 - rh * .38 + ey); ctx.lineTo(rw * .05, wy - r * .75 - rh * .3 + ey); ctx.closePath(); ctx.fill();
-    lidarPuck(rw * .12, wy - r * .75 - rh * .62 + ey, rh * .2, rh * .3, t, lights ? 1 : 0);
+    ctx.fillStyle = '#4a4740'; ctx.fillRect(rw * .1 - 1, wy - r * .75 - rh * .4 + ey, 2, rh * .4);
+    lidarPuck(rw * .1, wy - r * .75 - rh * .68 + ey, rh * .2, rh * .3, t, lights ? 1 : 0);
     for (const s of [-1, 1]) grouserWheel(s * wx, wy, r, roll + s * .5, ex * .5, ey * .5, false);
     ctx.restore();
   }
@@ -1503,12 +1478,12 @@ p strong{color:var(--ink);font-weight:600}
       });
       const kx = sstep(.55, .75, s) * (RM ? .8 : .6 + .4 * Math.sin(t * 3));
       if (kx > 0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; alpha(kx); ctx.translate(ax, fy); ctx.scale(1, .3); const xg = ctx.createRadialGradient(0, 0, 0, 0, 0, L * .12); xg.addColorStop(0, 'rgba(201,170,255,.8)'); xg.addColorStop(1, 'rgba(201,170,255,0)'); ctx.fillStyle = xg; ctx.fillRect(-L * .12, -L * .12, L * .24, L * .24); ctx.restore(); alpha(1); }
-      roverKit(X, Y, -.44, .44, yT, dX, dY, L);
-      // LiDAR on an angled black bracket at the front
-      const mx = X(.24 + dX * .5), mTop = Y(yT + dY * .5), pt0 = mTop - L * .2;
+      // LiDAR mast
+      const mx = X(.2 + dX * .5), mTop = Y(yT + dY * .5), pt0 = mTop - L * .34;
       off([0, -.42], () => {
-        ctx.fillStyle = '#2b2b30'; ctx.beginPath(); ctx.moveTo(mx - L * .09, mTop); ctx.lineTo(mx + L * .1, mTop); ctx.lineTo(mx + L * .07, mTop - L * .1); ctx.lineTo(mx - L * .06, mTop - L * .07); ctx.closePath(); ctx.fill();
-        ctx.strokeStyle = 'rgba(255,255,255,.18)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(mx - L * .06, mTop - L * .07); ctx.lineTo(mx + L * .07, mTop - L * .1); ctx.stroke();
+        const mg2 = ctx.createLinearGradient(mx - 3, 0, mx + 3, 0); mg2.addColorStop(0, '#2c2a26'); mg2.addColorStop(.5, '#8d877c'); mg2.addColorStop(1, '#2c2a26');
+        ctx.fillStyle = mg2; ctx.fillRect(mx - Math.max(1.5, L * .011), pt0 + L * .1, Math.max(3, L * .022), mTop - pt0 - L * .1);
+        ctx.fillStyle = '#3a3834'; ctx.beginPath(); ctx.ellipse(mx, mTop, L * .04, L * .01, 0, 0, TAU); ctx.fill();
         lidarPuck(mx, pt0, L * .065, L * .1, t, kl);
       });
       // near wheels
