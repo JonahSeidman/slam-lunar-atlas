@@ -41,7 +41,7 @@ body{margin:0;background:var(--void);color:var(--ink);font-family:var(--f-body);
 .facts.steps li{transition:opacity .35s,color .35s;opacity:.38}
 .facts.steps li.on{opacity:1}
 .facts.steps li.on b{color:var(--accent)}
-.tall.long{min-height:680vh}
+.tall.long{min-height:500vh}
 .callout.beat{transition:opacity .35s;opacity:.3}
 .callout.beat.on{opacity:1}
 .step{min-height:100vh;display:flex;align-items:center;padding-block:10vh}
@@ -915,14 +915,17 @@ try {
     for (let s = 0; s <= 24; s++) ctx.lineTo(x + w * s / 24, g + Math.sin(s * 2.1) * 1.2 - (s % 7 === 3 ? 1.5 : 0));
     ctx.lineTo(x + w, g + 5); ctx.lineTo(x, g + 5); ctx.closePath(); ctx.fill();
   }
+  let SH_BEAT = -1, SH_T0 = 0;
   SCN.shelter = {
     moon: () => null,
     draw(p, t, M) {
-      const s = Math.min(4, p * 5), Ls = shelterLayout();
-      const wR = 1 - sstep(.8, 1.1, s), wT = sstep(.8, 1.1, s) * (1 - sstep(1.8, 2.1, s));
-      const wM = sstep(1.8, 2.1, s) * (1 - sstep(2.8, 3.1, s)), wV = sstep(2.8, 3.1, s);
-      const uT = clamp((s - .95) / 1.05, 0, 1), dph = (.8 + uT * 1.05) % 1, T = surfT(dph), sun = Math.sin(dph * TAU);
-      const uV = clamp((s - 2.95) / .8, 0, 1);
+      const s = Math.min(3, p * 4), Ls = shelterLayout(), bi = Math.round(p * 4);
+      if (bi !== SH_BEAT) { SH_BEAT = bi; SH_T0 = NOW; }
+      const run = ms => RM ? 1 : clamp((NOW - SH_T0) / ms, 0, 1);
+      const wR = 1 - sstep(.35, .65, s), wT = sstep(.35, .65, s) * (1 - sstep(1.35, 1.65, s));
+      const wM = sstep(1.35, 1.65, s) * (1 - sstep(2.35, 2.65, s)), wV = sstep(2.35, 2.65, s);
+      const uT = bi === 1 ? run(2600) : bi > 1 ? 1 : 0, dph = (.8 + uT * 1.05) % 1, T = surfT(dph), sun = Math.sin(dph * TAU);
+      const uV = bi === 3 ? run(1600) : bi > 3 ? 1 : 0;
       for (const L of Ls) {
         const { x, y, w, h, g, ceil, floor, cave, hw, hh: hH, hx, hy } = L;
         ctx.save(); ctx.beginPath(); ctx.roundRect(x, y, w, h, 4); ctx.clip();
@@ -1053,19 +1056,19 @@ try {
   };
 
   /* ---------------- the gap: zoom from the globe into an orbital view of the pit ---------------- */
-  let pitTex = null, pitBorn = 0, pitSize = 0;
+  let pitTex = null, pitBorn = 0, pitSize = 0; const PIT_E = 1.7;
   function pitJob(S) {
     let prev = new Float32Array(S), cur = new Float32Array(S), row = -1;
     const L = (() => { const l = Math.hypot(.83, -.1, .5); return [.83 / l, -.1 / l, .5 / l]; })();
     return rasterJob(S, S, (x, y, d, o) => {
       if (y !== row) { const tmp = prev; prev = cur; cur = tmp; row = y; }
-      const u = x / S, v = y / S, dx = u - .5, dy = v - .5, ang = Math.atan2(dy, dx);
+      const u = .5 + (x / S - .5) * PIT_E, v = .5 + (y / S - .5) * PIT_E, dx = u - .5, dy = v - .5, ang = Math.atan2(dy, dx);
       const rp = .19 * (1 + (vnoise(Math.cos(ang) * 2 + 5, Math.sin(ang) * 2 + 5, 3) - .5) * .22 + (vnoise(Math.cos(ang) * 7 + 9, Math.sin(ang) * 7, 1) - .5) * .06);
       const q = Math.hypot(dx, dy) / rp;
       let h = craterH(u, v, .37, 9, 5, .4) + craterH(u, v, .71, 24, 9, .5) * .8 + craterH(u, v, .13, 70, 13, .55) * .6 + (vnoise(u * 30, v * 30, 2) - .5) * .004;
       if (q > 1) h += .01 * Math.exp(-(q - 1) * 3.5);
       cur[x] = h;
-      const gx = x ? (h - cur[x - 1]) * S : 0, gy = y ? (h - prev[x]) * S : 0;
+      const gx = x ? (h - cur[x - 1]) * S / PIT_E : 0, gy = y ? (h - prev[x]) * S / PIT_E : 0;
       const nl = Math.hypot(gx, gy, 1);
       const I = Math.max(0, (-gx * L[0] - gy * L[1] + L[2]) / nl) * 1.55;
       const alb = .5 + (vnoise(u * 6, v * 6, 4) - .5) * .14 + (vnoise(u * 60, v * 60, 1) - .5) * .1 + (vnoise(u * 160, v * 160, 8) - .5) * .08;
@@ -1085,11 +1088,11 @@ try {
         }
       }
       const c = clamp(val, 0, 1.1) * 232;
-      d[o] = Math.min(255, c * 1.02); d[o + 1] = Math.min(255, c); d[o + 2] = Math.min(255, c * .95); d[o + 3] = 255;
+      d[o] = Math.min(255, c * 1.02); d[o + 1] = Math.min(255, c); d[o + 2] = Math.min(255, c * .95); d[o + 3] = 255 * (1 - sstep(.36, .5, Math.hypot(x / S - .5, y / S - .5)));
     }, c => { if (S >= pitSize) { pitTex = c; pitSize = S; pitBorn = performance.now(); } });
   }
   resizers.push(() => {
-    const R = region(), want = Math.round(clamp(Math.min(R.x1 - R.x0, R.y1 - R.y0) * DPR * .95, 320, 900) / 32) * 32;
+    const R = region(), want = Math.round(clamp(Math.min(R.x1 - R.x0, R.y1 - R.y0) * DPR * .95 * PIT_E, 480, 1440) / 32) * 32;
     if (want > pitSize * 1.2) queue(pitJob(want));
   });
   function pitFrame(p) {
@@ -1110,9 +1113,17 @@ try {
       const Mo = { x: 0, y: 0, r: 1, w: lerp(0, -TRANQ[0] / 20, ks), lo: lerp(0, TRANQ[1], ks) }, [l0, o0] = moonRot(Mo);
       const u = project(TRANQ[0], TRANQ[1], l0, { x: 0, y: 0, r: 1 }, o0), r = b.r * Math.pow(60, kz);
       const tx = lerp(b.x + u.x * b.r, F.cx, kz), ty = lerp(b.y + u.y * b.r, F.cy, kz);
-      return { x: tx - u.x * r, y: ty - u.y * r, r, a: 1 - sstep(.3, .44, p), w: Mo.w, lo: Mo.lo };
+      return { x: tx - u.x * r, y: ty - u.y * r, r, a: 1, w: Mo.w, lo: Mo.lo };
     },
     draw(p, t, M) {
+      // the pit close-up lives on the surface: same scale as the globe, so the zoom simply arrives at it
+      {
+        const kz = ease((p - .14) / .28), F0 = pitFrame(p), ps = F0.s * PIT_E * Math.pow(60, kz - 1), pc = at(TRANQ, M);
+        if (ps > 4 && pc.vis) {
+          alpha(1);
+          if (pitTex) { ctx.globalAlpha = SA * clamp((NOW - pitBorn) / 600, 0, 1); ctx.imageSmoothingQuality = 'high'; ctx.drawImage(pitTex, pc.x - ps / 2, pc.y - ps / 2, ps, ps); }
+        }
+      }
       if (M.a > .05) carry('pits', (1 - sstep(.06, .3, p)) * M.a, t, M);
       // targeting box: hunts while the globe turns, locks on the pit, then opens up as we zoom
       const kf = sstep(.02, .08, p) * (1 - sstep(.34, .42, p));
@@ -1130,8 +1141,6 @@ try {
       const F = pitFrame(p), { x, y, s, cx, cy } = F;
       alpha(k);
       ctx.save(); ctx.beginPath(); ctx.rect(x, y, s, s); ctx.clip();
-      if (pitTex) { ctx.imageSmoothingQuality = 'high'; ctx.drawImage(pitTex, x, y, s, s); }
-      else { ctx.fillStyle = '#3c3a36'; ctx.fillRect(x, y, s, s); ctx.fillStyle = '#060606'; ctx.beginPath(); ctx.arc(cx, cy, s * .19, 0, TAU); ctx.fill(); }
       const vg = ctx.createRadialGradient(cx, cy, s * .32, cx, cy, s * .75);
       vg.addColorStop(0, 'rgba(5,7,13,0)'); vg.addColorStop(1, 'rgba(5,7,13,.78)');
       ctx.fillStyle = vg; ctx.fillRect(x, y, s, s);
@@ -2156,7 +2165,7 @@ try {
     const mid = ss + H * .5;
     const tops = sections.map(s => { const r = s.getBoundingClientRect(); return [r.top + scrollY, r.height]; });
     let idx = 0; for (let i = 0; i < tops.length; i++) if (tops[i][0] <= mid) idx = i;
-    const P = i => clamp((mid - tops[i][0]) / tops[i][1], 0, 1);
+    const P = i => i === shelterSec ? clamp((ss - tops[i][0]) / Math.max(1, tops[i][1] - H), 0, 1) : clamp((mid - tops[i][0]) / tops[i][1], 0, 1);
     const B = H * .22; let a = idx, b = -1, f = 0;
     if (idx + 1 < tops.length && tops[idx + 1][0] - mid < B) { b = idx + 1; f = ease((mid - (tops[idx + 1][0] - B)) / (2 * B)); }
     else if (idx > 0 && mid - tops[idx][0] < B) { a = idx - 1; b = idx; f = ease((mid - tops[idx][0] + B) / (2 * B)); }
@@ -2180,7 +2189,7 @@ try {
     ctx.globalAlpha = 1; SA = 1;
     if (window.HERO3D) HERO3D.show(HERO_ON); HERO_ON = false;
     veil.style.opacity = sstep(.3, .8, P(0)).toFixed(3);
-    if (shelterSec >= 0) { const on = Math.min(4, Math.floor(P(shelterSec) * 5)); shelterLi.forEach((li, i) => li.classList.toggle('on', i === on)); if (shelterCall) shelterCall.classList.toggle('on', on === 4); }
+    if (shelterSec >= 0) { const on = Math.round(P(shelterSec) * 4); shelterLi.forEach((li, i) => li.classList.toggle('on', i === on)); if (shelterCall) shelterCall.classList.toggle('on', on === 4); }
 
     if (idx !== hudIdx) { hudIdx = idx; hudN.textContent = String(idx + 1).padStart(2, '0'); hudT.textContent = sections[idx].dataset.chapter; }
     hudBar.style.transform = `scaleX(${clamp(scrollY / Math.max(1, document.documentElement.scrollHeight - H), 0, 1)})`;
@@ -2191,6 +2200,46 @@ try {
     }
     requestAnimationFrame(frame);
   }
+  (() => {
+    const sec = sections[shelterSec]; if (!sec) return;
+    const N = 4; let lock = 0, lastWheel = 0, ty0 = null;
+    const range = () => { const r = sec.getBoundingClientRect(), a = r.top + scrollY; return [a, a + r.height - innerHeight]; };
+    const go = y => { lock = performance.now() + 700; scrollTo({ top: Math.round(y), behavior: 'instant' }); };
+    // returns true when the input was consumed by the section
+    function beat(dir, dist) {
+      const [a, b] = range(), y = scrollY, st = (b - a) / N;
+      if (y < a - 2) { if (dir > 0 && y + dist >= a) { go(a); return true; } return false; }
+      if (y > b + 2) { if (dir < 0 && y - dist <= b) { go(b); return true; } return false; }
+      const i = Math.round((y - a) / st), ni = i + dir;
+      if (ni < 0 || ni > N) return false;
+      if (performance.now() >= lock) go(a + ni * st);
+      return true;
+    }
+    addEventListener('wheel', e => {
+      if (e.ctrlKey || !e.deltaY) return;
+      const now = performance.now(), fresh = now - lastWheel > 220; lastWheel = now;
+      const [a, b] = range(), y = scrollY;
+      const near = y >= a - 2 - Math.abs(e.deltaY) && y <= b + 2 + Math.abs(e.deltaY);
+      if (!near) return;
+      const dir = Math.sign(e.deltaY), [a2, b2] = [a, b], inside = y >= a2 - 2 && y <= b2 + 2;
+      if (inside && !fresh) { const i = Math.round((y - a) / ((b - a) / N)) + dir; if (i >= 0 && i <= N) { e.preventDefault(); return; } return; }
+      if (beat(dir, Math.abs(e.deltaY))) e.preventDefault();
+    }, { passive: false });
+    addEventListener('keydown', e => {
+      const k = e.key, dir = ['ArrowDown', 'PageDown', ' '].includes(k) ? 1 : ['ArrowUp', 'PageUp'].includes(k) ? -1 : 0;
+      if (!dir || e.target.closest && e.target.closest('input,textarea')) return;
+      if (beat(dir, innerHeight * .9)) e.preventDefault();
+    });
+    addEventListener('touchstart', e => { ty0 = e.touches[0].clientY; }, { passive: true });
+    addEventListener('touchmove', e => {
+      if (ty0 == null) return; const [a, b] = range(), y = scrollY, dy = ty0 - e.touches[0].clientY;
+      if (y >= a - 2 && y <= b + 2) { const i = Math.round((y - a) / ((b - a) / N)) + Math.sign(dy); if (i >= 0 && i <= N) e.preventDefault(); }
+    }, { passive: false });
+    addEventListener('touchend', e => {
+      if (ty0 == null) return; const dy = ty0 - e.changedTouches[0].clientY; ty0 = null;
+      if (Math.abs(dy) > 30) beat(Math.sign(dy), Math.abs(dy) * 2);
+    }, { passive: true });
+  })();
   sizeCanvas(); lastW = W; lastH = H;
   resizers.forEach(f => f());
   requestAnimationFrame(frame);
