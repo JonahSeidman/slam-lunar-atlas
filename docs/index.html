@@ -1414,11 +1414,6 @@ try {
     // far guard rail
     const rail = d => { poly([D(-195, 150, d), D(190, 150, d), D(190, 162, d), D(-195, 162, d)]); const g = ctx.createLinearGradient(0, Z(162 + dz * d), 0, Z(150 + dz * d)); g.addColorStop(0, '#c9ccd1'); g.addColorStop(1, '#55585e'); ctx.fillStyle = g; ctx.fill(); ctx.fillStyle = '#1b1c1f'; for (const x of [-195, 182]) { poly([D(x, 149, d), D(x + 9, 149, d), D(x + 9, 163, d), D(x, 163, d)]); ctx.fill(); } };
     rail(.92);
-    // e-stop on the rear deck
-    part('mast', () => {
-      poly([D(-162, 147, .75), D(-138, 147, .75), D(-138, 166, .75), D(-162, 166, .75)]); ctx.fillStyle = '#e2b52a'; ctx.fill();
-      const [ex, ez] = D(-150, 166, .75); ctx.fillStyle = '#d6372b'; ctx.beginPath(); ctx.ellipse(ex, Z(ez), 13, 9, 0, Math.PI, 0); ctx.fill();
-    });
     // mast: pedestal, plate, 40-degree wedge, L2 head with its dark dome
     part('mast', () => {
       ctx.save(); ctx.translate(dx * .5, -dz * .5);
