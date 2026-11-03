@@ -325,6 +325,8 @@ p strong{color:var(--ink);font-weight:600}
 
   let W = 0, H = 0, DPR = 1, NOW = 0, SA = 1;
   const alpha = k => { ctx.globalAlpha = SA * k; };
+  // keep the previous shot's overlay on screen while the camera moves on, clearing as the new one arrives
+  const carry = (name, k, t, M) => { if (k <= 0) return; const s0 = SA; SA *= k; ctx.save(); SCN[name].draw(1, t, M); ctx.restore(); SA = s0; alpha(1); };
   const r0 = rng(42);
   const stars = Array.from({ length: 300 }, () => ({ x: r0(), y: r0(), r: r0() * 1.1 + .25, a: r0() * .55 + .15, ph: r0() * 6.28, z: r0() }));
 
@@ -564,8 +566,9 @@ p strong{color:var(--ink);font-weight:600}
   };
 
   SCN.stay = {
-    moon: p => ({ ...moonPlace(1.04), w: lerp(1.4, 3, ease(p * 1.5)) }),
+    moon: p => ({ ...moonPlace(lerp(.9, 1.04, ease(clamp(p * 1.5, 0, 1)))), w: lerp(1.4, 3, ease(clamp(p * 1.5, 0, 1))) }),
     draw(p, t, M) {
+      carry('race', 1 - sstep(.04, .3, p), t, M);
       const k = sstep(.3, .45, p); if (k <= 0) return;
       const sp = project(-89.9, 0, -20 * M.w, M); if (!sp.vis) return;
       alpha(k); ring(sp.x, sp.y, 9, C.accent, t, .9);
@@ -970,6 +973,7 @@ p strong{color:var(--ink);font-weight:600}
       return { x: lerp(b.x, F.cx - u.x * r, k), y: lerp(b.y, F.cy - u.y * r, k), r, a: 1 - sstep(.26, .4, p), w: 0 };
     },
     draw(p, t, M) {
+      if (M.a > .05) carry('pits', (1 - sstep(.06, .3, p)) * M.a, t, M);
       const kz = sstep(.12, .3, p);
       if (kz > 0 && kz < 1 && M.a > .05) {
         const pt = at(TRANQ, M); alpha(kz * (1 - sstep(.3, .38, p)));
@@ -1714,6 +1718,7 @@ p strong{color:var(--ink);font-weight:600}
     if (b) return { ...b, a: b.a * f };
     return null;
   }
+  const CONT = new Set(['race>stay', 'pits>orbit']);
   let ss = scrollY, last = performance.now(), hudIdx = -1;
   function frame(now) {
     NOW = now;
@@ -1728,6 +1733,8 @@ p strong{color:var(--ink);font-weight:600}
     const B = H * .22; let a = idx, b = -1, f = 0;
     if (idx + 1 < tops.length && tops[idx + 1][0] - mid < B) { b = idx + 1; f = ease((mid - (tops[idx + 1][0] - B)) / (2 * B)); }
     else if (idx > 0 && mid - tops[idx][0] < B) { a = idx - 1; b = idx; f = ease((mid - tops[idx][0] + B) / (2 * B)); }
+    // same-shot pairs: the camera keeps moving on the Moon, no crossfade
+    if (b >= 0 && CONT.has(sections[a].dataset.scene + '>' + sections[b].dataset.scene)) { a = idx; b = -1; f = 0; }
     const SAo = SCN[sections[a].dataset.scene], SBo = b >= 0 ? SCN[sections[b].dataset.scene] : null;
     const pa = P(a), pb = b >= 0 ? P(b) : 0;
 
