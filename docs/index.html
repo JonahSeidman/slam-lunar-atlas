@@ -134,7 +134,7 @@ try {
   scene.add(key, rim, new THREE.HemisphereLight(0x9fb4ff, 0x1a1410, .4));
   const cam = new THREE.PerspectiveCamera(26, 1, .05, 60), spin = new THREE.Group(); scene.add(spin);
   let w = 0, h = 0, dpr = 0;
-  new GLTFLoader().load('rover.glb', g => {
+  new GLTFLoader().load('rover.glb?v=eae75a33', g => {   // ?v = first 8 of the GLB's md5; bump it with every new model so browsers can't reuse a stale copy
     const m = g.scene; m.traverse(o => { if (/^tether_/.test(o.name)) o.visible = false; }); m.updateMatrixWorld(true);
     const c = new THREE.Box3().setFromObject(m.getObjectByName('body') || m).getCenter(new THREE.Vector3());
     m.position.set(-c.x, 0, -c.z); spin.add(m);
