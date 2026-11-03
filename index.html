@@ -274,9 +274,9 @@ try {
     </div>
     <div class="step">
       <div class="panel">
-        <p class="eyebrow">Simultaneous localization and mapping</p>
-        <p class="lede">Once it's down, it drives into the dark.</p>
-        <p>The rover uses 3D LiDAR, an IMU and wheel odometry to run SLAM. LiDAR uses its own laser, so it works in complete darkness. The rover figures out where it is from the shape of the cave around it, with no GPS and no line of sight to Earth. People on the ground pick the goals and safety limits, and the rover decides how to drive there.</p>
+        <p class="eyebrow">Autonomous navigation</p>
+        <p class="lede">It drives itself with a single end-to-end neural network.</p>
+        <p>Raw data from the 3D LiDAR, IMU and wheel odometry goes into the network, and steering and speed come out. There are no hand-written driving rules in between and no one steering from Earth. The network reads the cave, keeps track of where the rover is and chooses its own path.</p>
       </div>
     </div>
     <div class="step">
@@ -334,7 +334,7 @@ try {
     <div class="panel">
       <p class="eyebrow">What comes next</p>
       <h2>Then Mars</h2>
-      <p>Every cave it maps is real-world testing for the whole system: the SLAM pipeline, the driving autonomy, the hazard detection, the tether handling and turning raw scans into a finished map.</p>
+      <p>Every cave it maps is more training data and real-world testing for the whole system: the driving network, the tether handling and turning raw scans into a finished map.</p>
       <p><strong>By the end of the lunar missions, SLAM should be a fully trained framework that can go to other planets.</strong> Mars is the obvious next step. Orbiters have found hundreds of possible caves there, and lava tubes are some of the best places to look for signs of past life.</p>
       <p class="callout">The Moon first, then Mars.</p>
     </div>
@@ -1710,7 +1710,7 @@ try {
       if (k2 > 0) {
         alpha(k2);
         tag(cx, ceil(cx) - 14 < g + 10 ? g + 14 : cy - rh * 3.2, 'LIDAR · IMU · WHEEL ODOMETRY', C.accent, 'center');
-        tag((px1 + rx) / 2 + w * .08, g + 16, 'NO GPS · NO LINE OF SIGHT TO EARTH', C.dim, 'center');
+        tag((px1 + rx) / 2 + w * .08, g + 16, 'END-TO-END NEURAL NETWORK', C.dim, 'center');
       }
       const k3 = sstep(2.9, 3.1, s);
       if (k3 > 0) {
