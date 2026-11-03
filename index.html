@@ -41,6 +41,9 @@ body{margin:0;background:var(--void);color:var(--ink);font-family:var(--f-body);
 .facts.steps li{transition:opacity .35s,color .35s;opacity:.38}
 .facts.steps li.on{opacity:1}
 .facts.steps li.on b{color:var(--accent)}
+.tall.long{min-height:680vh}
+.callout.beat{transition:opacity .35s;opacity:.3}
+.callout.beat.on{opacity:1}
 .step{min-height:100vh;display:flex;align-items:center;padding-block:10vh}
 .panel{max-width:33rem;min-width:0;display:grid;gap:1.1rem;will-change:opacity,transform}
 .panel.wide{max-width:40rem}
@@ -171,7 +174,7 @@ try {
     </div>
   </section>
   <section class="chapter" data-scene="shelter" data-chapter="Why caves">
-    <div class="step tall">
+    <div class="step tall long">
       <div class="panel">
         <p class="eyebrow">Why go underground</p>
         <h2>A lava tube is a ready-made shelter</h2>
@@ -181,7 +184,7 @@ try {
           <li><span><b>Impacts and dust.</b> The roof takes the micrometeoroid hits and keeps out most of the sharp dust that wears down equipment.</span></li>
           <li><span><b>Space.</b> No launching shielding from Earth or burying a base in regolith. The walls and roof are already there.</span></li>
         </ul>
-        <p class="callout">But none of that helps until you know how big the cave is, how to get in and what's down there.</p>
+        <p class="callout beat">But none of that helps until you know how big the cave is, how to get in and what's down there.</p>
       </div>
     </div>
   </section>
@@ -915,7 +918,7 @@ try {
   SCN.shelter = {
     moon: () => null,
     draw(p, t, M) {
-      const s = p * 4, Ls = shelterLayout();
+      const s = Math.min(4, p * 5), Ls = shelterLayout();
       const wR = 1 - sstep(.8, 1.1, s), wT = sstep(.8, 1.1, s) * (1 - sstep(1.8, 2.1, s));
       const wM = sstep(1.8, 2.1, s) * (1 - sstep(2.8, 3.1, s)), wV = sstep(2.8, 3.1, s);
       const uT = clamp((s - .95) / 1.05, 0, 1), dph = (.8 + uT * 1.05) % 1, T = surfT(dph), sun = Math.sin(dph * TAU);
@@ -2142,7 +2145,7 @@ try {
   }
   let HERO_ON = false; const HERO_WAIT = performance.now() + 9000;
   const CONT = new Set(['intro>moon', 'pits>orbit']);
-  const veil = document.querySelector('.veil'), shelterSec = sections.findIndex(s => s.dataset.scene === 'shelter'), shelterLi = [...document.querySelectorAll('.facts.steps li')];
+  const veil = document.querySelector('.veil'), shelterSec = sections.findIndex(s => s.dataset.scene === 'shelter'), shelterLi = [...document.querySelectorAll('.facts.steps li')], shelterCall = document.querySelector('.callout.beat');
   let ss = scrollY, last = performance.now(), hudIdx = -1;
   function frame(now) {
     NOW = now;
@@ -2177,7 +2180,7 @@ try {
     ctx.globalAlpha = 1; SA = 1;
     if (window.HERO3D) HERO3D.show(HERO_ON); HERO_ON = false;
     veil.style.opacity = sstep(.3, .8, P(0)).toFixed(3);
-    if (shelterSec >= 0) { const on = Math.min(3, Math.floor(P(shelterSec) * 4)); shelterLi.forEach((li, i) => li.classList.toggle('on', i === on)); }
+    if (shelterSec >= 0) { const on = Math.min(4, Math.floor(P(shelterSec) * 5)); shelterLi.forEach((li, i) => li.classList.toggle('on', i === on)); if (shelterCall) shelterCall.classList.toggle('on', on === 4); }
 
     if (idx !== hudIdx) { hudIdx = idx; hudN.textContent = String(idx + 1).padStart(2, '0'); hudT.textContent = sections[idx].dataset.chapter; }
     hudBar.style.transform = `scaleX(${clamp(scrollY / Math.max(1, document.documentElement.scrollHeight - H), 0, 1)})`;
